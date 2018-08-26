@@ -25,5 +25,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+
+#define SCREEN_WIDTH  640
+#define SCREEN_HEIGHT 480
+
+typedef struct {
+    SDL_Window* window;
+    SDL_Surface* screenSurface;
+    SDL_Renderer* renderer;
+} GameInfo;
 
 #endif
