@@ -12,6 +12,7 @@ bool initialize(GameInfo* g) {
             printf("Falha ao criar a janela! Erro: %s\n", SDL_GetError());
             success = false;
         } else {
+            SDL_SetWindowFullscreen(g->window, SDL_WINDOW_FULLSCREEN);
             g->renderer = SDL_CreateRenderer(g->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
             if(g->renderer == NULL) {
                 printf("Falha ao criar o renderer! Erro: %s\n", SDL_GetError());
@@ -54,9 +55,11 @@ int main() {
         TTF_Font* font = TTF_OpenFont("content/Fipps-Regular.ttf", 18);
         SDL_Color color = {0, 0, 255};
         SDL_Color color2 = {255, 255, 255};
-        SDL_Surface* textSurface = TTF_RenderUTF8_Shaded(font, "eae peçual", color, color2);
+        SDL_Color color3 = {255, 0, 0};
+        SDL_Surface* textSurface = TTF_RenderUTF8_Blended(font, "eae peçual", color);
         SDL_Texture* texture = SDL_CreateTextureFromSurface(g.renderer, textSurface);
         int w = textSurface->w, h = textSurface->h;
+        SDL_Rect renderQuad = {(SCREEN_WIDTH - w) / 2, (SCREEN_HEIGHT - h) / 2, w, h};
         SDL_FreeSurface(textSurface);
         while(!quit) {
             while(SDL_PollEvent(&e) != 0) {
@@ -64,9 +67,8 @@ int main() {
                     quit = true;
                 }
             }
-            SDL_SetRenderDrawColor(g.renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+            SDL_SetRenderDrawColor(g.renderer, 0x12, 0xFF, 0xFF, 0xFF);
             SDL_RenderClear(g.renderer);
-            SDL_Rect renderQuad = {(SCREEN_WIDTH - w) / 2, (SCREEN_HEIGHT - h) / 2, w, h};
             SDL_RenderCopy(g.renderer, texture, NULL, &renderQuad);
             SDL_RenderPresent(g.renderer);
         }
