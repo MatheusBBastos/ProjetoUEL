@@ -30,9 +30,13 @@
 #define SCREEN_WIDTH  640
 #define SCREEN_HEIGHT 480
 
-typedef struct {
+// Estrutura que carrega os elementos globais do programa
+typedef struct GameInfo {
+    // Janela global
     SDL_Window* window;
+    // Superfície global
     SDL_Surface* screenSurface;
+    // Renderizador global
     SDL_Renderer* renderer;
 } GameInfo;
 

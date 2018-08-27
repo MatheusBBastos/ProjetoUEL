@@ -1,13 +1,12 @@
 #include "headers.h"
 
+// Tentar inicializar a biblioteca SDL e suas funcionalidades
 bool initialize(GameInfo* g) {
     bool success = true;
-    printf("cheguei aqui\n");
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("Falha ao inicializar o SDL! Erro: %s\n", SDL_GetError());
         success = false;
     } else {
-        printf("cheguei aqui\n");
         g->window = SDL_CreateWindow("Projeto UEL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
         if(g->window == NULL) {
             printf("Falha ao criar a janela! Erro: %s\n", SDL_GetError());
@@ -15,7 +14,7 @@ bool initialize(GameInfo* g) {
         } else {
             g->renderer = SDL_CreateRenderer(g->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
             if(g->renderer == NULL) {
-                printf("Falha ao criar renderer! Erro: %s\n", SDL_GetError());
+                printf("Falha ao criar o renderer! Erro: %s\n", SDL_GetError());
                 success = false;
             } else {
                 SDL_SetRenderDrawColor(g->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -34,7 +33,8 @@ bool initialize(GameInfo* g) {
     return success;
 }
 
-void close(GameInfo* g) {
+// Destruir os elementos do SDL
+void destroy(GameInfo* g) {
     SDL_DestroyRenderer(g->renderer);
     g->renderer = NULL;
     SDL_DestroyWindow(g->window);
@@ -44,7 +44,7 @@ void close(GameInfo* g) {
     SDL_Quit();
 }
 
-int main(int argc, char* args[]) {
+int main() {
     GameInfo g;
     if(!initialize(&g)) {
         printf("Falha ao inicializar!\n");
@@ -75,6 +75,6 @@ int main(int argc, char* args[]) {
         SDL_DestroyTexture(texture);
         texture = NULL;
     }
-    close(&g);
+    destroy(&g);
     return 0;
 }
