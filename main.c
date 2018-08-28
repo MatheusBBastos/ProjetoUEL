@@ -1,4 +1,5 @@
 #include "headers.h"
+#include "scene_base.h"
 
 // Tentar inicializar a biblioteca SDL e suas funcionalidades
 bool initialize(GameInfo* g) {
@@ -12,7 +13,7 @@ bool initialize(GameInfo* g) {
             printf("Falha ao criar a janela! Erro: %s\n", SDL_GetError());
             success = false;
         } else {
-            SDL_SetWindowFullscreen(g->window, SDL_WINDOW_FULLSCREEN);
+            //SDL_SetWindowFullscreen(g->window, SDL_WINDOW_FULLSCREEN);
             g->renderer = SDL_CreateRenderer(g->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
             if(g->renderer == NULL) {
                 printf("Falha ao criar o renderer! Erro: %s\n", SDL_GetError());
@@ -47,35 +48,32 @@ void destroy(GameInfo* g) {
 
 int main() {
     GameInfo g;
+    SceneManager s;
     if(!initialize(&g)) {
         printf("Falha ao inicializar!\n");
     } else {
         bool quit = false;
+        g.mainFont = TTF_OpenFont("content/Fipps-Regular.ttf", 18);
+        s.currentScene = SCENE_MAINMENU;
+        s.sMainMenu = SceneMainMenu_new(&g);
         SDL_Event e;
-        TTF_Font* font = TTF_OpenFont("content/Fipps-Regular.ttf", 18);
-        SDL_Color color = {0, 0, 255};
-        SDL_Color color2 = {255, 255, 255};
-        SDL_Color color3 = {255, 0, 0};
-        SDL_Surface* textSurface = TTF_RenderUTF8_Blended(font, "eae peçual", color);
-        SDL_Texture* texture = SDL_CreateTextureFromSurface(g.renderer, textSurface);
-        int w = textSurface->w, h = textSurface->h;
-        SDL_Rect renderQuad = {(SCREEN_WIDTH - w) / 2, (SCREEN_HEIGHT - h) / 2, w, h};
-        SDL_FreeSurface(textSurface);
         while(!quit) {
             while(SDL_PollEvent(&e) != 0) {
                 if(e.type == SDL_QUIT) {
                     quit = true;
+                } else if(e.type == SDL_KEYDOWN) {
+                    if(e.key.keysym.sym == SDLK_RETURN) {
+                        SceneManager_performTransition(&s, 30, SCENE_MAINMENU);
+                    }
                 }
             }
             SDL_SetRenderDrawColor(g.renderer, 0x12, 0xFF, 0xFF, 0xFF);
             SDL_RenderClear(g.renderer);
-            SDL_RenderCopy(g.renderer, texture, NULL, &renderQuad);
+            SceneManager_updateScene(&s, &g);
             SDL_RenderPresent(g.renderer);
         }
-        TTF_CloseFont(font);
-        font = NULL;
-        SDL_DestroyTexture(texture);
-        texture = NULL;
+        TTF_CloseFont(g.mainFont);
+        g.mainFont = NULL;
     }
     destroy(&g);
     return 0;

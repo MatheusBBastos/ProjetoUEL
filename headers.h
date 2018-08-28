@@ -38,6 +38,8 @@ typedef struct GameInfo {
     SDL_Surface* screenSurface;
     // Renderizador global
     SDL_Renderer* renderer;
+    // Fonte principal
+    TTF_Font* mainFont;
 } GameInfo;
 
 #endif
