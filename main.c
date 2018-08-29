@@ -1,25 +1,28 @@
 #include "headers.h"
 #include "scene_base.h"
 
+GameInfo gInfo;
+SceneManager sMng;
+
 // Tentar inicializar a biblioteca SDL e suas funcionalidades
-bool initialize(GameInfo* g) {
+bool initialize() {
     bool success = true;
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("Falha ao inicializar o SDL! Erro: %s\n", SDL_GetError());
         success = false;
     } else {
-        g->window = SDL_CreateWindow("Projeto UEL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-        if(g->window == NULL) {
+        gInfo.window = SDL_CreateWindow("Projeto UEL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+        if(gInfo.window == NULL) {
             printf("Falha ao criar a janela! Erro: %s\n", SDL_GetError());
             success = false;
         } else {
-            //SDL_SetWindowFullscreen(g->window, SDL_WINDOW_FULLSCREEN);
-            g->renderer = SDL_CreateRenderer(g->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-            if(g->renderer == NULL) {
+            //SDL_SetWindowFullscreen(gInfo.window, SDL_WINDOW_FULLSCREEN);
+            gInfo.renderer = SDL_CreateRenderer(gInfo.window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+            if(gInfo.renderer == NULL) {
                 printf("Falha ao criar o renderer! Erro: %s\n", SDL_GetError());
                 success = false;
             } else {
-                SDL_SetRenderDrawColor(g->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+                SDL_SetRenderDrawColor(gInfo.renderer, 0xFF, 0xFF, 0xFF, 0xFF);
                 int imgFlags = IMG_INIT_PNG;
                 if(!(IMG_Init(imgFlags) & imgFlags)) {
                     printf("Falha ao inicializar o SDL_image! Erro: %s\n", IMG_GetError());
@@ -36,26 +39,24 @@ bool initialize(GameInfo* g) {
 }
 
 // Destruir os elementos do SDL
-void destroy(GameInfo* g) {
-    SDL_DestroyRenderer(g->renderer);
-    g->renderer = NULL;
-    SDL_DestroyWindow(g->window);
-    g->window = NULL;
+void destroy() {
+    SDL_DestroyRenderer(gInfo.renderer);
+    gInfo.renderer = NULL;
+    SDL_DestroyWindow(gInfo.window);
+    gInfo.window = NULL;
     TTF_Quit();
     IMG_Quit();
     SDL_Quit();
 }
 
 int main() {
-    GameInfo g;
-    SceneManager s;
-    if(!initialize(&g)) {
+    if(!initialize()) {
         printf("Falha ao inicializar!\n");
     } else {
         bool quit = false;
-        g.mainFont = TTF_OpenFont("content/Fipps-Regular.ttf", 18);
-        s.currentScene = SCENE_MAINMENU;
-        s.sMainMenu = SceneMainMenu_new(&g);
+        gInfo.mainFont = TTF_OpenFont("content/Fipps-Regular.ttf", 18);
+        sMng.currentScene = SCENE_MAINMENU;
+        sMng.sMainMenu = SceneMainMenu_new();
         SDL_Event e;
         while(!quit) {
             while(SDL_PollEvent(&e) != 0) {
@@ -63,18 +64,16 @@ int main() {
                     quit = true;
                 } else if(e.type == SDL_KEYDOWN) {
                     if(e.key.keysym.sym == SDLK_RETURN) {
-                        SceneManager_performTransition(&s, 30, SCENE_MAINMENU);
+                        SceneManager_performTransition(15, SCENE_SINGLEPLAYER);
                     }
                 }
             }
-            SDL_SetRenderDrawColor(g.renderer, 0x12, 0xFF, 0xFF, 0xFF);
-            SDL_RenderClear(g.renderer);
-            SceneManager_updateScene(&s, &g);
-            SDL_RenderPresent(g.renderer);
+            SceneManager_updateScene();
+            SDL_RenderPresent(gInfo.renderer);
         }
-        TTF_CloseFont(g.mainFont);
-        g.mainFont = NULL;
+        TTF_CloseFont(gInfo.mainFont);
+        gInfo.mainFont = NULL;
     }
-    destroy(&g);
+    destroy();
     return 0;
 }

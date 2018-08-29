@@ -5,8 +5,10 @@
 
 #include "headers.h"
 #include "scene_mainmenu.h"
+#include "scene_singleplayer.h"
 
 typedef struct Scene_MainMenu Scene_MainMenu;
+typedef struct Scene_Singleplayer Scene_Singleplayer;
 
 // Enumerador de tipos de cenas do jogo
 enum SceneTypes {
@@ -34,15 +36,16 @@ typedef struct SceneManager {
     unsigned transitionFrame;
     // Estrutura da cena do menu principal
     Scene_MainMenu* sMainMenu;
+    Scene_Singleplayer* sSingleplayer;
 } SceneManager;
 
 // Fazer transição entre cenas
-void SceneManager_performTransition(SceneManager* s, int duration, int newScene);
+void SceneManager_performTransition(int duration, int newScene);
 // Mudar a cena atual
-void SceneManager_changeScene(SceneManager* s, GameInfo* g, int newScene);
+void SceneManager_changeScene(int newScene);
 // Atualizar a cena atual
-void SceneManager_updateScene(SceneManager* s, GameInfo* g);
+void SceneManager_updateScene();
 // Lidar com um evento na cena atual
-void SceneManager_handleEvent(SceneManager* s, SDL_Event* e);
+void SceneManager_handleEvent(SDL_Event* e);
 
 #endif

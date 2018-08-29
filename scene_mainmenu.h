@@ -11,10 +11,10 @@ typedef struct Scene_MainMenu {
     SDL_Rect renderQuad;
 } Scene_MainMenu;
 
-Scene_MainMenu* SceneMainMenu_new(GameInfo* g);
+Scene_MainMenu* SceneMainMenu_new();
 
-void SceneMainMenu_update(SceneManager* s, GameInfo* g);
+void SceneMainMenu_update();
 
-void SceneMainMenu_destroy(SceneManager* s);
+void SceneMainMenu_destroy();
 
 #endif

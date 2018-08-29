@@ -42,4 +42,9 @@ typedef struct GameInfo {
     TTF_Font* mainFont;
 } GameInfo;
 
+typedef struct SceneManager SceneManager;
+
+extern GameInfo gInfo;
+extern SceneManager sMng;
+
 #endif
