@@ -62,10 +62,8 @@ int main() {
             while(SDL_PollEvent(&e) != 0) {
                 if(e.type == SDL_QUIT) {
                     quit = true;
-                } else if(e.type == SDL_KEYDOWN) {
-                    if(e.key.keysym.sym == SDLK_RETURN) {
-                        SceneManager_performTransition(15, SCENE_SINGLEPLAYER);
-                    }
+                } else {
+                    SceneManager_handleEvent(&e);
                 }
             }
             SceneManager_updateScene();
@@ -73,6 +71,7 @@ int main() {
         }
         TTF_CloseFont(gInfo.mainFont);
         gInfo.mainFont = NULL;
+        SceneManager_changeScene(SCENE_UNDEFINED);
     }
     destroy();
     return 0;

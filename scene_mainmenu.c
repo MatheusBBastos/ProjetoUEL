@@ -13,14 +13,23 @@ Scene_MainMenu* SceneMainMenu_new() {
     return newScene;
 }
 
-void SceneMainMenu_update() {
+void SceneMainMenu_update(Scene_MainMenu* s) {
     SDL_SetRenderDrawColor(gInfo.renderer, 0x12, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(gInfo.renderer);
-    SDL_RenderCopy(gInfo.renderer, sMng.sMainMenu->textTexture, NULL, &sMng.sMainMenu->renderQuad);
+    SDL_RenderCopy(gInfo.renderer, s->textTexture, NULL, &s->renderQuad);
 }
 
-void SceneMainMenu_destroy() {
-    SDL_DestroyTexture(sMng.sMainMenu->textTexture);
-    free(sMng.sMainMenu);
-    sMng.sMainMenu = NULL;
+void SceneMainMenu_destroy(Scene_MainMenu* s) {
+    SDL_DestroyTexture(s->textTexture);
+    free(s);
+}
+
+void SceneMainMenu_handleEvent(SDL_Event* e) {
+    if(sMng.inTransition)
+        return;
+    if(e->type == SDL_KEYDOWN) {
+        if(e->key.keysym.sym == SDLK_RETURN) {
+            SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SINGLEPLAYER);
+        }
+    }
 }

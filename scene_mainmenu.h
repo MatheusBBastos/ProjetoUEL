@@ -13,8 +13,10 @@ typedef struct Scene_MainMenu {
 
 Scene_MainMenu* SceneMainMenu_new();
 
-void SceneMainMenu_update();
+void SceneMainMenu_update(Scene_MainMenu* s);
 
-void SceneMainMenu_destroy();
+void SceneMainMenu_handleEvent(SDL_Event* e);
+
+void SceneMainMenu_destroy(Scene_MainMenu* s);
 
 #endif

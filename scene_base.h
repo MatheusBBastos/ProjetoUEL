@@ -17,7 +17,8 @@ enum SceneTypes {
     SCENE_MULTIPLAYER,
     SCENE_CREATE_LOBBY,
     SCENE_LOBBY,
-    SCENE_GAME
+    SCENE_GAME,
+    SCENE_UNDEFINED
 };
 
 // Estrutura SceneManager: carrega dados para controlar as cenas

@@ -1,4 +1,4 @@
-OBJS = main.c scene_base.c scene_mainmenu.c scene_singleplayer.c
+OBJS = main.c scene_base.c scene_mainmenu.c scene_singleplayer.c widgets.c
 CC = gcc
 COMPILER_FLAGS = -w
 LINKER_FLAGS = -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf
