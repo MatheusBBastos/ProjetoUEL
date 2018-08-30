@@ -9,7 +9,9 @@ typedef struct SceneManager SceneManager;
 typedef struct Scene_MainMenu {
     SDL_Texture* textTexture;
     SDL_Texture* textLogar;
+    SDL_Texture* textModoOff;
     SDL_Rect renderQuad;
+    bool modoOff=false;
 } Scene_MainMenu;
 
 Scene_MainMenu* SceneMainMenu_new();
