@@ -50,12 +50,7 @@ void SceneSingleplayer_handleEvent(Scene_Singleplayer* s, SDL_Event* e) {
         if(e->key.keysym.sym == SDLK_RETURN) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
         } else if(e->key.keysym.sym == SDLK_TAB) {
-<<<<<<< HEAD
-            Address* ad = NewAddress(191, 52, 64, 165, 3000);
-            printf("%d\n", ad->address);
-=======
             Address* ad = NewAddress(127, 0, 0, 1, 3000);
->>>>>>> master
             char data[] = "Testando";
             Socket_Send(sMng.sSingleplayer->s2, ad, data, sizeof(data));
             free(ad);
