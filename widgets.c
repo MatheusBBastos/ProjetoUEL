@@ -49,8 +49,22 @@ void WD_TextureLoadFromFile(WTexture* wtexture, char* path) {
 
 // Renderiza uma textura (necessário que ela já tenha sido alocada e carregada)
 void WD_TextureRender(WTexture* wtexture, int x, int y) {
-    SDL_Rect textRect = {x, y, wtexture->w, wtexture->h};
-    SDL_RenderCopy(gInfo.renderer, wtexture->mTexture, NULL, &textRect);
+    SDL_Rect textureRect = {x, y, wtexture->w, wtexture->h};
+    SDL_RenderCopy(gInfo.renderer, wtexture->mTexture, NULL, &textureRect);
+}
+
+// Renderiza uma textura com mais opções
+// clip: região da textura que será renderizada
+// angle: ângulo (em graus) que indica a rotação em sentido horário aplicada na imagem
+// center: ponto indicando o centro em torno do qual a imagem será rotacionada
+// flip: valor indicando o espelhamento da imagem; Valores possíves: SDL_FLIP_HORIZONTAL, SDL_FLIP_VERITICAL, SDL_FLIP_NONE
+void WD_TextureRenderEx(WTexture* wtexture, int x, int y, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip) {
+    SDL_Rect textureRect = {x, y, wtexture->w, wtexture->h};
+    if(clip != NULL) {
+        textureRect.w = clip->w;
+        textureRect.h = clip->h;
+    }
+    SDL_RenderCopyEx(gInfo.renderer, wtexture->mTexture, clip, &textureRect, angle, center, flip);
 }
 
 // Cria um novo botão a partir das informações fornecidas e retorna seu ponteiro
