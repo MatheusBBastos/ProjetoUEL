@@ -1,6 +1,5 @@
 #include "scene_singleplayer.h"
 #include "network.h"
-#include <arpa/inet.h>
 
 Scene_Singleplayer* SceneSingleplayer_new() {
     Scene_Singleplayer* newScene = malloc(sizeof(Scene_Singleplayer));
@@ -22,10 +21,7 @@ void SceneSingleplayer_update(Scene_Singleplayer* s) {
     char data[256];
     if(Socket_Receive(s->socketFd, sender, data, sizeof(data)) > 0) {
         char salve[256];
-        struct in_addr oi;
-        oi.s_addr = htonl(sender->address);
-        inet_ntop(AF_INET, &oi, salve, sizeof(salve));
-        printf("%s:%u\n", salve, sender->port);
+        printf("%u:%u\n", sender->address, sender->port);
         printf("%s\n", data);
     }
     free(sender);
@@ -47,15 +43,19 @@ void SceneSingleplayer_destroy(Scene_Singleplayer* s) {
     free(s);
 }
 
-void SceneSingleplayer_handleEvent(SDL_Event* e) {
+void SceneSingleplayer_handleEvent(Scene_Singleplayer* s, SDL_Event* e) {
     if(sMng.inTransition)
         return;
     if(e->type == SDL_KEYDOWN) {
         if(e->key.keysym.sym == SDLK_RETURN) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
         } else if(e->key.keysym.sym == SDLK_TAB) {
+<<<<<<< HEAD
             Address* ad = NewAddress(191, 52, 64, 165, 3000);
             printf("%d\n", ad->address);
+=======
+            Address* ad = NewAddress(127, 0, 0, 1, 3000);
+>>>>>>> master
             char data[] = "Testando";
             Socket_Send(sMng.sSingleplayer->s2, ad, data, sizeof(data));
             free(ad);

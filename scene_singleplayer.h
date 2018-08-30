@@ -19,7 +19,7 @@ Scene_Singleplayer* SceneSingleplayer_new();
 
 void SceneSingleplayer_update(Scene_Singleplayer* s);
 
-void SceneSingleplayer_handleEvent(SDL_Event* e);
+void SceneSingleplayer_handleEvent(Scene_Singleplayer* s, SDL_Event* e);
 
 void SceneSingleplayer_destroy(Scene_Singleplayer* s);
 

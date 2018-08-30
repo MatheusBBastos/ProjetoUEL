@@ -41,21 +41,20 @@ void SceneMainMenu_destroy(Scene_MainMenu* s) {
     free(s);
 }
 
-void SceneMainMenu_handleEvent(SDL_Event* e) {
-    bool modoOff;
+void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e) {
     if(sMng.inTransition)
         return;
     if(e->type == SDL_KEYDOWN) {
-        if(e->key.keysym.sym == SDLK_RETURN && modoOff) {
+        if(e->key.keysym.sym == SDLK_RETURN && s->modoOff) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SINGLEPLAYER);
         }if(e->key.keysym.sym == SDLK_RIGHT){
             //WD_TextureLoadFromText(newScene->textLogar, "Logar" , gInfo.menuFont, );
             //WD_TextureLoadFromText(newScene->textModoOff, "Modo Offline", gInfo.menuFont, colorOff);
-            modoOff=true;
+            s->modoOff=true;
         }if(e->key.keysym.sym == SDLK_LEFT){
                 //WD_TextureLoadFromText(newScene->textLogar, "Logar" , gInfo.menuFont, colorLogar);
                 //WD_TextureLoadFromText(newScene->textModoOff, "Modo Offline", gInfo.menuFont, colorOff);
-            modoOff=false;
+            s->modoOff=false;
         }
     }
 }
