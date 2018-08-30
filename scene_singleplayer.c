@@ -43,7 +43,7 @@ void SceneSingleplayer_destroy(Scene_Singleplayer* s) {
     free(s);
 }
 
-void SceneSingleplayer_handleEvent(SDL_Event* e) {
+void SceneSingleplayer_handleEvent(Scene_Singleplayer* s, SDL_Event* e) {
     if(sMng.inTransition)
         return;
     if(e->type == SDL_KEYDOWN) {

@@ -15,7 +15,7 @@ Scene_MainMenu* SceneMainMenu_new();
 
 void SceneMainMenu_update(Scene_MainMenu* s);
 
-void SceneMainMenu_handleEvent(SDL_Event* e);
+void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e);
 
 void SceneMainMenu_destroy(Scene_MainMenu* s);
 

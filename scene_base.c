@@ -76,10 +76,10 @@ void SceneManager_updateScene() {
 void SceneManager_handleEvent(SDL_Event* e) {
     switch(sMng.currentScene) {
         case SCENE_MAINMENU:
-            SceneMainMenu_handleEvent(e);
+            SceneMainMenu_handleEvent(sMng.sMainMenu, e);
             break;
         case SCENE_SINGLEPLAYER:
-            SceneSingleplayer_handleEvent(e);
+            SceneSingleplayer_handleEvent(sMng.sSingleplayer, e);
             break;
     }
 }

@@ -24,7 +24,7 @@ void SceneMainMenu_destroy(Scene_MainMenu* s) {
     free(s);
 }
 
-void SceneMainMenu_handleEvent(SDL_Event* e) {
+void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e) {
     if(sMng.inTransition)
         return;
     if(e->type == SDL_KEYDOWN) {
