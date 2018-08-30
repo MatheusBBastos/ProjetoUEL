@@ -27,8 +27,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define SCREEN_WIDTH  800
-#define SCREEN_HEIGHT 600
+#define SCREEN_WIDTH  720
+#define SCREEN_HEIGHT 540
 
 #define DEFAULT_TRANSITION_DURATION 10
 
@@ -42,6 +42,8 @@ typedef struct GameInfo {
     SDL_Renderer* renderer;
     // Fonte principal
     TTF_Font* mainFont;
+    // Fonte MainMenu
+    TTF_Font* menuFont;
 } GameInfo;
 
 typedef struct SceneManager SceneManager;

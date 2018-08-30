@@ -8,6 +8,7 @@ typedef struct SceneManager SceneManager;
 
 typedef struct Scene_MainMenu {
     SDL_Texture* textTexture;
+    SDL_Texture* textLogar;
     SDL_Rect renderQuad;
 } Scene_MainMenu;
 
