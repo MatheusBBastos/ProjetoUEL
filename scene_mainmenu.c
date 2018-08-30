@@ -14,7 +14,7 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->textModoOff = WD_CreateTexture();
 
     WD_TextureLoadFromText(newScene->textLogar, "Logar" , gInfo.menuFont, colorSelect);
-    WD_TextureLoadFromText(newScene->textModoOff, "Modo Offline", gInfo.menuFont, colorNotSelect);
+    WD_TextureLoadFromText(newScene->textModoOff, "Modo offline", gInfo.menuFont, colorNotSelect);
 
     newScene->textTexture = SDL_CreateTextureFromSurface(gInfo.renderer, textSurface);
     int w = textSurface->w, h = textSurface->h;
