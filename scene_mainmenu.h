@@ -11,7 +11,7 @@ typedef struct Scene_MainMenu {
     SDL_Texture* textLogar;
     SDL_Texture* textModoOff;
     SDL_Rect renderQuad;
-    bool modoOff=false;
+    bool modoOff;
 } Scene_MainMenu;
 
 Scene_MainMenu* SceneMainMenu_new();
