@@ -1,5 +1,6 @@
 #include "headers.h"
 #include "scene_base.h"
+#include "network.h"
 
 GameInfo gInfo;
 SceneManager sMng;
@@ -32,6 +33,10 @@ bool initialize() {
                     printf("Falha ao inicializar o SDL_ttf! Erro: %s\n", TTF_GetError());
                     success = false;
                 }
+                if(!Network_InitSockets()) {
+                    printf("Falha ao inicializar os módulos de conexão!\n");
+                    success = false;
+                }
             }
         }
     }
@@ -47,6 +52,7 @@ void destroy() {
     TTF_Quit();
     IMG_Quit();
     SDL_Quit();
+    Network_ShutdownSockets();
 }
 
 int main(int argc, char* argv[]) {

@@ -12,6 +12,7 @@ typedef struct Scene_Singleplayer {
     WTexture* testTexture;
     SDL_Rect renderQuad;
     int cont;
+    int socketFd;
 } Scene_Singleplayer;
 
 Scene_Singleplayer* SceneSingleplayer_new();
