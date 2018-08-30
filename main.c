@@ -49,7 +49,7 @@ void destroy() {
     SDL_Quit();
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     if(!initialize()) {
         printf("Falha ao inicializar!\n");
     } else {

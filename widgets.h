@@ -1,23 +1,29 @@
+// widgets.h - Esta parte do código facilita a criação de widgets na tela.
+
 #ifndef WIDGETS_H
 #define WIDGETS_H
 
 #include "headers.h"
 
-typedef struct Text {
+// WTexture - estrutura que carrega informações de uma textura
+typedef struct WTexture {
     SDL_Texture* mTexture;
     int w, h;
-} Text;
+} WTexture;
 
-Text* WD_CreateText();
+WTexture* WD_CreateTexture();
 
-void WD_TextDestroy(Text* text);
+void WD_TextureDestroy(WTexture* wtexture);
 
-void WD_TextLoad(Text* text, char* newTextStr, TTF_Font* font, SDL_Color color);
+void WD_TextureLoadFromText(WTexture* wtexture, char* newTextStr, TTF_Font* font, SDL_Color color);
 
-void WD_TextRender(Text* text, int x, int y);
+void WD_TextureLoadFromFile(WTexture* wtexture, char* path);
 
+void WD_TextureRender(WTexture* wtexture, int x, int y);
+
+// Button - estrutura que carrega informações necessárias para renderizar um botão
 typedef struct Button {
-    Text* textW;
+    WTexture* textW;
     SDL_Rect buttonRect;
     SDL_Color buttonColor;
     bool clicking;

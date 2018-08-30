@@ -3,21 +3,30 @@
 Scene_Singleplayer* SceneSingleplayer_new() {
     Scene_Singleplayer* newScene = malloc(sizeof(Scene_Singleplayer));
     SDL_Color color = {0, 255, 0};
-    newScene->text = WD_CreateText();
-    WD_TextLoad(newScene->text, "Uhulll", gInfo.mainFont, color);
-    newScene->renderQuad.x = (SCREEN_WIDTH - newScene->text->w) / 2;
-    newScene->renderQuad.y = (SCREEN_HEIGHT - newScene->text->h) / 2;
+    newScene->textTexture = WD_CreateTexture();
+    WD_TextureLoadFromText(newScene->textTexture, "Uhulll", gInfo.mainFont, color);
+    newScene->testTexture = WD_CreateTexture();
+    WD_TextureLoadFromFile(newScene->testTexture, "img.png");
+    newScene->renderQuad.x = (SCREEN_WIDTH - newScene->textTexture->w) / 2;
+    newScene->renderQuad.y = (SCREEN_HEIGHT - newScene->textTexture->h) / 2;
+    newScene->cont = 0;
     return newScene;
 }
 
 void SceneSingleplayer_update(Scene_Singleplayer* s) {
     SDL_SetRenderDrawColor(gInfo.renderer, 0x34, 0x92, 0x22, 0xFF);
     SDL_RenderClear(gInfo.renderer);
-    WD_TextRender(s->text, s->renderQuad.x, s->renderQuad.y);
+    WD_TextureRender(s->textTexture, s->renderQuad.x, s->renderQuad.y);
+    WD_TextureRender(s->testTexture, 15 * s->cont, 100);
+    s->cont++;
+    if(s->cont > 60) {
+        s->cont = 0;
+    }
 }
 
 void SceneSingleplayer_destroy(Scene_Singleplayer* s) {
-    WD_TextDestroy(s->text);
+    WD_TextureDestroy(s->textTexture);
+    WD_TextureDestroy(s->testTexture);
     free(s);
 }
 

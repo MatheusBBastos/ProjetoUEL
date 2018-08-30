@@ -8,8 +8,10 @@ typedef struct SceneManager SceneManager;
 #include "widgets.h"
 
 typedef struct Scene_Singleplayer {
-    Text* text;
+    WTexture* textTexture;
+    WTexture* testTexture;
     SDL_Rect renderQuad;
+    int cont;
 } Scene_Singleplayer;
 
 Scene_Singleplayer* SceneSingleplayer_new();

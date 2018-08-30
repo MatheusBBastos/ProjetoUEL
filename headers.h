@@ -30,7 +30,7 @@
 #define SCREEN_WIDTH  800
 #define SCREEN_HEIGHT 600
 
-#define DEFAULT_TRANSITION_DURATION 15
+#define DEFAULT_TRANSITION_DURATION 10
 
 // Estrutura que carrega os elementos globais do programa
 typedef struct GameInfo {
