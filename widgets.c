@@ -53,6 +53,11 @@ void WD_TextureRender(WTexture* wtexture, int x, int y) {
     SDL_RenderCopy(gInfo.renderer, wtexture->mTexture, NULL, &textureRect);
 }
 
+// Renderiza a textura em um retângulo
+void WD_TextureRenderDest(WTexture* wtexture, SDL_Rect* renderQuad) {
+    SDL_RenderCopy(gInfo.renderer, wtexture->mTexture, NULL, renderQuad);
+}
+
 // Renderiza uma textura com mais opções
 // clip: região da textura que será renderizada
 // angle: ângulo (em graus) que indica a rotação em sentido horário aplicada na imagem
