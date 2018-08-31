@@ -2,14 +2,13 @@
 
 Scene_MainMenu* SceneMainMenu_new() {
     Scene_MainMenu* newScene = malloc(sizeof(Scene_MainMenu));
-    //SDL_Surface* textSurface = TTF_RenderUTF8_Blended(gInfo.mainFont, "Testesao", color);
     
-    SDL_Surface * textSurface = IMG_Load("BG_Login.png");//BACKGROUND LOGIN
+    SDL_Surface * textSurface = IMG_Load("BG_Login.png"); // Plano de fundo do menu
 
-    SDL_Color colorSelect = {255, 156, 0};//CORES INICIAIS DOS BOTÕES
-    SDL_Color colorNotSelect = {255,255,255};
+    SDL_Color colorSelected = {255, 156, 0}; // Cores dos botões quando selecionados
+    SDL_Color colorNotSelected = {255,255,255}; // Cores dos botões quando não selecionados
 
-    newScene->textTexture = WD_CreateTexture();
+    newScene->backgroundTexture = WD_CreateTexture();
     newScene->textLogar = WD_CreateTexture();
     newScene->textModoOff = WD_CreateTexture();
     newScene->textLogarOff = WD_CreateTexture();
@@ -18,19 +17,19 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->seta = WD_CreateTexture();
 
     WD_TextureLoadFromFile(newScene->seta, "seta.png");
-    WD_TextureLoadFromText(newScene->textLogar, "Logar" , gInfo.menuFont, colorSelect);
-    WD_TextureLoadFromText(newScene->textLogarOff, "Logar", gInfo.menuFont, colorNotSelect);
-    WD_TextureLoadFromText(newScene->textModoOff, "Modo offline", gInfo.menuFont, colorSelect);
-    WD_TextureLoadFromText(newScene->textModoOffOff, "Modo offline", gInfo.menuFont, colorNotSelect);
+    WD_TextureLoadFromText(newScene->textLogar, "Logar" , gInfo.menuFont, colorSelected);
+    WD_TextureLoadFromText(newScene->textLogarOff, "Logar", gInfo.menuFont, colorNotSelected);
+    WD_TextureLoadFromText(newScene->textModoOff, "Modo offline", gInfo.menuFont, colorSelected);
+    WD_TextureLoadFromText(newScene->textModoOffOff, "Modo offline", gInfo.menuFont, colorNotSelected);
 
     newScene->seta->h *= 0.5;
     newScene->seta->w *= 0.5;
 
-    newScene->textTexture = SDL_CreateTextureFromSurface(gInfo.renderer, textSurface);
+    WD_TextureLoadFromFile(newScene->backgroundTexture, "BG_Login.png");
     int w = textSurface->w, h = textSurface->h;
     SDL_FreeSurface(textSurface);
-    newScene->renderQuad.x =0;// (SCREEN_WIDTH - w) / 2;
-    newScene->renderQuad.y =0;// (SCREEN_HEIGHT - h) / 2;
+    newScene->renderQuad.x = 0;
+    newScene->renderQuad.y = 0;
     newScene->renderQuad.w = w/2;
     newScene->renderQuad.h = h/2;
     return newScene;
@@ -39,7 +38,7 @@ Scene_MainMenu* SceneMainMenu_new() {
 void SceneMainMenu_update(Scene_MainMenu* s) {
     SDL_SetRenderDrawColor(gInfo.renderer, 0x12, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(gInfo.renderer);
-    SDL_RenderCopy(gInfo.renderer, s->textTexture, NULL, &s->renderQuad);
+    WD_TextureRenderDest(s->backgroundTexture, &s->renderQuad);
     SDL_SetRenderDrawColor(gInfo.renderer, 0x00, 0x00, 0x00, 0x00);
     TTF_SetFontOutline(gInfo.menuFont, 3);
     if (s->modoOff) {
@@ -61,11 +60,11 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
 }
 
 void SceneMainMenu_destroy(Scene_MainMenu* s) {
-    SDL_DestroyTexture(s->textTexture);
-    SDL_DestroyTexture(s->textLogar);
-    SDL_DestroyTexture(s->textLogarOff);
-    SDL_DestroyTexture(s->textModoOff);
-    SDL_DestroyTexture(s->textModoOffOff);
+    WD_TextureDestroy(s->backgroundTexture);
+    WD_TextureDestroy(s->textLogar);
+    WD_TextureDestroy(s->textLogarOff);
+    WD_TextureDestroy(s->textModoOff);
+    WD_TextureDestroy(s->textModoOffOff);
     free(s);
 }
 
@@ -75,14 +74,8 @@ void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e) {
     if(e->type == SDL_KEYDOWN) {
         if(e->key.keysym.sym == SDLK_RETURN && s->modoOff) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SINGLEPLAYER);
-        }if(e->key.keysym.sym == SDLK_RIGHT){
-            //WD_TextureLoadFromText(newScene->textLogar, "Logar" , gInfo.menuFont, );
-            //WD_TextureLoadFromText(newScene->textModoOff, "Modo Offline", gInfo.menuFont, colorOff);
-            s->modoOff=true;
-        }if(e->key.keysym.sym == SDLK_LEFT){
-                //WD_TextureLoadFromText(newScene->textLogar, "Logar" , gInfo.menuFont, colorLogar);
-                //WD_TextureLoadFromText(newScene->textModoOff, "Modo Offline", gInfo.menuFont, colorOff);
-            s->modoOff=false;
+        }if(e->key.keysym.sym == SDLK_RIGHT || e->key.keysym.sym == SDLK_LEFT){
+            s->modoOff = !s->modoOff;
         }
     }
 }
