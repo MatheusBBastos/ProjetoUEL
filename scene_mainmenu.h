@@ -8,11 +8,12 @@ typedef struct SceneManager SceneManager;
 
 typedef struct Scene_MainMenu {
     SDL_Texture* textTexture;
-    SDL_Texture* textLogar;
-    SDL_Texture* textModoOff;
+    SDL_Texture* textLogar; //PARA QUANDO LOGAR TIVER ATIVO
+    SDL_Texture* textModoOff; //PARA QUANDO MODO OFFLINE TIVER ATIVO
+    SDL_Texture* textLogarOff; //PARA QUANDO LOGAR TIVER INATIVO
+	SDL_Texture* textModoOffOff; //PARA QUANDO MODOOFFLINE TIVER INATIVO
+    SDL_Texture* seta;
     SDL_Rect renderQuad;
-    SDL_Texture* textLogarOff;
-	SDL_Texture* textModoOffOff;
     bool modoOff;
 } Scene_MainMenu;
 
