@@ -83,11 +83,11 @@ void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e) {
     if(e->type == SDL_KEYDOWN) {
         if(e->key.keysym.sym == SDLK_RETURN && s->modoOff && s->index == 2 ) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SINGLEPLAYER);
-        }if(e->key.keysym.sym == SDLK_RIGHT && s->index == 2 || e->key.keysym.sym == SDLK_LEFT && s->index == 2 ){
+        }else if(e->key.keysym.sym == SDLK_RIGHT && s->index == 2 || e->key.keysym.sym == SDLK_LEFT && s->index == 2 ){
             s->modoOff = !s->modoOff;
-        }if(e->key.keysym.sym == SDLK_DOWN && s->index < 2){
+        }else if((e->key.keysym.sym == SDLK_DOWN || e->key.keysym.sym == SDLK_TAB) && s->index < 2){
             s->index++;
-        }if(e->key.keysym.sym == SDLK_UP && s->index > 0){
+        }else if(e->key.keysym.sym == SDLK_UP && s->index > 0){
             s->index--;
         }
     }
