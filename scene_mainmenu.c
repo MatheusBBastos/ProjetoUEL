@@ -2,8 +2,6 @@
 
 Scene_MainMenu* SceneMainMenu_new() {
     Scene_MainMenu* newScene = malloc(sizeof(Scene_MainMenu));
-    
-    SDL_Surface * textSurface = IMG_Load("BG_Login.png"); // Plano de fundo do menu
 
     SDL_Color colorSelected = {255, 156, 0}; // Cores dos botões quando selecionados
     SDL_Color colorNotSelected = {255,255,255}; // Cores dos botões quando não selecionados
@@ -26,8 +24,7 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->seta->w *= 0.5;
 
     WD_TextureLoadFromFile(newScene->backgroundTexture, "BG_Login.png");
-    int w = textSurface->w, h = textSurface->h;
-    SDL_FreeSurface(textSurface);
+    int w = newScene->backgroundTexture->w, h = newScene->backgroundTexture->h;
     newScene->renderQuad.x = 0;
     newScene->renderQuad.y = 0;
     newScene->renderQuad.w = w/2;
