@@ -12,9 +12,19 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->textTexture = WD_CreateTexture();
     newScene->textLogar = WD_CreateTexture();
     newScene->textModoOff = WD_CreateTexture();
+	newScene->textLogarOff = WD_CreateTexture();
+	newScene->textModoOffOff = WD_CreateTexture();
+	newScene->modoOff = false;
+	newScene->seta = WD_CreateTexture();
 
+	WD_TextureLoadFromFile(newScene->seta, "seta.png");
     WD_TextureLoadFromText(newScene->textLogar, "Logar" , gInfo.menuFont, colorSelect);
-    WD_TextureLoadFromText(newScene->textModoOff, "Modo offline", gInfo.menuFont, colorNotSelect);
+	WD_TextureLoadFromText(newScene->textLogarOff, "Logar", gInfo.menuFont, colorNotSelect);
+    WD_TextureLoadFromText(newScene->textModoOff, "Modo offline", gInfo.menuFont, colorSelect);
+	WD_TextureLoadFromText(newScene->textModoOffOff, "Modo offline", gInfo.menuFont, colorNotSelect);
+
+	newScene->seta->h *= 0.5;
+	newScene->seta->w *= 0.5;
 
     newScene->textTexture = SDL_CreateTextureFromSurface(gInfo.renderer, textSurface);
     int w = textSurface->w, h = textSurface->h;
@@ -29,8 +39,16 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
     SDL_SetRenderDrawColor(gInfo.renderer, 0x12, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(gInfo.renderer);
     SDL_RenderCopy(gInfo.renderer, s->textTexture, NULL, &s->renderQuad);
-    WD_TextureRender(s->textLogar, 325/2, 800/2);
-    WD_TextureRender(s->textModoOff, 800/2, 800/2);
+	if (s->modoOff) {
+		WD_TextureRender(s->textLogarOff, 325 / 2, 800 / 2);
+		WD_TextureRender(s->textModoOff, 800 / 2, 800 / 2);
+		WD_TextureRender(s->seta, 720 / 2, 806 / 2);
+	}
+	else {
+		WD_TextureRender(s->textLogar, 325 / 2, 800 / 2);
+		WD_TextureRender(s->textModoOffOff, 800 / 2, 800 / 2);
+		WD_TextureRender(s->seta, 245 / 2, 806 / 2);
+	}
 
 }
 
