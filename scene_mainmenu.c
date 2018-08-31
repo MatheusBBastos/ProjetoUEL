@@ -2,7 +2,7 @@
 
 Scene_MainMenu* SceneMainMenu_new() {
     Scene_MainMenu* newScene = malloc(sizeof(Scene_MainMenu));
-
+    newScene->enteringFrame = 0;
     SDL_Color colorSelected = {255, 156, 0}; // Cores dos botões quando selecionados
     SDL_Color colorNotSelected = {255,255,255}; // Cores dos botões quando não selecionados
 
@@ -54,6 +54,12 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
     SDL_RenderFillRect(gInfo.renderer, &rect);
     rect.y += 45;
     SDL_RenderFillRect(gInfo.renderer, &rect);
+    if(s->enteringFrame < 25) {
+        SDL_SetRenderDrawColor(gInfo.renderer, 0x00, 0x00, 0x00, 255 - 10 * s->enteringFrame);
+        SDL_Rect fillRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
+        SDL_RenderFillRect(gInfo.renderer, &fillRect);
+        s->enteringFrame++;
+    }
 }
 
 void SceneMainMenu_destroy(Scene_MainMenu* s) {

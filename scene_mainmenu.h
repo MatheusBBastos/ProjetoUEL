@@ -8,6 +8,7 @@ typedef struct SceneManager SceneManager;
 #include "widgets.h"
 
 typedef struct Scene_MainMenu {
+    int enteringFrame;
     WTexture* backgroundTexture;
     WTexture* textLogar;
     WTexture* textModoOff;
