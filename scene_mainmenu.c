@@ -40,6 +40,8 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
     SDL_SetRenderDrawColor(gInfo.renderer, 0x12, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(gInfo.renderer);
     SDL_RenderCopy(gInfo.renderer, s->textTexture, NULL, &s->renderQuad);
+    SDL_SetRenderDrawColor(gInfo.renderer, 0x00, 0x00, 0x00, 0x00);
+    TTF_SetFontOutline(gInfo.menuFont, 3);
     if (s->modoOff) {
         WD_TextureRender(s->textLogarOff, 325 / 2, 800 / 2);
         WD_TextureRender(s->textModoOff, 800 / 2, 800 / 2);
@@ -50,13 +52,20 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
         WD_TextureRender(s->textModoOffOff, 800 / 2, 800 / 2);
         WD_TextureRender(s->seta, 245 / 2, 806 / 2);
     }
-
+    SDL_SetRenderDrawBlendMode(gInfo.renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(gInfo.renderer, 0xFF, 0xFF, 0xFF, 100);
+    SDL_Rect rect = {240, 290, 260, 26};
+    SDL_RenderFillRect(gInfo.renderer, &rect);
+    rect.y += 45;
+    SDL_RenderFillRect(gInfo.renderer, &rect);
 }
 
 void SceneMainMenu_destroy(Scene_MainMenu* s) {
     SDL_DestroyTexture(s->textTexture);
     SDL_DestroyTexture(s->textLogar);
+    SDL_DestroyTexture(s->textLogarOff);
     SDL_DestroyTexture(s->textModoOff);
+    SDL_DestroyTexture(s->textModoOffOff);
     free(s);
 }
 
