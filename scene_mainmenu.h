@@ -5,16 +5,12 @@ typedef struct SceneManager SceneManager;
 
 #include "headers.h"
 #include "scene_base.h"
-#include "widgets.h"
 
 typedef struct Scene_MainMenu {
     SDL_Texture* textTexture;
     SDL_Texture* textLogar;
     SDL_Texture* textModoOff;
-	SDL_Rect renderQuad;
-	SDL_Texture* textLogarOff;
-	SDL_Texture* textModoOffOff;
-	WTexture* seta;
+    SDL_Rect renderQuad;
     bool modoOff;
 } Scene_MainMenu;
 
