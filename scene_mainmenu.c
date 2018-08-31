@@ -37,7 +37,6 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
     SDL_RenderClear(gInfo.renderer);
     WD_TextureRenderDest(s->backgroundTexture, &s->renderQuad);
     SDL_SetRenderDrawColor(gInfo.renderer, 0x00, 0x00, 0x00, 0x00);
-    TTF_SetFontOutline(gInfo.menuFont, 3);
     if (s->modoOff) {
         WD_TextureRender(s->textLogarOff, 325 / 2, 800 / 2);
         WD_TextureRender(s->textModoOff, 800 / 2, 800 / 2);
