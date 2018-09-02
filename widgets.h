@@ -37,4 +37,23 @@ Button* WD_CreateButton(char* text, int x, int y, TTF_Font* font, SDL_Color text
 
 void WD_ButtonRender();
 
+typedef struct TextBox {
+    int x, y, width, height, cursorX, cursorY, maxSize;
+    TTF_Font* font;
+    char* text;
+    char* displayText;
+    SDL_Color textColor;
+    bool needRefresh, active, password;
+    WTexture* textTexture;
+    SDL_Rect textClip;
+} TextBox;
+
+TextBox* WD_CreateTextBox(int x, int y, int width, int height, int maxSize, TTF_Font* font, SDL_Color textColor, bool password);
+
+bool WD_TextBoxHandleEvent(TextBox* t, SDL_Event* e);
+
+void WD_TextBoxRender(TextBox* t, unsigned frameCount);
+
+void WD_TextBoxDestroy(TextBox* t);
+
 #endif

@@ -8,7 +8,7 @@ typedef struct SceneManager SceneManager;
 #include "widgets.h"
 
 typedef struct Scene_MainMenu {
-    int enteringFrame;
+    int enteringFrame, frame;
     WTexture* backgroundTexture;
     WTexture* textLogar;
     WTexture* textModoOff;
@@ -16,6 +16,8 @@ typedef struct Scene_MainMenu {
     WTexture* textLogarOff;
     WTexture* textModoOffOff;
     WTexture* seta;
+    TextBox* login;
+    TextBox* senha;
     bool modoOff;
     short int index;
 } Scene_MainMenu;

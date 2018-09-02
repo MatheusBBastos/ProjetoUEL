@@ -62,6 +62,7 @@ int main(int argc, char* argv[]) {
         bool quit = false;
         gInfo.mainFont = TTF_OpenFont("content/Fipps-Regular.ttf", 18);
         gInfo.menuFont = TTF_OpenFont("content/Minecraft.ttf", 36);
+        gInfo.inputFont = TTF_OpenFont("content/Minecraft.ttf", 23);
         SDL_RenderPresent(gInfo.renderer);
         sMng.currentScene = SCENE_MAINMENU;
         sMng.sMainMenu = SceneMainMenu_new();
@@ -78,6 +79,8 @@ int main(int argc, char* argv[]) {
             SDL_RenderPresent(gInfo.renderer);
         }
         TTF_CloseFont(gInfo.mainFont);
+        TTF_CloseFont(gInfo.menuFont);
+        TTF_CloseFont(gInfo.inputFont);
         gInfo.mainFont = NULL;
         SceneManager_changeScene(SCENE_UNDEFINED);
     }

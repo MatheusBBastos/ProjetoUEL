@@ -3,6 +3,7 @@
 Scene_MainMenu* SceneMainMenu_new() {
     Scene_MainMenu* newScene = malloc(sizeof(Scene_MainMenu));
     newScene->enteringFrame = 0;
+    newScene->frame = 0;
 
     SDL_Color colorSelected = {255, 156, 0}; // Cores dos botões quando selecionados
     SDL_Color colorNotSelected = {255,255,255}; // Cores dos botões quando não selecionados
@@ -31,6 +32,11 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->renderQuad.y = 0;
     newScene->renderQuad.w = w/2;
     newScene->renderQuad.h = h/2;
+    SDL_Color black = {0, 0, 0, 255};
+    newScene->login = WD_CreateTextBox(240, 290, 260, 26, 100, gInfo.inputFont, black, false);
+    newScene->senha = WD_CreateTextBox(240, 335, 260, 26, 100, gInfo.inputFont, black, true);
+
+    SDL_StartTextInput();
     
     return newScene;
 }
@@ -60,11 +66,27 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
     SDL_RenderFillRect(gInfo.renderer, &rect);
     rect.y += 45;
     SDL_RenderFillRect(gInfo.renderer, &rect);
+    if(s->index == 0) {
+        s->login->active = true;
+    } else {
+        s->login->active = false;
+    }
+    if(s->index == 1) {
+        s->senha->active = true;
+    } else {
+        s->senha->active = false;
+    }
+    WD_TextBoxRender(s->login, s->frame);
+    WD_TextBoxRender(s->senha, s->frame);
     if(s->enteringFrame < 25) {
         SDL_SetRenderDrawColor(gInfo.renderer, 0x00, 0x00, 0x00, 255 - 10 * s->enteringFrame);
         SDL_Rect fillRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
         SDL_RenderFillRect(gInfo.renderer, &fillRect);
         s->enteringFrame++;
+    }
+    s->frame++;
+    if(s->frame >= 60) {
+        s->frame = 0;
     }
 }
 
@@ -74,6 +96,9 @@ void SceneMainMenu_destroy(Scene_MainMenu* s) {
     WD_TextureDestroy(s->textLogarOff);
     WD_TextureDestroy(s->textModoOff);
     WD_TextureDestroy(s->textModoOffOff);
+    WD_TextBoxDestroy(s->login);
+    WD_TextBoxDestroy(s->senha);
+    SDL_StopTextInput();
     free(s);
 }
 
@@ -91,4 +116,6 @@ void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e) {
             s->index--;
         }
     }
+    WD_TextBoxHandleEvent(s->login, e);
+    WD_TextBoxHandleEvent(s->senha, e);
 }
