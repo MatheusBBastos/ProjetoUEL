@@ -1,4 +1,5 @@
 # Projeto UEL
+[![Build Status](https://travis-ci.org/Epherex/ProjetoUEL.svg?branch=master)](https://travis-ci.org/Epherex/ProjetoUEL) <br>
 
 Projeto acadêmico para a matéria de Laboratório de Computação (1o ano).
 
