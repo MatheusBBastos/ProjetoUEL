@@ -80,7 +80,7 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
     WD_TextBoxRender(s->senha, s->frame);
     if(s->enteringFrame < 25) {
         SDL_SetRenderDrawColor(gInfo.renderer, 0x00, 0x00, 0x00, 255 - 10 * s->enteringFrame);
-        SDL_Rect fillRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
+        SDL_Rect fillRect = {0, 0, gInfo.screenWidth, gInfo.screenHeight};
         SDL_RenderFillRect(gInfo.renderer, &fillRect);
         s->enteringFrame++;
     }

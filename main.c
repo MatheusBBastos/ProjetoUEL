@@ -7,12 +7,14 @@ SceneManager sMng;
 
 // Tentar inicializar a biblioteca SDL e suas funcionalidades
 bool initialize() {
+    gInfo.screenWidth = 720;
+    gInfo.screenHeight = 540;
     bool success = true;
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("Falha ao inicializar o SDL! Erro: %s\n", SDL_GetError());
         success = false;
     } else {
-        gInfo.window = SDL_CreateWindow("Projeto UEL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+        gInfo.window = SDL_CreateWindow("Projeto UEL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, gInfo.screenWidth, gInfo.screenHeight, SDL_WINDOW_SHOWN);
         if(gInfo.window == NULL) {
             printf("Falha ao criar a janela! Erro: %s\n", SDL_GetError());
             success = false;
