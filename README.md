@@ -5,15 +5,13 @@ Projeto acadêmico para a matéria de Laboratório de Computação (1o ano).
 ### Pré requisitos
 
 #### **Compatibilidade OS:** 
-> Windows XP, Vista, 7, 8, 8.1, 10. <br>
+Windows XP, Vista, 7, 8, 8.1, 10. <br>
 Linux distros compatíveis
 
 #### **Biblioteca SDL2**
-```
-Obtenha a biblioteca para o seu sistema [aqui](https://www.libsdl.org).
-```
-#### **Requisitos**
-###### Mínimo
+Obtenha a biblioteca para o seu sistema [aqui](https://www.libsdl.org/download-2.0.php).
+
+#### **Requisitos mínimos**
 Processador: 2Ghz Singlecore <br>
 RAM: 1GB <br>
 Placa de vídeo: Intel HD 3000 <br>
