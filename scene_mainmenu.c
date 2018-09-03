@@ -34,7 +34,7 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->modoOff = false;
     newScene->index=0; // Começar no login
 
-    WD_TextureLoadFromFile(newScene->seta, "seta.png");
+    WD_TextureLoadFromFile(newScene->seta, "content\\seta.png");
     WD_TextureLoadFromText(newScene->textLogar, "Logar" , gInfo.menuFont, colorSelected);
     WD_TextureLoadFromText(newScene->textLogarOff, "Logar", gInfo.menuFont, colorNotSelected);
     WD_TextureLoadFromText(newScene->textModoOff, "Modo offline", gInfo.menuFont, colorSelected);
@@ -43,7 +43,7 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->seta->h *= gInfo.screenMulti;
     newScene->seta->w *= gInfo.screenMulti;
 
-    WD_TextureLoadFromFile(newScene->backgroundTexture, "BG_Login.png");
+    WD_TextureLoadFromFile(newScene->backgroundTexture, "content\\BG_Login.png");
     int w = newScene->backgroundTexture->w, h = newScene->backgroundTexture->h;
     newScene->renderQuad.x = 0;
     newScene->renderQuad.y = 0;

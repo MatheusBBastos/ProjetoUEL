@@ -15,7 +15,7 @@ bool initialize() {
         SDL_DisplayMode current;
         SDL_GetCurrentDisplayMode(0, &current);
         if (current.w >= 1920) {
-            gInfo.screenMulti = 1;
+            gInfo.screenMulti = 0.8;
         }
         else {
             gInfo.screenMulti = 0.5;
