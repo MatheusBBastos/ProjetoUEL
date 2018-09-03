@@ -70,7 +70,11 @@ bool Socket_Send(int socketFd, Address* destination, void* data, int size) {
 
 int Socket_Receive(int socketFd, Address* sender, char* data, int size) {
     struct sockaddr_in from;
+    #if PLATFORM == PLATFORM_WINDOWS
+    int fromLength = sizeof(from);
+    #else
     socklen_t fromLength = sizeof(from);
+    #endif
     int bytes = recvfrom(socketFd, data, size, 0, (struct sockaddr*) &from, &fromLength);
     sender->address = ntohl(from.sin_addr.s_addr);
     sender->port = ntohs(from.sin_port);
