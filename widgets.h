@@ -37,6 +37,7 @@ Button* WD_CreateButton(char* text, int x, int y, TTF_Font* font, SDL_Color text
 
 void WD_ButtonRender();
 
+// TextBox - estrutura que carrega informações de uma caixa de texto
 typedef struct TextBox {
     int x, y, width, height, cursorX, cursorY, maxSize;
     TTF_Font* font;

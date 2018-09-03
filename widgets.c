@@ -94,6 +94,9 @@ void WD_ButtonDestroy(Button* button) {
     free(button);
 }
 
+// Cria uma nova caixa de texto a partir das informações fornecidas
+// maxSize - tamanho máximo do texto
+// password - o texto contido não será mostrado, no lugar dele ficarão asteriscos
 TextBox* WD_CreateTextBox(int x, int y, int width, int height, int maxSize, TTF_Font* font, SDL_Color textColor, bool password) {
     TextBox* newTextBox = malloc(sizeof(TextBox));
     newTextBox->x = x;
@@ -114,32 +117,42 @@ TextBox* WD_CreateTextBox(int x, int y, int width, int height, int maxSize, TTF_
     return newTextBox;
 }
 
+// Renderiza uma caixa de texto
 void WD_TextBoxRender(TextBox* t, unsigned frameCount) {
+    // Só carregar novas texturas caso necessário
     if(t->needRefresh) {
         if(t->password) {
+            // Preencher o texto com asteriscos caso a caixa esteja no modo senha
             int i, len = strlen(t->text);
             for(i = 0; i < len; i++) {
                 t->displayText[i] = '*';
             }
             t->displayText[i] = '\0';
+            // Carregar textura do novo texto
             if(i == 0)
                 WD_TextureLoadFromText(t->textTexture, " ", t->font, t->textColor);
             else
                 WD_TextureLoadFromText(t->textTexture, t->displayText, t->font, t->textColor);
         } else {
+            // Carregar textura do novo texto
             if(strlen(t->text) == 0)
                 WD_TextureLoadFromText(t->textTexture, " ", t->font, t->textColor);
             else
                 WD_TextureLoadFromText(t->textTexture, t->text, t->font, t->textColor);
         }
+        // Coordenadas iniciais do cursor
         t->cursorX = t->x + 4;
         int xClip, wClip;
+        // Se o texto está maior que a caixa de texto
         if(t->textTexture->w > t->width - 12) {
+            // Cursor na posição máxima
             t->cursorX += t->width - 12;
+            // Parte do texto renderizada será a mais da direita
             xClip = t->textTexture->w - t->width + 12;
             wClip = t->width - 12;
         } else {
             if(strlen(t->text) > 0) {
+                // Posicionar o cursor à direita do texto
                 t->cursorX += t->textTexture->w;
             }
             xClip = 0;
@@ -152,22 +165,28 @@ void WD_TextBoxRender(TextBox* t, unsigned frameCount) {
         t->textClip.h = t->height - 3;
         t->needRefresh = false;
     }
+    // Renderizar o texto
     WD_TextureRenderEx(t->textTexture, t->x + 4, t->y + 4, &t->textClip, 0.0, NULL, SDL_FLIP_NONE);
     if(t->active && frameCount >= 30) {
         SDL_Rect cursorRect = {t->cursorX, t->y + 2, 1, t->height - 4};
+        SDL_SetRenderDrawColor(gInfo.renderer, t->textColor.r, t->textColor.g, t->textColor.b, t->textColor.a);
+        // Renderizar o cursor
         SDL_RenderFillRect(gInfo.renderer, &cursorRect);
     }
 }
 
+// Lida com um evento na caixa de texto
 bool WD_TextBoxHandleEvent(TextBox* t, SDL_Event* e) {
     if(t->active) {
         if(e->type == SDL_TEXTINPUT) {
+            // Adicionar texto digitado se ele couber
             if(t->maxSize >= strlen(t->text) + strlen(e->text.text)) {
                 strcat(t->text, e->text.text);
                 t->needRefresh = true;
             }
             return true;
         } else if(e->type == SDL_KEYDOWN && e->key.keysym.sym == SDLK_BACKSPACE) {
+            // Backspace para uma string em UTF-8
             int textlen = SDL_strlen(t->text);
             if(textlen > 0) {
                 while(true) {
@@ -195,6 +214,7 @@ bool WD_TextBoxHandleEvent(TextBox* t, SDL_Event* e) {
     return false;
 }
 
+// Destrói uma caixa de texto
 void WD_TextBoxDestroy(TextBox* t) {
     WD_TextureDestroy(t->textTexture);
     free(t->text);

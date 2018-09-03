@@ -44,7 +44,7 @@ typedef struct GameInfo {
     TTF_Font* mainFont;
     // Fonte MainMenu
     TTF_Font* menuFont;
-
+    // Fonte de entrada de texto
     TTF_Font* inputFont;
 } GameInfo;
 
