@@ -1,5 +1,22 @@
 #include "scene_mainmenu.h"
 
+    int posSetaX[2] = { 720,245 };
+    int posSetaY = 806;
+
+    int posLogarX = 325;
+    int posLogarY = 800;
+
+    int posModoX = 800;
+    int posModoY = 800;
+
+    int posLoginX = 480;
+    int posLoginY = 580;
+    int sizeLogin[2] = { 520,52 };
+
+    int posSenhaX = 480;
+    int posSenhaY = 670;
+    int sizeSenha[2] = { 520,52 };
+
 Scene_MainMenu* SceneMainMenu_new() {
     Scene_MainMenu* newScene = malloc(sizeof(Scene_MainMenu));
     newScene->enteringFrame = 0;
@@ -23,18 +40,18 @@ Scene_MainMenu* SceneMainMenu_new() {
     WD_TextureLoadFromText(newScene->textModoOff, "Modo offline", gInfo.menuFont, colorSelected);
     WD_TextureLoadFromText(newScene->textModoOffOff, "Modo offline", gInfo.menuFont, colorNotSelected);
 
-    newScene->seta->h *= 0.5;
-    newScene->seta->w *= 0.5;
+    newScene->seta->h *= gInfo.screenMulti;
+    newScene->seta->w *= gInfo.screenMulti;
 
     WD_TextureLoadFromFile(newScene->backgroundTexture, "BG_Login.png");
     int w = newScene->backgroundTexture->w, h = newScene->backgroundTexture->h;
     newScene->renderQuad.x = 0;
     newScene->renderQuad.y = 0;
-    newScene->renderQuad.w = w/2;
-    newScene->renderQuad.h = h/2;
+    newScene->renderQuad.w = w * gInfo.screenMulti;
+    newScene->renderQuad.h = h * gInfo.screenMulti;
     SDL_Color textColor = {50, 50, 50, 255};
-    newScene->login = WD_CreateTextBox(240, 290, 260, 26, 30, gInfo.inputFont, textColor, false);
-    newScene->senha = WD_CreateTextBox(240, 335, 260, 26, 30, gInfo.inputFont, textColor, true);
+    newScene->login = WD_CreateTextBox(posLoginX * gInfo.screenMulti, posLoginY * gInfo.screenMulti, sizeLogin[0] * gInfo.screenMulti, sizeLogin[1] * gInfo.screenMulti, 30, gInfo.inputFont, textColor, false);
+    newScene->senha = WD_CreateTextBox(posSenhaX* gInfo.screenMulti, posSenhaY* gInfo.screenMulti, sizeSenha[0] * gInfo.screenMulti, sizeSenha[1] * gInfo.screenMulti, 30, gInfo.inputFont, textColor, true);
 
     SDL_StartTextInput();
     
@@ -47,24 +64,24 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
     WD_TextureRenderDest(s->backgroundTexture, &s->renderQuad);
     SDL_SetRenderDrawColor(gInfo.renderer, 0x00, 0x00, 0x00, 0x00);
 
-    WD_TextureRender(s->textLogarOff, 325 / 2, 800 / 2); //Começa com os dois botoes brancos
-    WD_TextureRender(s->textModoOffOff, 800 / 2, 800 / 2);
+    WD_TextureRender(s->textLogarOff, posLogarX * gInfo.screenMulti, posLogarY * gInfo.screenMulti); //Começa com os dois botoes brancos
+    WD_TextureRender(s->textModoOffOff, posModoX * gInfo.screenMulti, posModoY * gInfo.screenMulti);
 
     if (s->modoOff && s->index==2) {
-        WD_TextureRender(s->textLogarOff, 325 / 2, 800 / 2);
-        WD_TextureRender(s->textModoOff, 800 / 2, 800 / 2);
-        WD_TextureRender(s->seta, 720 / 2, 806 / 2);
+        WD_TextureRender(s->textLogarOff, posLogarX * gInfo.screenMulti, posLogarY * gInfo.screenMulti);
+        WD_TextureRender(s->textModoOff, posModoX * gInfo.screenMulti, posModoY * gInfo.screenMulti);
+        WD_TextureRender(s->seta, posSetaX[0] * gInfo.screenMulti, posSetaY * gInfo.screenMulti);
     }
     else if(!s->modoOff && s->index==2) {
-        WD_TextureRender(s->textLogar, 325 / 2, 800 / 2);
-        WD_TextureRender(s->textModoOffOff, 800 / 2, 800 / 2);
-        WD_TextureRender(s->seta, 245 / 2, 806 / 2);
+        WD_TextureRender(s->textLogar, posLogarX * gInfo.screenMulti, posLogarY * gInfo.screenMulti);
+        WD_TextureRender(s->textModoOffOff, posModoX * gInfo.screenMulti, posModoY * gInfo.screenMulti);
+        WD_TextureRender(s->seta, posSetaX[1] * gInfo.screenMulti, posSetaY * gInfo.screenMulti);
     }
     SDL_SetRenderDrawBlendMode(gInfo.renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(gInfo.renderer, 0xFF, 0xFF, 0xFF, 100);
-    SDL_Rect rect = {240, 290, 260, 26};
+    SDL_Rect rect = {480 * gInfo.screenMulti, 580 * gInfo.screenMulti, 520 * gInfo.screenMulti, 52 * gInfo.screenMulti };
     SDL_RenderFillRect(gInfo.renderer, &rect);
-    rect.y += 45;
+    rect.y += 90 * gInfo.screenMulti;
     SDL_RenderFillRect(gInfo.renderer, &rect);
     if(s->index == 0) {
         s->login->active = true;
