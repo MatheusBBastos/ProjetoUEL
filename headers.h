@@ -41,6 +41,7 @@ typedef struct GameInfo {
     int screenWidth;
     // Altura da tela
     int screenHeight;
+    // Controle da resolução e escalonamento
     double screenMulti;
     // Fonte principal
     TTF_Font* mainFont;
