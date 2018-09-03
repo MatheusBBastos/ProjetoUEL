@@ -162,8 +162,10 @@ void WD_TextBoxRender(TextBox* t, unsigned frameCount) {
 bool WD_TextBoxHandleEvent(TextBox* t, SDL_Event* e) {
     if(t->active) {
         if(e->type == SDL_TEXTINPUT) {
-            strcat(t->text, e->text.text);
-            t->needRefresh = true;
+            if(t->maxSize >= strlen(t->text) + strlen(e->text.text)) {
+                strcat(t->text, e->text.text);
+                t->needRefresh = true;
+            }
             return true;
         } else if(e->type == SDL_KEYDOWN && e->key.keysym.sym == SDLK_BACKSPACE) {
             int textlen = SDL_strlen(t->text);

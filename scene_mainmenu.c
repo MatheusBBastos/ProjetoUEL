@@ -33,8 +33,8 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->renderQuad.w = w/2;
     newScene->renderQuad.h = h/2;
     SDL_Color black = {0, 0, 0, 255};
-    newScene->login = WD_CreateTextBox(240, 290, 260, 26, 100, gInfo.inputFont, black, false);
-    newScene->senha = WD_CreateTextBox(240, 335, 260, 26, 100, gInfo.inputFont, black, true);
+    newScene->login = WD_CreateTextBox(240, 290, 260, 26, 30, gInfo.inputFont, black, false);
+    newScene->senha = WD_CreateTextBox(240, 335, 260, 26, 30, gInfo.inputFont, black, true);
 
     SDL_StartTextInput();
     
