@@ -22,6 +22,14 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->enteringFrame = 0;
     newScene->frame = 0;
 
+    SDL_AudioSpec wavSpec;
+    Uint32 wavLength;
+
+    SDL_LoadWAV("content\\loading.wav", &wavSpec, &newScene->wavBuffer, &wavLength);
+    newScene->deviceId = SDL_OpenAudioDevice(NULL, 0, &wavSpec, NULL, 0);
+    int success = SDL_QueueAudio(newScene->deviceId, newScene->wavBuffer, wavLength);
+    SDL_PauseAudioDevice(newScene->deviceId, 0);
+
     SDL_Color colorSelected = {255, 156, 0}; // Cores dos botões quando selecionados
     SDL_Color colorNotSelected = {255,255,255}; // Cores dos botões quando não selecionados
 
@@ -115,6 +123,8 @@ void SceneMainMenu_destroy(Scene_MainMenu* s) {
     WD_TextureDestroy(s->textModoOffOff);
     WD_TextBoxDestroy(s->login);
     WD_TextBoxDestroy(s->senha);
+    SDL_CloseAudioDevice(s->deviceId);
+    SDL_FreeWAV(s->wavBuffer);
     SDL_StopTextInput();
     free(s);
 }

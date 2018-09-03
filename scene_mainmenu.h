@@ -18,6 +18,8 @@ typedef struct Scene_MainMenu {
     WTexture* seta;
     TextBox* login;
     TextBox* senha;
+    SDL_AudioDeviceID* deviceId;
+    Uint8* wavBuffer;
     bool modoOff;
     short int index;
 } Scene_MainMenu;
