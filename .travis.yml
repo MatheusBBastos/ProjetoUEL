@@ -1,0 +1,3 @@
+language: c
+sudo: enabled
+install: make get-deps
