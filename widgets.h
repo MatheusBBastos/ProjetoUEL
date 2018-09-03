@@ -21,6 +21,8 @@ void WD_TextureLoadFromFile(WTexture* wtexture, char* path);
 
 void WD_TextureRender(WTexture* wtexture, int x, int y);
 
+void WD_TextureRenderDest(WTexture* wtexture, SDL_Rect* renderQuad);
+
 void WD_TextureRenderEx(WTexture* wtexture, int x, int y, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip);
 
 // Button - estrutura que carrega informações necessárias para renderizar um botão
@@ -34,5 +36,25 @@ typedef struct Button {
 Button* WD_CreateButton(char* text, int x, int y, TTF_Font* font, SDL_Color textColor, SDL_Color buttonColor);
 
 void WD_ButtonRender();
+
+// TextBox - estrutura que carrega informações de uma caixa de texto
+typedef struct TextBox {
+    int x, y, width, height, cursorX, cursorY, maxSize;
+    TTF_Font* font;
+    char* text;
+    char* displayText;
+    SDL_Color textColor;
+    bool needRefresh, active, password;
+    WTexture* textTexture;
+    SDL_Rect textClip;
+} TextBox;
+
+TextBox* WD_CreateTextBox(int x, int y, int width, int height, int maxSize, TTF_Font* font, SDL_Color textColor, bool password);
+
+bool WD_TextBoxHandleEvent(TextBox* t, SDL_Event* e);
+
+void WD_TextBoxRender(TextBox* t, unsigned frameCount);
+
+void WD_TextBoxDestroy(TextBox* t);
 
 #endif

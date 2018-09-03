@@ -12,7 +12,17 @@ bool initialize() {
         printf("Falha ao inicializar o SDL! Erro: %s\n", SDL_GetError());
         success = false;
     } else {
-        gInfo.window = SDL_CreateWindow("Projeto UEL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+        SDL_DisplayMode current;
+        SDL_GetCurrentDisplayMode(0, &current);
+        if (current.w >= 1920) {
+            gInfo.screenMulti = 1;
+        }
+        else {
+            gInfo.screenMulti = 0.5;
+        }
+        gInfo.screenWidth = 1440 * gInfo.screenMulti;
+        gInfo.screenHeight = 1080 * gInfo.screenMulti;
+        gInfo.window = SDL_CreateWindow("Projeto UEL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, gInfo.screenWidth, gInfo.screenHeight, SDL_WINDOW_SHOWN);
         if(gInfo.window == NULL) {
             printf("Falha ao criar a janela! Erro: %s\n", SDL_GetError());
             success = false;
@@ -60,7 +70,10 @@ int main(int argc, char* argv[]) {
         printf("Falha ao inicializar!\n");
     } else {
         bool quit = false;
-        gInfo.mainFont = TTF_OpenFont("content/Fipps-Regular.ttf", 18);
+        gInfo.mainFont = TTF_OpenFont("content/Fipps-Regular.ttf", 36 * gInfo.screenMulti);
+        gInfo.menuFont = TTF_OpenFont("content/Minecraft.ttf", 72 * gInfo.screenMulti);
+        gInfo.inputFont = TTF_OpenFont("content/Minecraft.ttf", 46 * gInfo.screenMulti);
+        SDL_RenderPresent(gInfo.renderer);
         sMng.currentScene = SCENE_MAINMENU;
         sMng.sMainMenu = SceneMainMenu_new();
         SDL_Event e;
@@ -76,6 +89,8 @@ int main(int argc, char* argv[]) {
             SDL_RenderPresent(gInfo.renderer);
         }
         TTF_CloseFont(gInfo.mainFont);
+        TTF_CloseFont(gInfo.menuFont);
+        TTF_CloseFont(gInfo.inputFont);
         gInfo.mainFont = NULL;
         SceneManager_changeScene(SCENE_UNDEFINED);
     }

@@ -27,9 +27,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define SCREEN_WIDTH  800
-#define SCREEN_HEIGHT 600
-
 #define DEFAULT_TRANSITION_DURATION 10
 
 // Estrutura que carrega os elementos globais do programa
@@ -40,8 +37,17 @@ typedef struct GameInfo {
     SDL_Surface* screenSurface;
     // Renderizador global
     SDL_Renderer* renderer;
+    // Comprimento da tela
+    int screenWidth;
+    // Altura da tela
+    int screenHeight;
+    double screenMulti;
     // Fonte principal
     TTF_Font* mainFont;
+    // Fonte MainMenu
+    TTF_Font* menuFont;
+    // Fonte de entrada de texto
+    TTF_Font* inputFont;
 } GameInfo;
 
 typedef struct SceneManager SceneManager;
