@@ -17,14 +17,27 @@
     int posSenhaY = 670;
     int sizeSenha[2] = { 520,52 };
 
+    int posErroX = 438;
+    int posErroY = 960;
+
 Scene_MainMenu* SceneMainMenu_new() {
     Scene_MainMenu* newScene = malloc(sizeof(Scene_MainMenu));
     newScene->enteringFrame = 0;
     newScene->frame = 0;
 
+    SDL_AudioSpec wavSpec;
+    Uint32 wavLength;
+
+    SDL_LoadWAV("content\\loading.wav", &wavSpec, &newScene->wavBuffer, &wavLength);
+    newScene->deviceId = SDL_OpenAudioDevice(NULL, 0, &wavSpec, NULL, 0);
+    int success = SDL_QueueAudio(newScene->deviceId, newScene->wavBuffer, wavLength);
+    SDL_PauseAudioDevice(newScene->deviceId, 0);
+
     SDL_Color colorSelected = {255, 156, 0}; // Cores dos botões quando selecionados
     SDL_Color colorNotSelected = {255,255,255}; // Cores dos botões quando não selecionados
+    SDL_Color fullRed = { 255,0,0 };
 
+    newScene->textError = WD_CreateTexture();
     newScene->backgroundTexture = WD_CreateTexture();
     newScene->textLogar = WD_CreateTexture();
     newScene->textModoOff = WD_CreateTexture();
@@ -34,16 +47,17 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->modoOff = false;
     newScene->index=0; // Começar no login
 
-    WD_TextureLoadFromFile(newScene->seta, "seta.png");
+    WD_TextureLoadFromFile(newScene->seta, "content\\seta.png");
     WD_TextureLoadFromText(newScene->textLogar, "Logar" , gInfo.menuFont, colorSelected);
     WD_TextureLoadFromText(newScene->textLogarOff, "Logar", gInfo.menuFont, colorNotSelected);
     WD_TextureLoadFromText(newScene->textModoOff, "Modo offline", gInfo.menuFont, colorSelected);
     WD_TextureLoadFromText(newScene->textModoOffOff, "Modo offline", gInfo.menuFont, colorNotSelected);
+    WD_TextureLoadFromText(newScene->textError, "ACESSO NEGADO", gInfo.menuFont, fullRed);
 
     newScene->seta->h *= gInfo.screenMulti;
     newScene->seta->w *= gInfo.screenMulti;
 
-    WD_TextureLoadFromFile(newScene->backgroundTexture, "BG_Login.png");
+    WD_TextureLoadFromFile(newScene->backgroundTexture, "content\\BG_Login.png");
     int w = newScene->backgroundTexture->w, h = newScene->backgroundTexture->h;
     newScene->renderQuad.x = 0;
     newScene->renderQuad.y = 0;
@@ -53,6 +67,7 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->login = WD_CreateTextBox(posLoginX * gInfo.screenMulti, posLoginY * gInfo.screenMulti, sizeLogin[0] * gInfo.screenMulti, sizeLogin[1] * gInfo.screenMulti, 30, gInfo.inputFont, textColor, false);
     newScene->senha = WD_CreateTextBox(posSenhaX* gInfo.screenMulti, posSenhaY* gInfo.screenMulti, sizeSenha[0] * gInfo.screenMulti, sizeSenha[1] * gInfo.screenMulti, 30, gInfo.inputFont, textColor, true);
 
+    newScene->acessonegado = false;
     SDL_StartTextInput();
     
     return newScene;
@@ -66,6 +81,19 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
 
     WD_TextureRender(s->textLogarOff, posLogarX * gInfo.screenMulti, posLogarY * gInfo.screenMulti); //Começa com os dois botoes brancos
     WD_TextureRender(s->textModoOffOff, posModoX * gInfo.screenMulti, posModoY * gInfo.screenMulti);
+
+    if (s->frame % 5 == 0) {
+        if (s->acessonegado) {
+            s->acessonegado = false;
+        }
+        else {
+            s->acessonegado = true;
+        }
+    }
+
+    if (s->acessonegado) {
+        WD_TextureRender(s->textError, posErroX * gInfo.screenMulti, posErroY * gInfo.screenMulti);
+    }
 
     if (s->modoOff && s->index==2) {
         WD_TextureRender(s->textLogarOff, posLogarX * gInfo.screenMulti, posLogarY * gInfo.screenMulti);
@@ -115,6 +143,8 @@ void SceneMainMenu_destroy(Scene_MainMenu* s) {
     WD_TextureDestroy(s->textModoOffOff);
     WD_TextBoxDestroy(s->login);
     WD_TextBoxDestroy(s->senha);
+    SDL_CloseAudioDevice(s->deviceId);
+    SDL_FreeWAV(s->wavBuffer);
     SDL_StopTextInput();
     free(s);
 }
@@ -131,6 +161,13 @@ void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e) {
             s->index++;
         }else if(e->key.keysym.sym == SDLK_UP && s->index > 0){
             s->index--;
+        }else if(e->key.keysym.sym == SDLK_1) {
+            if (s->acessonegado) {
+                s->acessonegado = false;
+            }
+            else {
+                s->acessonegado = true;
+            }
         }
     }
     WD_TextBoxHandleEvent(s->login, e);
