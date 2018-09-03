@@ -7,7 +7,7 @@ Scene_Singleplayer* SceneSingleplayer_new() {
     newScene->textTexture = WD_CreateTexture();
     WD_TextureLoadFromText(newScene->textTexture, "Uhulll", gInfo.mainFont, color);
     newScene->testTexture = WD_CreateTexture();
-    WD_TextureLoadFromFile(newScene->testTexture, "content\\img.png");
+    WD_TextureLoadFromFile(newScene->testTexture, "content/img.png");
     newScene->renderQuad.x = (gInfo.screenWidth - newScene->textTexture->w) / 2;
     newScene->renderQuad.y = (gInfo.screenHeight - newScene->textTexture->h) / 2;
     newScene->cont = 0;
