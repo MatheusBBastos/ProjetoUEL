@@ -25,7 +25,7 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->enteringFrame = 0;
     newScene->frame = 0;
 
-    newScene->music = Mix_LoadMUS("content/loading.wav");
+    newScene->music = Mix_LoadMUS("content/teste.ogg");
     Mix_PlayMusic(newScene->music, -1);
 
     SDL_Color colorSelected = {255, 156, 0}; // Cores dos botões quando selecionados
