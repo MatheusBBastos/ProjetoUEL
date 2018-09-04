@@ -12,7 +12,7 @@ bool initialize() {
         printf("Falha ao inicializar o SDL! Erro: %s\n", SDL_GetError());
         success = false;
     } else {
-        SDL_Init(SDL_INIT_AUDIO);
+        Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
         SDL_DisplayMode current;
         SDL_GetCurrentDisplayMode(0, &current);
         if (current.w >= 1920) {
