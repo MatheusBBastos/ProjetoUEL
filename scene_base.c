@@ -12,8 +12,8 @@ void SceneManager_performTransition(int duration, int newScene) {
 // Troca a cena, destruindo a anterior e criando a nova
 void SceneManager_changeScene(int newScene) {
     switch(sMng.currentScene) {
-        case SCENE_MAINMENU:
-            SceneMainMenu_destroy(sMng.sMainMenu);
+        case SCENE_LOGIN:
+            SceneLogin_destroy(sMng.sLogin);
             break;
         case SCENE_SINGLEPLAYER:
             SceneSingleplayer_destroy(sMng.sSingleplayer);
@@ -21,8 +21,8 @@ void SceneManager_changeScene(int newScene) {
     }
     sMng.currentScene = newScene;
     switch(newScene) {
-        case SCENE_MAINMENU:
-            sMng.sMainMenu = SceneMainMenu_new();
+        case SCENE_LOGIN:
+            sMng.sLogin = SceneLogin_new();
             break;
         case SCENE_SINGLEPLAYER:
             sMng.sSingleplayer = SceneSingleplayer_new();
@@ -33,8 +33,8 @@ void SceneManager_changeScene(int newScene) {
 // Atualiza e renderiza a cena atual, além de mostrar os efeitos de uma transição se for o caso
 void SceneManager_updateScene() {
     switch(sMng.currentScene) {
-        case SCENE_MAINMENU:
-            SceneMainMenu_update(sMng.sMainMenu);
+        case SCENE_LOGIN:
+            SceneLogin_update(sMng.sLogin);
             break;
         case SCENE_SINGLEPLAYER:
             SceneSingleplayer_update(sMng.sSingleplayer);
@@ -75,8 +75,8 @@ void SceneManager_updateScene() {
 
 void SceneManager_handleEvent(SDL_Event* e) {
     switch(sMng.currentScene) {
-        case SCENE_MAINMENU:
-            SceneMainMenu_handleEvent(sMng.sMainMenu, e);
+        case SCENE_LOGIN:
+            SceneLogin_handleEvent(sMng.sLogin, e);
             break;
         case SCENE_SINGLEPLAYER:
             SceneSingleplayer_handleEvent(sMng.sSingleplayer, e);

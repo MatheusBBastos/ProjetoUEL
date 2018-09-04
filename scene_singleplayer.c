@@ -48,7 +48,7 @@ void SceneSingleplayer_handleEvent(Scene_Singleplayer* s, SDL_Event* e) {
         return;
     if(e->type == SDL_KEYDOWN) {
         if(e->key.keysym.sym == SDLK_RETURN) {
-            SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
+            SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOGIN);
         } else if(e->key.keysym.sym == SDLK_TAB) {
             Address* ad = NewAddress(127, 0, 0, 1, 3000);
             char data[] = "Testando";

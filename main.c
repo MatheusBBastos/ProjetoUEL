@@ -75,8 +75,8 @@ int main(int argc, char* argv[]) {
         gInfo.menuFont = TTF_OpenFont("content/Minecraft.ttf", 72 * gInfo.screenMulti);
         gInfo.inputFont = TTF_OpenFont("content/Minecraft.ttf", 46 * gInfo.screenMulti);
         SDL_RenderPresent(gInfo.renderer);
-        sMng.currentScene = SCENE_MAINMENU;
-        sMng.sMainMenu = SceneMainMenu_new();
+        sMng.currentScene = SCENE_LOGIN;
+        sMng.sLogin = SceneLogin_new();
         SDL_Event e;
         while(!quit) {
             while(SDL_PollEvent(&e) != 0) {

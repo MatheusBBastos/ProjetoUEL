@@ -4,14 +4,15 @@
 #define SCENE_BASE_H
 
 #include "headers.h"
-#include "scene_mainmenu.h"
+#include "scene_login.h"
 #include "scene_singleplayer.h"
 
-typedef struct Scene_MainMenu Scene_MainMenu;
+typedef struct Scene_Login Scene_Login;
 typedef struct Scene_Singleplayer Scene_Singleplayer;
 
 // Enumerador de tipos de cenas do jogo
 enum SceneTypes {
+    SCENE_LOGIN,
     SCENE_MAINMENU,
     SCENE_SINGLEPLAYER,
     SCENE_MULTIPLAYER,
@@ -36,7 +37,7 @@ typedef struct SceneManager {
     // Frame da transição
     unsigned transitionFrame;
     // Estrutura da cena do menu principal
-    Scene_MainMenu* sMainMenu;
+    Scene_Login* sLogin;
     Scene_Singleplayer* sSingleplayer;
 } SceneManager;
 
