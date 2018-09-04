@@ -30,7 +30,7 @@ Scene_MainMenu* SceneMainMenu_new() {
 
     SDL_Color colorSelected = {255, 156, 0}; // Cores dos botões quando selecionados
     SDL_Color colorNotSelected = {255,255,255}; // Cores dos botões quando não selecionados
-    SDL_Color fullRed = { 255,0,0 };
+    SDL_Color fullRed = { 230,30,255 };
 
     newScene->textError = WD_CreateTexture();
     newScene->backgroundTexture = WD_CreateTexture();
