@@ -138,6 +138,7 @@ void SceneMainMenu_destroy(Scene_MainMenu* s) {
     WD_TextureDestroy(s->textModoOffOff);
     WD_TextBoxDestroy(s->login);
     WD_TextBoxDestroy(s->senha);
+    WD_TextureDestroy(s->textError);
     Mix_FreeMusic(s->music);
     SDL_StopTextInput();
     free(s);
