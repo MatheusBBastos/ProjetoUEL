@@ -25,12 +25,12 @@ typedef struct Scene_Login {
     short int index;
 } Scene_Login;
 
-Scene_Login* SceneMainMenu_new();
+Scene_Login* SceneLogin_new();
 
-void SceneMainMenu_update(Scene_Login* s);
+void SceneLogin_update(Scene_Login* s);
 
-void SceneMainMenu_handleEvent(Scene_Login* s, SDL_Event* e);
+void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e);
 
-void SceneMainMenu_destroy(Scene_Login* s);
+void SceneLogin_destroy(Scene_Login* s);
 
 #endif
