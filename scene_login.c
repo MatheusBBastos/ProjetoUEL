@@ -27,10 +27,11 @@ Scene_Login* SceneLogin_new() {
 
     newScene->music = Mix_LoadMUS("content/teste.ogg");
     Mix_PlayMusic(newScene->music, -1);
+    Mix_PauseMusic();
 
     SDL_Color colorSelected = {255, 156, 0}; // Cores dos botões quando selecionados
     SDL_Color colorNotSelected = {255,255,255}; // Cores dos botões quando não selecionados
-    SDL_Color fullRed = { 230,30,255 };
+    SDL_Color fullRed = { 255,0,0 };
 
     newScene->textError = WD_CreateTexture();
     newScene->backgroundTexture = WD_CreateTexture();
@@ -161,6 +162,14 @@ void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
             }
             else {
                 s->acessonegado = true;
+            }
+        }
+        else if (e->key.keysym.sym == SDLK_F2) {
+            if (Mix_PausedMusic()) {
+                Mix_ResumeMusic();
+            }
+            else {
+                Mix_PauseMusic();
             }
         }
     }
