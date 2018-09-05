@@ -18,6 +18,9 @@ void SceneManager_changeScene(int newScene) {
         case SCENE_SINGLEPLAYER:
             SceneSingleplayer_destroy(sMng.sSingleplayer);
             break;
+        case SCENE_MAINMENU:
+            SceneMainMenu_destroy(sMng.sMainMenu);
+            break;
     }
     sMng.currentScene = newScene;
     switch(newScene) {
@@ -26,6 +29,9 @@ void SceneManager_changeScene(int newScene) {
             break;
         case SCENE_SINGLEPLAYER:
             sMng.sSingleplayer = SceneSingleplayer_new();
+            break;
+        case SCENE_MAINMENU:
+            sMng.sMainMenu = SceneMainMenu_new();
             break;
     }
 }
@@ -38,6 +44,9 @@ void SceneManager_updateScene() {
             break;
         case SCENE_SINGLEPLAYER:
             SceneSingleplayer_update(sMng.sSingleplayer);
+            break;
+        case SCENE_MAINMENU:
+            SceneMainMenu_update(sMng.sMainMenu);
             break;
     }
     if(sMng.inTransition) {
@@ -80,6 +89,9 @@ void SceneManager_handleEvent(SDL_Event* e) {
             break;
         case SCENE_SINGLEPLAYER:
             SceneSingleplayer_handleEvent(sMng.sSingleplayer, e);
+            break;
+        case SCENE_MAINMENU:
+            SceneMainMenu_handleEvent(sMng.sMainMenu, e);
             break;
     }
 }

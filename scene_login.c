@@ -148,7 +148,7 @@ void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
         return;
     if(e->type == SDL_KEYDOWN) {
         if(e->key.keysym.sym == SDLK_RETURN && s->modoOff && s->index == 2 ) {
-            SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SINGLEPLAYER);
+            SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
         }else if(e->key.keysym.sym == SDLK_RIGHT && s->index == 2 || e->key.keysym.sym == SDLK_LEFT && s->index == 2 ){
             s->modoOff = !s->modoOff;
         }else if((e->key.keysym.sym == SDLK_DOWN || e->key.keysym.sym == SDLK_TAB) && s->index < 2){
