@@ -4,9 +4,12 @@ Scene_MainMenu* SceneMainMenu_new() {
     Scene_MainMenu* newScene = malloc(sizeof(Scene_MainMenu));
     newScene->backgroundTexture = WD_CreateTexture();
     newScene->bemvindo = WD_CreateTexture();
+    newScene->nome = WD_CreateTexture();
 
-    SDL_Color colorText = {141,38,38}; 
-    WD_TextureLoadFromText(newScene->bemvindo,"Bem Vindo", gInfo.mainMenu, colorText);
+    SDL_Color colorBemvindo = {141,38,38}; 
+    SDL_Color colorNome = {255, 255, 255};
+    WD_TextureLoadFromText(newScene->bemvindo,"Bem Vindo", gInfo.mainMenu, colorBemvindo);
+    WD_TextureLoadFromText(newScene->nome, "Basto Forte", gInfo.mainMenu, colorNome);
 
 
     WD_TextureLoadFromFile(newScene->backgroundTexture, "content/BG_mainMenu.png");
@@ -26,12 +29,14 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
     SDL_RenderClear(gInfo.renderer);
     WD_TextureRenderDest(s->backgroundTexture, &s->renderQuad);
     WD_TextureRender(s->bemvindo, 84 * gInfo.screenMulti, 566 * gInfo.screenMulti);
+    WD_TextureRender(s->nome, 84 * gInfo.screenMulti, 634 * gInfo.screenMulti);
     
 }
 
 void SceneMainMenu_destroy(Scene_MainMenu* s) {
     WD_TextureDestroy(s->backgroundTexture);
     WD_TextureDestroy(s->bemvindo);
+    WD_TextureDestroy(s->nome);
     free(s);
     
 }

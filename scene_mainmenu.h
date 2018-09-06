@@ -11,6 +11,7 @@ typedef struct Scene_MainMenu {
     WTexture* backgroundTexture;
     SDL_Rect renderQuad;   
     WTexture* bemvindo;
+    WTexture* nome;
 } Scene_MainMenu;
 
 Scene_MainMenu * SceneMainMenu_new();
