@@ -20,6 +20,8 @@
     int posErroX = 438;
     int posErroY = 960;
 
+    int posLogoX = 215;
+    int posLogoY = 200;
 Scene_Login* SceneLogin_new() {
     Scene_Login* newScene = malloc(sizeof(Scene_Login));
     newScene->enteringFrame = 0;
@@ -33,6 +35,8 @@ Scene_Login* SceneLogin_new() {
     SDL_Color colorNotSelected = {255,255,255}; // Cores dos botões quando não selecionados
     SDL_Color fullRed = { 255,0,0 };
 
+    newScene->logo[0] = WD_CreateTexture();
+    newScene->logo[1] = WD_CreateTexture();
     newScene->textError = WD_CreateTexture();
     newScene->backgroundTexture = WD_CreateTexture();
     newScene->textLogar = WD_CreateTexture();
@@ -43,12 +47,18 @@ Scene_Login* SceneLogin_new() {
     newScene->modoOff = false;
     newScene->index=0; // Começar no login
 
+    WD_TextureLoadFromFile(newScene->logo[0], "content/dalhebomba.png");
+    WD_TextureLoadFromFile(newScene->logo[1], "content/logo.png");
     WD_TextureLoadFromFile(newScene->seta, "content/seta.png");
-    WD_TextureLoadFromText(newScene->textLogar, "Logar" , gInfo.menuFont, colorSelected);
-    WD_TextureLoadFromText(newScene->textLogarOff, "Logar", gInfo.menuFont, colorNotSelected);
-    WD_TextureLoadFromText(newScene->textModoOff, "Modo offline", gInfo.menuFont, colorSelected);
-    WD_TextureLoadFromText(newScene->textModoOffOff, "Modo offline", gInfo.menuFont, colorNotSelected);
-    WD_TextureLoadFromText(newScene->textError, "ACESSO NEGADO", gInfo.menuFont, fullRed);
+    WD_TextureLoadFromText(newScene->textLogar, "Logar", gInfo.telaLogin, colorSelected);
+    WD_TextureLoadFromText(newScene->textLogarOff, "Logar", gInfo.telaLogin, colorNotSelected);
+    WD_TextureLoadFromText(newScene->textModoOff, "Modo offline", gInfo.telaLogin, colorSelected);
+    WD_TextureLoadFromText(newScene->textModoOffOff, "Modo offline", gInfo.telaLogin, colorNotSelected);
+    WD_TextureLoadFromText(newScene->textError, "ACESSO NEGADO", gInfo.telaLogin, fullRed);
+
+
+    newScene->logo[0]->h *= 0.5; newScene->logo[0]->w *= 0.5;
+    newScene->logo[1]->h *= gInfo.screenMulti; newScene->logo[1]->w *= gInfo.screenMulti;
 
     newScene->seta->h *= gInfo.screenMulti;
     newScene->seta->w *= gInfo.screenMulti;
@@ -65,7 +75,8 @@ Scene_Login* SceneLogin_new() {
 
     newScene->acessonegado = false;
     SDL_StartTextInput();
-    
+    newScene->positionAnimado = 0;
+
     return newScene;
 }
 
@@ -77,6 +88,7 @@ void SceneLogin_update(Scene_Login* s) {
 
     WD_TextureRender(s->textLogarOff, posLogarX * gInfo.screenMulti, posLogarY * gInfo.screenMulti); //Começa com os dois botoes brancos
     WD_TextureRender(s->textModoOffOff, posModoX * gInfo.screenMulti, posModoY * gInfo.screenMulti);
+    WD_TextureRender(s->logo[1], posLogoX * gInfo.screenMulti, posLogoY * gInfo.screenMulti);
 
     if (s->frame % 5 == 0) {
         if (s->acessonegado) {
@@ -126,9 +138,22 @@ void SceneLogin_update(Scene_Login* s) {
         s->enteringFrame++;
     }
     s->frame++;
-    if(s->frame >= 60) {
+    if (s->frame >= 60) {
         s->frame = 0;
     }
+
+    if (s->frame % 6 == 0) {
+        s->positionAnimado++;
+    }
+
+
+
+    if (s->positionAnimado == 16)
+        s->positionAnimado = 0;
+
+        SDL_Rect clip = { 0, 320*s->positionAnimado, 320, 320 };
+        WD_TextureRenderExCustom(s->logo[0], 900, 100, &clip, 0.0, NULL, SDL_FLIP_NONE, 100,100);
+
 }
 
 void SceneLogin_destroy(Scene_Login* s) {

@@ -20,9 +20,11 @@ typedef struct Scene_Login {
     TextBox* senha;
     WTexture* textError;
     Mix_Music* music;
+    WTexture* logo[2];
     bool modoOff;
     bool acessonegado;
     short int index;
+    int positionAnimado;
 } Scene_Login;
 
 Scene_Login* SceneLogin_new();

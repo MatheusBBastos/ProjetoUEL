@@ -68,6 +68,15 @@ void WD_TextureRenderEx(WTexture* wtexture, int x, int y, SDL_Rect* clip, double
     SDL_RenderCopyEx(gInfo.renderer, wtexture->mTexture, clip, &textureRect, angle, center, flip);
 }
 
+void WD_TextureRenderExCustom(WTexture* wtexture, int x, int y, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip, int w, int h) {
+    SDL_Rect textureRect = { x, y, wtexture->w, wtexture->h };
+    if (clip != NULL) {
+        textureRect.w = w;
+        textureRect.h = h;
+    }
+    SDL_RenderCopyEx(gInfo.renderer, wtexture->mTexture, clip, &textureRect, angle, center, flip);
+}
+
 // Cria um novo botão a partir das informações fornecidas e retorna seu ponteiro
 Button* WD_CreateButton(char* text, int x, int y, TTF_Font* font, SDL_Color textColor, SDL_Color buttonColor) {
     Button* newButton = malloc(sizeof(Button));
