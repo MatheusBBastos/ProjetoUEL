@@ -8,7 +8,9 @@ typedef struct SceneManager SceneManager;
 #include "widgets.h"
 
 typedef struct Scene_MainMenu {
-    
+    WTexture* backgroundTexture;
+    SDL_Rect renderQuad;   
+    WTexture* bemvindo;
 } Scene_MainMenu;
 
 Scene_MainMenu * SceneMainMenu_new();

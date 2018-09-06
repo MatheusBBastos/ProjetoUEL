@@ -44,11 +44,11 @@ Scene_Login* SceneLogin_new() {
     newScene->index=0; // Começar no login
 
     WD_TextureLoadFromFile(newScene->seta, "content/seta.png");
-    WD_TextureLoadFromText(newScene->textLogar, "Logar" , gInfo.menuFont, colorSelected);
-    WD_TextureLoadFromText(newScene->textLogarOff, "Logar", gInfo.menuFont, colorNotSelected);
-    WD_TextureLoadFromText(newScene->textModoOff, "Modo offline", gInfo.menuFont, colorSelected);
-    WD_TextureLoadFromText(newScene->textModoOffOff, "Modo offline", gInfo.menuFont, colorNotSelected);
-    WD_TextureLoadFromText(newScene->textError, "ACESSO NEGADO", gInfo.menuFont, fullRed);
+    WD_TextureLoadFromText(newScene->textLogar, "Logar" , gInfo.telaLogin, colorSelected);
+    WD_TextureLoadFromText(newScene->textLogarOff, "Logar", gInfo.telaLogin, colorNotSelected);
+    WD_TextureLoadFromText(newScene->textModoOff, "Modo offline", gInfo.telaLogin, colorSelected);
+    WD_TextureLoadFromText(newScene->textModoOffOff, "Modo offline", gInfo.telaLogin, colorNotSelected);
+    WD_TextureLoadFromText(newScene->textError, "ACESSO NEGADO", gInfo.telaLogin, fullRed);
 
     newScene->seta->h *= gInfo.screenMulti;
     newScene->seta->w *= gInfo.screenMulti;

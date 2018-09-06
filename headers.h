@@ -47,10 +47,12 @@ typedef struct GameInfo {
     double screenMulti;
     // Fonte principal
     TTF_Font* mainFont;
-    // Fonte MainMenu
-    TTF_Font* menuFont;
+    // Fonte telaLogin
+    TTF_Font* telaLogin;
     // Fonte de entrada de texto
     TTF_Font* inputFont;
+    // Fonte mainmenu
+    TTF_Font* mainMenu;
 } GameInfo;
 
 typedef struct SceneManager SceneManager;
