@@ -7,10 +7,12 @@
 #include "scene_login.h"
 #include "scene_singleplayer.h"
 #include "scene_mainmenu.h"
+#include "scene_map.h"
 
 typedef struct Scene_Login Scene_Login;
 typedef struct Scene_Singleplayer Scene_Singleplayer;
 typedef struct Scene_MainMenu Scene_MainMenu;
+typedef struct Scene_Map Scene_Map;
 
 // Enumerador de tipos de cenas do jogo
 enum SceneTypes {
@@ -20,7 +22,7 @@ enum SceneTypes {
     SCENE_MULTIPLAYER,
     SCENE_CREATE_LOBBY,
     SCENE_LOBBY,
-    SCENE_GAME,
+    SCENE_MAP,
     SCENE_UNDEFINED
 };
 
@@ -42,6 +44,7 @@ typedef struct SceneManager {
     Scene_Login* sLogin;
     Scene_Singleplayer* sSingleplayer;
     Scene_MainMenu* sMainMenu;
+    Scene_Map* sMap;
 } SceneManager;
 
 // Fazer transição entre cenas

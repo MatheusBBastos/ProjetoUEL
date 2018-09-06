@@ -21,6 +21,9 @@ void SceneManager_changeScene(int newScene) {
         case SCENE_MAINMENU:
             SceneMainMenu_destroy(sMng.sMainMenu);
             break;
+        case SCENE_MAP:
+            SceneMap_destroy(sMng.sMap);
+            break;
     }
     sMng.currentScene = newScene;
     switch(newScene) {
@@ -32,6 +35,9 @@ void SceneManager_changeScene(int newScene) {
             break;
         case SCENE_MAINMENU:
             sMng.sMainMenu = SceneMainMenu_new();
+            break;
+        case SCENE_MAP:
+            sMng.sMap = SceneMap_new();
             break;
     }
 }
@@ -47,6 +53,9 @@ void SceneManager_updateScene() {
             break;
         case SCENE_MAINMENU:
             SceneMainMenu_update(sMng.sMainMenu);
+            break;
+        case SCENE_MAP:
+            SceneMap_update(sMng.sMap);
             break;
     }
     if(sMng.inTransition) {
@@ -92,6 +101,9 @@ void SceneManager_handleEvent(SDL_Event* e) {
             break;
         case SCENE_MAINMENU:
             SceneMainMenu_handleEvent(sMng.sMainMenu, e);
+            break;
+        case SCENE_MAP:
+            SceneMap_handleEvent(sMng.sMap, e);
             break;
     }
 }
