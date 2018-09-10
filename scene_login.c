@@ -159,6 +159,8 @@ void SceneLogin_update(Scene_Login* s) {
 }
 
 void SceneLogin_destroy(Scene_Login* s) {
+    WD_TextureDestroy(s->logo[0]);
+    WD_TextureDestroy(s->logo[1]);
     WD_TextureDestroy(s->backgroundTexture);
     WD_TextureDestroy(s->textLogar);
     WD_TextureDestroy(s->textLogarOff);
