@@ -53,6 +53,8 @@ typedef struct GameInfo {
     TTF_Font* inputFont;
     // Fonte mainmenu
     TTF_Font* mainMenu;
+    // Fonte mainmenu - botoes
+    TTF_Font* mainMenu_botoes;
 } GameInfo;
 
 typedef struct SceneManager SceneManager;
