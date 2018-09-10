@@ -30,6 +30,8 @@
 #include <stdbool.h>
 
 #define DEFAULT_TRANSITION_DURATION 10
+#define MAP_LAYERS 2
+#define TILE_SIZE 32
 
 // Estrutura que carrega os elementos globais do programa
 typedef struct GameInfo {
