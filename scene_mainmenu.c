@@ -11,6 +11,7 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->jogarOff = WD_CreateTexture();
     newScene->tutorialOff = WD_CreateTexture();
     newScene->logoutOff = WD_CreateTexture();
+    newScene->seta =  WD_CreateTexture();//
     newScene->index = 0;
 
     SDL_Color colorBemvindo = {141,38,38}; 
@@ -28,12 +29,17 @@ Scene_MainMenu* SceneMainMenu_new() {
     WD_TextureLoadFromText(newScene->tutorialOff, "Tutorial", gInfo.mainMenu_botoes, colorNotSelected);
     WD_TextureLoadFromText(newScene->logoutOff, "Logout", gInfo.mainMenu_botoes, colorNotSelected);
 
+    WD_TextureLoadFromFile(newScene->seta, "content/seta.png");
     WD_TextureLoadFromFile(newScene->backgroundTexture, "content/BG_mainMenu.png");
     int w = newScene->backgroundTexture->w, h = newScene->backgroundTexture->h;
     newScene->renderQuad.x = 0;
     newScene->renderQuad.y = 0;
     newScene->renderQuad.w = w*gInfo.screenMulti;
     newScene->renderQuad.h = h*gInfo.screenMulti;
+
+
+    newScene->seta->h *= gInfo.screenMulti;
+    newScene->seta->w *= gInfo.screenMulti;
 
     return newScene;
 }
@@ -51,14 +57,17 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
     //WD_TextureRender(s->logout, 156 * gInfo.screenMulti, 892 * gInfo.screenMulti);
 
     if(s->index == 0) {
+        WD_TextureRender(s->seta, 76 * gInfo.screenMulti, 750 * gInfo.screenMulti);
         WD_TextureRender(s->jogar, 156 * gInfo.screenMulti, 720 * gInfo.screenMulti);
         WD_TextureRender(s->tutorialOff, 156 * gInfo.screenMulti, 804 * gInfo.screenMulti);
         WD_TextureRender(s->logoutOff, 156 * gInfo.screenMulti, 892 * gInfo.screenMulti);
     } else if(s->index == 1) {
+        WD_TextureRender(s->seta, 76 * gInfo.screenMulti, 834 * gInfo.screenMulti);
         WD_TextureRender(s->jogarOff, 156 * gInfo.screenMulti, 720 * gInfo.screenMulti);
         WD_TextureRender(s->tutorial, 156 * gInfo.screenMulti, 804 * gInfo.screenMulti);
         WD_TextureRender(s->logoutOff, 156 * gInfo.screenMulti, 892 * gInfo.screenMulti);
     } else {
+        WD_TextureRender(s->seta, 76 * gInfo.screenMulti, 922 * gInfo.screenMulti);
         WD_TextureRender(s->jogarOff, 156 * gInfo.screenMulti, 720 * gInfo.screenMulti);
         WD_TextureRender(s->tutorialOff, 156 * gInfo.screenMulti, 804 * gInfo.screenMulti);
         WD_TextureRender(s->logout, 156 * gInfo.screenMulti, 892 * gInfo.screenMulti);
@@ -76,6 +85,7 @@ void SceneMainMenu_destroy(Scene_MainMenu* s) {
     WD_TextureDestroy(s->jogarOff);
     WD_TextureDestroy(s->tutorialOff);
     WD_TextureDestroy(s->logoutOff);
+    WD_TextureDestroy(s->seta);
     free(s);
     
 }

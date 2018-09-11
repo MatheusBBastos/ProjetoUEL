@@ -12,7 +12,8 @@ typedef struct Scene_MainMenu {
     SDL_Rect renderQuad;
     short int index;
 
-    WTexture* bemvindo;
+    WTexture* seta;//
+    WTexture* bemvindo  ;
     WTexture* nome;
     WTexture* jogar;  
     WTexture* tutorial;
