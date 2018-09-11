@@ -12,6 +12,7 @@ typedef struct Scene_Map {
     WTexture* tileMap;
     Map* map;
     int tileWidth, tileHeight, mapWidth, mapHeight;
+    int screenX, screenY;
 } Scene_Map;
 
 Scene_Map* SceneMap_new();
