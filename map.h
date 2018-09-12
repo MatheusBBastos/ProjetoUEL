@@ -1,4 +1,5 @@
 #include "headers.h"
+#include "widgets.h"
 
 typedef struct Map {
     int* data;
@@ -13,5 +14,7 @@ void Map_Load(Map* map, char* path);
 int Map_Get(Map* m, int x, int y, int z);
 
 void Map_Set(Map* m, int x, int y, int z, int value);
+
+void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY);
 
 void Map_Destroy(Map* m);

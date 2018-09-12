@@ -39,6 +39,29 @@ void Map_Set(Map* m, int x, int y, int z, int value) {
     }
 }
 
+void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY) {
+    int offsetX = screenX % TILE_SIZE;
+    int offsetY = screenY % TILE_SIZE;
+    int startX = (int) (screenX / TILE_SIZE);
+    int startY = (int) (screenY / TILE_SIZE);
+    int endX = ((screenX + gInfo.screenWidth) / TILE_SIZE + 1);
+    int endY = ((screenY + gInfo.screenHeight) / TILE_SIZE + 1);
+    int x, y, z;
+    for(z = 0; z < MAP_LAYERS; z++) {
+        for(y = startY; y < endY; y ++) {
+            for(x = startX; x < endX; x ++) {
+                int tile = Map_Get(m, x, y, z);
+                if(tile != -1) {
+                    int realX = x - screenX / TILE_SIZE;
+                    int realY = y - screenY / TILE_SIZE;
+                    SDL_Rect c = {tile * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE};
+                    WD_TextureRenderEx(tileMap, realX * TILE_SIZE - offsetX, realY * TILE_SIZE - offsetY, &c, 0.0, NULL, SDL_FLIP_NONE);
+                }
+            }
+        }
+    }
+}
+
 void Map_Destroy(Map* m) {
     if(m->loaded)
         free(m->data);

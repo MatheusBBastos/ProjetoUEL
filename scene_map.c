@@ -8,32 +8,26 @@ Scene_Map* SceneMap_new() {
     Map_Load(newScene->map, "map.txt");
     newScene->screenX = 0;
     newScene->screenY = 0;
+    newScene->player = Character_Create("content/testcharacter.png");
     return newScene;
 }
 
 void SceneMap_update(Scene_Map* s) {
+    if(s->screenX < 0)
+        s->screenX = 0;
+    if(s->screenY < 0)
+        s->screenY = 0;
+    if(s->screenX > s->map->width * TILE_SIZE - gInfo.screenWidth) {
+        s->screenX = s->map->width * TILE_SIZE - gInfo.screenWidth;
+    }
+    if(s->screenY > s->map->height * TILE_SIZE - gInfo.screenHeight) {
+        s->screenY = s->map->height * TILE_SIZE - gInfo.screenHeight;
+    }
     SDL_SetRenderDrawColor(gInfo.renderer, 0x00, 0x00, 0x00, 0xFF);
     SDL_RenderClear(gInfo.renderer);
-    int offsetX = s->screenX % TILE_SIZE;
-    int offsetY = s->screenY % TILE_SIZE;
-    int startX = (int) (s->screenX / TILE_SIZE);
-    int startY = (int) (s->screenY / TILE_SIZE);
-    int endX = ((s->screenX + gInfo.screenWidth) / TILE_SIZE + 1);
-    int endY = ((s->screenY + gInfo.screenHeight) / TILE_SIZE + 1);
-    int x, y, z;
-    for(z = 0; z < MAP_LAYERS; z++) {
-        for(y = startY; y < endY; y ++) {
-            for(x = startX; x < endX; x ++) {
-                int tile = Map_Get(s->map, x, y, z);
-                if(tile != -1) {
-                    int realX = x - s->screenX / TILE_SIZE;
-                    int realY = y - s->screenY / TILE_SIZE;
-                    SDL_Rect c = {tile * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE};
-                    WD_TextureRenderEx(s->tileMap, realX * TILE_SIZE - offsetX, realY * TILE_SIZE - offsetY, &c, 0.0, NULL, SDL_FLIP_NONE);
-                }
-            }
-        }
-    }
+    Map_Render(s->map, s->tileMap, s->screenX, s->screenY);
+    Character_Update(s->player);
+    Character_Render(s->player, s->screenX, s->screenY);
 }
 
 void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
@@ -41,19 +35,48 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
         if(e->key.keysym.sym == SDLK_TAB) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOGIN);
         } else if(e->key.keysym.sym == SDLK_RIGHT){
-            s->screenX += 3;
+            // GAMBIARRA SÓ PRA TESTAR
+            s->player->direction = 2;
+            if(!s->player->moving) {
+                s->player->moving = true;
+                s->player->animationIndex = 0;
+            }
         } else if(e->key.keysym.sym == SDLK_LEFT) {
-            s->screenX -= 3;
+            s->player->direction = 1;
+            if(!s->player->moving) {
+                s->player->moving = true;
+                s->player->animationIndex = 0;
+            }
         } else if(e->key.keysym.sym == SDLK_UP) {
-            s->screenY -= 3;
+            s->player->direction = 3;
+            if(!s->player->moving) {
+                s->player->moving = true;
+                s->player->animationIndex = 0;
+            }
         } else if(e->key.keysym.sym == SDLK_DOWN) {
-            s->screenY += 3;
+            s->player->direction = 0;
+            if(!s->player->moving) {
+                s->player->moving = true;
+                s->player->animationIndex = 0;
+            }
         }
-    }  
+    } else if(e->type == SDL_KEYUP) {
+        // GAMBIARRA SÓ PRA TESTAR
+        if(e->key.keysym.sym == SDLK_RIGHT){
+            s->player->moving = false;
+        } else if(e->key.keysym.sym == SDLK_LEFT) {
+            s->player->moving = false;
+        } else if(e->key.keysym.sym == SDLK_UP) {
+            s->player->moving = false;
+        } else if(e->key.keysym.sym == SDLK_DOWN) {
+            s->player->moving = false;
+        }
+    }
 }
 
 void SceneMap_destroy(Scene_Map* s) {
     WD_TextureDestroy(s->tileMap);
     Map_Destroy(s->map);
+    Character_Destroy(s->player);
     free(s);
 }

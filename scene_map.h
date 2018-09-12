@@ -7,12 +7,14 @@ typedef struct SceneManager SceneManager;
 #include "scene_base.h"
 #include "widgets.h"
 #include "map.h"
+#include "character.h"
 
 typedef struct Scene_Map {
     WTexture* tileMap;
     Map* map;
     int tileWidth, tileHeight, mapWidth, mapHeight;
     int screenX, screenY;
+    Character* player;
 } Scene_Map;
 
 Scene_Map* SceneMap_new();

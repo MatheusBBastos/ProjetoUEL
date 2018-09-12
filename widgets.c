@@ -167,7 +167,7 @@ void WD_TextBoxRender(TextBox* t, unsigned frameCount) {
     }
     // Renderizar o texto
     WD_TextureRenderEx(t->textTexture, t->x + 4, t->y + 4, &t->textClip, 0.0, NULL, SDL_FLIP_NONE);
-    if(t->active && frameCount >= 30) {
+    if(t->active && frameCount >= gInfo.screenFreq / 2) {
         SDL_Rect cursorRect = {t->cursorX, t->y + 2, 1, t->height - 4};
         SDL_SetRenderDrawColor(gInfo.renderer, t->textColor.r, t->textColor.g, t->textColor.b, t->textColor.a);
         // Renderizar o cursor

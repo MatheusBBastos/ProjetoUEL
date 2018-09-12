@@ -126,7 +126,7 @@ void SceneLogin_update(Scene_Login* s) {
         s->enteringFrame++;
     }
     s->frame++;
-    if(s->frame >= 60) {
+    if(s->frame >= gInfo.screenFreq) {
         s->frame = 0;
     }
 }

@@ -45,6 +45,8 @@ typedef struct GameInfo {
     int screenWidth;
     // Altura da tela
     int screenHeight;
+    // Taxa de atualização da tela
+    int screenFreq;
     // Controle da resolução e escalonamento
     double screenMulti;
     // Fonte principal

@@ -15,6 +15,7 @@ bool initialize() {
         Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
         SDL_DisplayMode current;
         SDL_GetCurrentDisplayMode(0, &current);
+        gInfo.screenFreq = current.refresh_rate;
         if (current.w >= 1920) {
             gInfo.screenMulti = 0.8;
         }
