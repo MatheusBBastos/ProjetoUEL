@@ -13,26 +13,37 @@ Character* Character_Create(char* spritePath) {
     return newCharacter;
 }
 
-void Character_Update(Character* c) {
+void Character_Update(Character* c, Map* m) {
     if(c->moving) {
         c->animationCount++;
-        if(c->animationCount == 10) {
+        if(c->animationCount == 8) {
             c->animationCount = 0;
             c->animationIndex = (c->animationIndex + 1) % 3;
         }
-        switch(c->direction) {
-            case 0:
-                c->y++;
-                break;
-            case 1:
-                c->x--;
-                break;
-            case 2:
-                c->x++;
-                break;
-            case 3:
-                c->y--;
-                break;
+        int collisionWidth = c->sprite->w / 6;
+        int collisionHeight = c->sprite->h / 8;
+
+        if(c->direction == 0) {
+            int newY = c->y + 1;
+            if(Map_Passable(m, c->x + (c->sprite->w / 3 - collisionWidth) / 2, newY + (c->sprite->h / 4 - collisionHeight), collisionWidth, collisionHeight)) {
+                c->y = newY;
+            }
+            //c->y += 2;
+        } else if(c->direction == 1) {
+            int newX = c->x - 1;
+            if(Map_Passable(m, newX + (c->sprite->w / 3 - collisionWidth) / 2, c->y + (c->sprite->h / 4 - collisionHeight), collisionWidth, collisionHeight)) {
+                c->x = newX;
+            }
+        } else if(c->direction == 2) {
+            int newX = c->x + 1;
+            if(Map_Passable(m, newX + (c->sprite->w / 3 - collisionWidth) / 2, c->y + (c->sprite->h / 4 - collisionHeight), collisionWidth, collisionHeight)) {
+                c->x = newX;
+            }
+        } else if(c->direction == 3) {
+            int newY = c->y - 1;
+            if(Map_Passable(m, c->x + (c->sprite->w / 3 - collisionWidth) / 2, newY + (c->sprite->h / 4 - collisionHeight), collisionWidth, collisionHeight)) {
+                c->y = newY;
+            }
         }
     } else {
         c->animationCount = 0;

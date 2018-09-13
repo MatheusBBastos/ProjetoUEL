@@ -22,6 +22,7 @@ void Map_Load(Map* map, char* path) {
         }
     }
     fclose(mapFile);
+    //free(mapFile);
     map->loaded = true;
 }
 
@@ -47,19 +48,41 @@ void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY) {
     int endX = ((screenX + gInfo.screenWidth) / TILE_SIZE + 1);
     int endY = ((screenY + gInfo.screenHeight) / TILE_SIZE + 1);
     int x, y, z;
-    for(z = 0; z < MAP_LAYERS; z++) {
+    // RENDERIZANDO APENAS A PRIMEIRA CAMADA POR ENQUANTO
+    for(z = 0; z < 1; z++) {
         for(y = startY; y < endY; y ++) {
             for(x = startX; x < endX; x ++) {
                 int tile = Map_Get(m, x, y, z);
                 if(tile != -1) {
                     int realX = x - screenX / TILE_SIZE;
                     int realY = y - screenY / TILE_SIZE;
-                    SDL_Rect c = {tile * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE};
+                    SDL_Rect c = {(tile * TILE_SIZE) % TILESET_WIDTH, (int) tile / TILESET_WIDTH, TILE_SIZE, TILE_SIZE};
                     WD_TextureRenderEx(tileMap, realX * TILE_SIZE - offsetX, realY * TILE_SIZE - offsetY, &c, 0.0, NULL, SDL_FLIP_NONE);
                 }
             }
         }
     }
+}
+
+bool Map_Passable(Map* m, int x, int y, int width, int height) {
+    int firstTileX = x;
+    int firstTileY = y;
+    int lastTileX = (firstTileX + width - 1) / TILE_SIZE;
+    int lastTileY = (firstTileY + height - 1) / TILE_SIZE;
+    firstTileX /= TILE_SIZE;
+    firstTileY /= TILE_SIZE;
+    for(int z = 0; z < MAP_LAYERS; z++) {
+        for(int y = firstTileY; y <= lastTileY; y++) {
+            for(int x = firstTileX; x <= lastTileX; x++) {
+                printf("%d %d %d\n", x, y, Map_Get(m, x, y, z));
+                // PEGANDO APENAS DA PRIMEIRA CAMADA POR ENQUANTO
+                if(Map_Get(m, x, y, 0) == 1) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
 }
 
 void Map_Destroy(Map* m) {

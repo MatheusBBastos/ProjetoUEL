@@ -29,9 +29,14 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+// Duração padrao da transiçao (em frames)
 #define DEFAULT_TRANSITION_DURATION 10
+// Número de camadas do mapa
 #define MAP_LAYERS 2
+// Tamanho (em pixels) de cada tile (quadrado)
 #define TILE_SIZE 32
+// Comprimento da imagem do Tileset
+#define TILESET_WIDTH 160
 
 // Estrutura que carrega os elementos globais do programa
 typedef struct GameInfo {

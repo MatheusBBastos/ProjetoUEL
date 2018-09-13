@@ -1,3 +1,6 @@
+#ifndef MAP_H
+#define MAP_H
+
 #include "headers.h"
 #include "widgets.h"
 
@@ -17,4 +20,8 @@ void Map_Set(Map* m, int x, int y, int z, int value);
 
 void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY);
 
+bool Map_Passable(Map* m, int x, int y, int width, int height);
+
 void Map_Destroy(Map* m);
+
+#endif

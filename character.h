@@ -3,6 +3,7 @@
 
 #include "headers.h"
 #include "widgets.h"
+#include "map.h"
 
 typedef struct Character {
     bool player;
@@ -16,7 +17,7 @@ typedef struct Character {
 
 Character* Character_Create(char* spritePath);
 
-void Character_Update(Character* c);
+void Character_Update(Character* c, Map* m);
 
 void Character_Render(Character* c, int screenX, int screenY);
 
