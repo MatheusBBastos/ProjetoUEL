@@ -16,6 +16,7 @@ typedef struct Scene_Map {
     int screenX, screenY;
     Character* player;
     Character** characters;
+    int charNumber;
 } Scene_Map;
 
 Scene_Map* SceneMap_new();

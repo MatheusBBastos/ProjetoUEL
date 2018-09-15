@@ -36,7 +36,7 @@
 // Tamanho (em pixels) de cada tile (quadrado)
 #define TILE_SIZE 32
 // Comprimento da imagem do Tileset
-#define TILESET_WIDTH 160
+#define TILESET_WIDTH 256
 
 // Estrutura que carrega os elementos globais do programa
 typedef struct GameInfo {
@@ -60,6 +60,8 @@ typedef struct GameInfo {
     TTF_Font* menuFont;
     // Fonte de entrada de texto
     TTF_Font* inputFont;
+    // Modo debug
+    bool debug;
 } GameInfo;
 
 typedef struct SceneManager SceneManager;

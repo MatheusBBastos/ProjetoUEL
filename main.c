@@ -12,6 +12,7 @@ bool initialize() {
         printf("Falha ao inicializar o SDL! Erro: %s\n", SDL_GetError());
         success = false;
     } else {
+        gInfo.debug = false;
         Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
         SDL_DisplayMode current;
         SDL_GetCurrentDisplayMode(0, &current);

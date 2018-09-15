@@ -3,15 +3,26 @@
 Map* Map_Create() {
     Map* newMap = malloc(sizeof(Map));
     newMap->loaded = false;
+    newMap->layers = malloc(MAP_LAYERS * sizeof(SDL_Texture*));
+    for(int i = 0; i < MAP_LAYERS; i++) {
+        newMap->layers[i] = NULL;
+    }
     return newMap;
 }
 
 void Map_Load(Map* map, char* path) {
     if(map->loaded) {
         free(map->data);
+        for(int i = 0; i < MAP_LAYERS; i++) {
+            SDL_DestroyTexture(map->layers[i]);
+            map->layers[i] = NULL;
+        }
     }
     FILE* mapFile = fopen(path, "r");
     fscanf(mapFile, "%d %d", &map->width, &map->height);
+    for(int i = 0; i < MAP_LAYERS; i++) {
+        map->layers[i] = SDL_CreateTexture(gInfo.renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, map->width * TILE_SIZE, map->height * TILE_SIZE);
+    }
     map->data = malloc(MAP_LAYERS * map->width * map->height * sizeof(int));
     int x, y, z;
     for(z = 0; z < MAP_LAYERS; z++) {
@@ -22,7 +33,6 @@ void Map_Load(Map* map, char* path) {
         }
     }
     fclose(mapFile);
-    //free(mapFile);
     map->loaded = true;
 }
 
@@ -40,6 +50,24 @@ void Map_Set(Map* m, int x, int y, int z, int value) {
     }
 }
 
+void Map_RenderFull(Map* m, WTexture* tileMap) {
+    int x, y, z;
+    for(z = 0; z < MAP_LAYERS; z++) {
+        SDL_SetRenderTarget(gInfo.renderer, m->layers[z]);
+        SDL_SetTextureBlendMode(m->layers[z], SDL_BLENDMODE_BLEND);
+        for(y = 0; y < m->height; y ++) {
+            for(x = 0; x < m->width; x ++) {
+                int tile = Map_Get(m, x, y, z);
+                if(tile != -1) {
+                    SDL_Rect c = {(tile * TILE_SIZE) % TILESET_WIDTH, (int) tile / TILESET_WIDTH, TILE_SIZE, TILE_SIZE};
+                    WD_TextureRenderEx(tileMap, x * TILE_SIZE, y * TILE_SIZE, &c, 0.0, NULL, SDL_FLIP_NONE);
+                }
+            }
+        }
+    }
+    SDL_SetRenderTarget(gInfo.renderer, NULL);
+}
+
 void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY) {
     int offsetX = screenX % TILE_SIZE;
     int offsetY = screenY % TILE_SIZE;
@@ -49,7 +77,7 @@ void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY) {
     int endY = ((screenY + gInfo.screenHeight) / TILE_SIZE + 1);
     int x, y, z;
     // RENDERIZANDO APENAS A PRIMEIRA CAMADA POR ENQUANTO
-    for(z = 0; z < 1; z++) {
+    for(z = 0; z < MAP_LAYERS; z++) {
         for(y = startY; y < endY; y ++) {
             for(x = startX; x < endX; x ++) {
                 int tile = Map_Get(m, x, y, z);
@@ -74,9 +102,9 @@ bool Map_Passable(Map* m, SDL_Rect* box) {
     for(int z = 0; z < MAP_LAYERS; z++) {
         for(int y = firstTileY; y <= lastTileY; y++) {
             for(int x = firstTileX; x <= lastTileX; x++) {
-                printf("%d %d %d\n", x, y, Map_Get(m, x, y, z));
+                //printf("%d %d %d\n", x, y, Map_Get(m, x, y, z));
                 // PEGANDO APENAS DA PRIMEIRA CAMADA POR ENQUANTO
-                if(Map_Get(m, x, y, 0) == 1) {
+                if(Map_Get(m, x, y, z) == 4) {
                     return false;
                 }
             }
@@ -88,5 +116,9 @@ bool Map_Passable(Map* m, SDL_Rect* box) {
 void Map_Destroy(Map* m) {
     if(m->loaded)
         free(m->data);
+    for(int i = 0; i < MAP_LAYERS; i++) {
+        SDL_DestroyTexture(m->layers[i]);
+    }
+    free(m->layers);
     free(m);
 }

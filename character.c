@@ -21,7 +21,7 @@ void Character_GetCollisionBox(Character* c, SDL_Rect* box, int offsetX, int off
     box->y = c->y + offsetY + (c->sprite->h / 4 - box->h);
 }
 
-void Character_Update(Character* c, Map* m, Character** characters) {
+void Character_Update(Character* c, Map* m, Character** characters, int charNumber) {
     if(c->moving) {
         c->animationCount++;
         if(c->animationCount == 8) {
@@ -45,7 +45,9 @@ void Character_Update(Character* c, Map* m, Character** characters) {
         }
         if(Map_Passable(m, &collisionBox)) {
             bool noCollision = true;
-            for(int i = 0; i < 3; i++) {
+            for(int i = 0; i < charNumber; i++) {
+                if(characters[i]->id == c->id)
+                    continue;
                 SDL_Rect otherCollisionBox;
                 Character_GetCollisionBox(characters[i], &otherCollisionBox, 0, 0);
                 //printf("TESTANDO TESTANDO TESTANDO\n"); 
@@ -75,10 +77,12 @@ void Character_Render(Character* c, int screenX, int screenY) {
         SDL_Rect clip = {c->sprite->w / 3 * c->animationIndex, c->sprite->h / 4 * c->direction, c->sprite->w / 3, c->sprite->h / 4};
         WD_TextureRenderEx(c->sprite, realX, realY, &clip, 0.0, NULL, SDL_FLIP_NONE);
     }
-    SDL_Rect box;
-    Character_GetCollisionBox(c, &box, -screenX, -screenY);
-    SDL_SetRenderDrawColor(gInfo.renderer, 255, 0, 0, 150);
-    SDL_RenderFillRect(gInfo.renderer, &box);
+    if(gInfo.debug) {
+        SDL_Rect box;
+        Character_GetCollisionBox(c, &box, -screenX, -screenY);
+        SDL_SetRenderDrawColor(gInfo.renderer, 255, 0, 0, 150);
+        SDL_RenderFillRect(gInfo.renderer, &box);
+    }
 }
 
 void Character_Destroy(Character* c) {
