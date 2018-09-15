@@ -73,9 +73,13 @@ int main(int argc, char* argv[]) {
         printf("Falha ao inicializar!\n");
     } else {
         bool quit = false;
+        // Fontes
         gInfo.mainFont = TTF_OpenFont("content/Fipps-Regular.ttf", 36 * gInfo.screenMulti);
-        gInfo.menuFont = TTF_OpenFont("content/Minecraft.ttf", 72 * gInfo.screenMulti);
+        gInfo.telaLogin = TTF_OpenFont("content/Minecraft.ttf", 72 * gInfo.screenMulti);
         gInfo.inputFont = TTF_OpenFont("content/Minecraft.ttf", 46 * gInfo.screenMulti);
+        gInfo.mainMenu = TTF_OpenFont("content/RC.ttf", 65 * gInfo.screenMulti);
+        gInfo.mainMenu_botoes = TTF_OpenFont("content/RC.ttf", 72 * gInfo.screenMulti);
+
         SDL_RenderPresent(gInfo.renderer);
         sMng.currentScene = SCENE_LOGIN;
         sMng.sLogin = SceneLogin_new();
@@ -92,7 +96,7 @@ int main(int argc, char* argv[]) {
             SDL_RenderPresent(gInfo.renderer);
         }
         TTF_CloseFont(gInfo.mainFont);
-        TTF_CloseFont(gInfo.menuFont);
+        TTF_CloseFont(gInfo.telaLogin);
         TTF_CloseFont(gInfo.inputFont);
         gInfo.mainFont = NULL;
         SceneManager_changeScene(SCENE_UNDEFINED);
