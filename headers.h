@@ -60,6 +60,10 @@ typedef struct GameInfo {
     TTF_Font* telaLogin;
     // Fonte de entrada de texto
     TTF_Font* inputFont;
+    // Fonte mainmenu
+    TTF_Font* mainMenu;
+    // Fonte mainmenu - botoes
+    TTF_Font* mainMenu_botoes;
     // Modo debug
     bool debug;
 } GameInfo;
