@@ -1,4 +1,5 @@
 #include "map.h"
+#include "scene_base.h"
 
 Map* Map_Create() {
     Map* newMap = malloc(sizeof(Map));
@@ -102,8 +103,13 @@ bool Map_Passable(Map* m, SDL_Rect* box) {
     for(int z = 0; z < MAP_LAYERS; z++) {
         for(int y = firstTileY; y <= lastTileY; y++) {
             for(int x = firstTileX; x <= lastTileX; x++) {
-                //printf("%d %d %d\n", x, y, Map_Get(m, x, y, z));
-                // PEGANDO APENAS DA PRIMEIRA CAMADA POR ENQUANTO
+                if(gInfo.debug) {
+                    int offX = sMng.sMap->screenX;
+                    int offY = sMng.sMap->screenY;
+                    SDL_Rect r = {x * TILE_SIZE - offX, y * TILE_SIZE - offY, TILE_SIZE, TILE_SIZE};
+                    SDL_SetRenderDrawColor(gInfo.renderer, 0, 255, 0, 60);
+                    SDL_RenderFillRect(gInfo.renderer, &r);
+                }
                 if(Map_Get(m, x, y, z) == 4) {
                     return false;
                 }
