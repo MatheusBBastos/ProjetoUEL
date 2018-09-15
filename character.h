@@ -6,6 +6,7 @@
 #include "map.h"
 
 typedef struct Character {
+    int id;
     bool player;
     WTexture* sprite;
     short int direction;
@@ -15,9 +16,11 @@ typedef struct Character {
     int animationCount;
 } Character;
 
-Character* Character_Create(char* spritePath);
+Character* Character_Create(char* spritePath, int id);
 
-void Character_Update(Character* c, Map* m);
+void Character_GetCollisionBox(Character* c, SDL_Rect* box, int offsetX, int offsetY);
+
+void Character_Update(Character* c, Map* m, Character** characters);
 
 void Character_Render(Character* c, int screenX, int screenY);
 

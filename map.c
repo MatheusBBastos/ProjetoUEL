@@ -64,11 +64,11 @@ void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY) {
     }
 }
 
-bool Map_Passable(Map* m, int x, int y, int width, int height) {
-    int firstTileX = x;
-    int firstTileY = y;
-    int lastTileX = (firstTileX + width - 1) / TILE_SIZE;
-    int lastTileY = (firstTileY + height - 1) / TILE_SIZE;
+bool Map_Passable(Map* m, SDL_Rect* box) {
+    int firstTileX = box->x;
+    int firstTileY = box->y;
+    int lastTileX = (firstTileX + box->w - 1) / TILE_SIZE;
+    int lastTileY = (firstTileY + box->h - 1) / TILE_SIZE;
     firstTileX /= TILE_SIZE;
     firstTileY /= TILE_SIZE;
     for(int z = 0; z < MAP_LAYERS; z++) {

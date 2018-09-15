@@ -15,6 +15,7 @@ typedef struct Scene_Map {
     int tileWidth, tileHeight, mapWidth, mapHeight;
     int screenX, screenY;
     Character* player;
+    Character** characters;
 } Scene_Map;
 
 Scene_Map* SceneMap_new();

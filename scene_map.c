@@ -8,7 +8,13 @@ Scene_Map* SceneMap_new() {
     Map_Load(newScene->map, "map.txt");
     newScene->screenX = 0;
     newScene->screenY = 0;
-    newScene->player = Character_Create("content/testcharacter.png");
+    newScene->player = Character_Create("content/dragon.png", 0);
+    int charNumber = 3;
+    newScene->characters = malloc(charNumber * sizeof(Character*));
+    for(int i = 0; i < charNumber; i++) {
+        newScene->characters[i] = Character_Create("content/testcharacter.png", i + 1);
+        newScene->characters[i]->x += 10 * i * 12;
+    }
     return newScene;
 }
 
@@ -60,8 +66,14 @@ void SceneMap_update(Scene_Map* s) {
     }
     // ------------------------------------ //
 
-    Character_Update(s->player, s->map);
+    Character_Update(s->player, s->map, s->characters);
+    for(int i = 0; i < 3; i++) {
+        Character_Update(s->characters[i], s->map, s->characters);
+    }
     Character_Render(s->player, s->screenX, s->screenY);
+    for(int i = 0; i < 3; i++) {
+        Character_Render(s->characters[i], s->screenX, s->screenY);
+    }
 }
 
 void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
@@ -76,5 +88,8 @@ void SceneMap_destroy(Scene_Map* s) {
     WD_TextureDestroy(s->tileMap);
     Map_Destroy(s->map);
     Character_Destroy(s->player);
+    for(int i = 0; i < 3; i++) {
+        Character_Destroy(s->characters[i]);
+    }
     free(s);
 }
