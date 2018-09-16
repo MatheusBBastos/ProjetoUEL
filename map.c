@@ -38,7 +38,7 @@ void Map_Load(Map* map, char* path) {
 }
 
 int Map_Get(Map* m, int x, int y, int z) {
-    if(m->loaded && x < m->width && y < m->height && z < MAP_LAYERS) {
+    if(m->loaded && x >= 0 && y >= 0 && x < m->width && y < m->height && z < MAP_LAYERS) {
         return m->data[m->height * m->width * z + y * m->width + x];
     } else {
         return -1;
@@ -94,6 +94,8 @@ void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY) {
 }
 
 bool Map_Passable(Map* m, SDL_Rect* box) {
+    if(box->x < 0 || box->y < 0)
+        return false;
     int firstTileX = box->x;
     int firstTileY = box->y;
     int lastTileX = (firstTileX + box->w - 1) / TILE_SIZE;
@@ -110,7 +112,8 @@ bool Map_Passable(Map* m, SDL_Rect* box) {
                     SDL_SetRenderDrawColor(gInfo.renderer, 0, 255, 0, 60);
                     SDL_RenderFillRect(gInfo.renderer, &r);
                 }
-                if(Map_Get(m, x, y, z) == 4) {
+                int tile = Map_Get(m, x, y, z);
+                if(tile == 4 || tile == -1) {
                     return false;
                 }
             }
