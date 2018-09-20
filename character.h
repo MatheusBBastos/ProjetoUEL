@@ -14,6 +14,7 @@ typedef struct Character {
     int x, y;
     int animationIndex;
     int animationCount;
+    bool animPart;
 } Character;
 
 Character* Character_Create(char* spritePath, int id);

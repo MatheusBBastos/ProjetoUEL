@@ -37,7 +37,7 @@ int Socket_Open(unsigned short port) {
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons((unsigned short) port);
     if(bind(socketFd, (const struct sockaddr*) &address, sizeof(struct sockaddr_in)) < 0) {
-        printf("Falha ao dar bind na socket!");
+        printf("Falha ao dar bind na socket!\n");
         return 0;
     }
     #if PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX

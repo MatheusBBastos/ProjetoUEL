@@ -11,6 +11,7 @@ Character* Character_Create(char* spritePath, int id) {
     newCharacter->y = 0;
     newCharacter->animationIndex = 0;
     newCharacter->animationCount = 0;
+    newCharacter->animPart = false;
     return newCharacter;
 }
 
@@ -26,7 +27,19 @@ void Character_Update(Character* c, Map* m, Character** characters, int charNumb
         c->animationCount++;
         if(c->animationCount == 8) {
             c->animationCount = 0;
-            c->animationIndex = (c->animationIndex + 1) % 3;
+            if(c->animPart) {
+                c->animationIndex -= 1;
+                if(c->animationIndex < 0) {
+                    c->animationIndex = 1;
+                    c->animPart = false;
+                }
+            } else {
+                c->animationIndex += 1;
+                if(c->animationIndex == 3) {
+                    c->animationIndex = 1;
+                    c->animPart = true;
+                }
+            }
         }
         SDL_Rect collisionBox;
         int newX = c->x, newY = c->y;

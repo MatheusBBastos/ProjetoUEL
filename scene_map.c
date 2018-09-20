@@ -101,6 +101,26 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOGIN);
         } else if(e->key.keysym.sym == SDLK_F3) {
             gInfo.debug = !gInfo.debug;
+        } else if(e->key.keysym.sym == SDLK_F4) {
+            s->testServer = Server_Open(3000);
+            if(s->testServer != NULL) {
+                printf("Server open\n");
+                s->serverThread = SDL_CreateThread(Server_InitLoop, "ServerLoop", s->testServer);
+                //thrd_create(&s->tId, Server_InitLoop, s->testServer);
+            }
+        } else if(e->key.keysym.sym == SDLK_F5) {
+            int fd = Socket_Open(0);
+            char data[] = "Testando";
+            Address* ad = NewAddress(127, 0, 0, 1, 3000);
+            Socket_Send(fd, ad, data, sizeof(data));
+            char data2[] = "VAI TOMA NO SEU CU TALIGADO";
+            Socket_Send(fd, ad, data2, sizeof(data2));
+            free(ad);
+            Socket_Close(fd);
+        } else if(e->key.keysym.sym == SDLK_F6) {
+            s->testServer->running = false;
+            Server_Destroy(s->testServer);
+            SDL_DetachThread(s->serverThread);
         }
     }
 }

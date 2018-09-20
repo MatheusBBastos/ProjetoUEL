@@ -8,6 +8,7 @@ typedef struct SceneManager SceneManager;
 #include "widgets.h"
 #include "map.h"
 #include "character.h"
+#include "server.h"
 
 typedef struct Scene_Map {
     WTexture* tileMap;
@@ -17,6 +18,8 @@ typedef struct Scene_Map {
     Character* player;
     Character** characters;
     int charNumber;
+    Server* testServer;
+    SDL_Thread* serverThread;
 } Scene_Map;
 
 Scene_Map* SceneMap_new();
