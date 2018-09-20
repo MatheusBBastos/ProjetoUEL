@@ -17,6 +17,8 @@ typedef struct Scene_Map {
     Character* player;
     Character** characters;
     int charNumber;
+    Uint32 lastTimeStamp;
+    bool keyUp, keyDown, keyRight, keyLeft;
 } Scene_Map;
 
 Scene_Map* SceneMap_new();

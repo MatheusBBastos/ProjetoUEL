@@ -31,6 +31,7 @@ bool initialize() {
             success = false;
         } else {
             //SDL_SetWindowFullscreen(gInfo.window, SDL_WINDOW_FULLSCREEN);
+            SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
             gInfo.renderer = SDL_CreateRenderer(gInfo.window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
             if(gInfo.renderer == NULL) {
                 printf("Falha ao criar o renderer! Erro: %s\n", SDL_GetError());
