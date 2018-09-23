@@ -21,10 +21,28 @@ Scene_Map* SceneMap_new() {
         }
     }
     newScene->player = newScene->characters[0];
+    newScene->waitingConnection = false;
+    newScene->testServer = NULL;
     return newScene;
 }
 
 void SceneMap_update(Scene_Map* s) {
+    if(s->waitingConnection) {
+        Address* serveraddr = NewAddress(127, 0, 0, 1, 3000);
+        char sendData[] = "PNG";
+        Socket_Send(s->sockFd, serveraddr, sendData, sizeof(sendData));
+        DestroyAddress(serveraddr);
+        Address sender;
+        char data[512];
+        int bytes = Socket_Receive(s->sockFd, &sender, data, sizeof(data));
+        if(bytes > 0) {
+            printf("[Client] Received from server: %s\n", data);
+            if(strncmp("KCK", data, 3) == 0) {
+                s->waitingConnection = false;
+                Socket_Close(s->sockFd);
+            }
+        }
+    }
     s->screenX = (s->player->x + s->player->sprite->w / 6) - (gInfo.screenWidth) / 2;
     s->screenY = (s->player->y + s->player->sprite->h / 8) - (gInfo.screenHeight) / 2;
     if(s->screenX > s->map->width * TILE_SIZE - gInfo.screenWidth) {
@@ -106,26 +124,30 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
             if(s->testServer != NULL) {
                 printf("Server open\n");
                 s->serverThread = SDL_CreateThread(Server_InitLoop, "ServerLoop", s->testServer);
-                //thrd_create(&s->tId, Server_InitLoop, s->testServer);
             }
         } else if(e->key.keysym.sym == SDLK_F5) {
-            int fd = Socket_Open(0);
-            char data[] = "Testando";
+            if(s->waitingConnection == false)
+                s->sockFd = Socket_Open(0);
             Address* ad = NewAddress(127, 0, 0, 1, 3000);
-            Socket_Send(fd, ad, data, sizeof(data));
-            char data2[] = "VAI TOMA NO SEU CU TALIGADO";
-            Socket_Send(fd, ad, data2, sizeof(data2));
+            char data[] = "CON 1";
+            Socket_Send(s->sockFd, ad, data, sizeof(data));
+            s->waitingConnection = true;
             free(ad);
-            Socket_Close(fd);
         } else if(e->key.keysym.sym == SDLK_F6) {
-            s->testServer->running = false;
-            Server_Destroy(s->testServer);
-            SDL_DetachThread(s->serverThread);
+            if(s->testServer != NULL && s->testServer->running) {
+                s->testServer->running = false;
+                int returnValue;
+                SDL_WaitThread(s->serverThread, &returnValue);
+                printf("Thread closed with return value %d\n", returnValue);
+                Server_Destroy(s->testServer);
+                s->testServer = NULL;
+            }
         }
     }
 }
 
 void SceneMap_destroy(Scene_Map* s) {
+    Socket_Close(s->sockFd);
     WD_TextureDestroy(s->tileMap);
     Map_Destroy(s->map);
     for(int i = 0; i < s->charNumber; i++) {

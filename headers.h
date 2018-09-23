@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>
 
 // Duração padrao da transiçao (em frames)
 #define DEFAULT_TRANSITION_DURATION 10
@@ -37,6 +38,8 @@
 #define TILE_SIZE 32
 // Comprimento da imagem do Tileset
 #define TILESET_WIDTH 256
+
+#define SERVER_TICKRATE 60
 
 // Estrutura que carrega os elementos globais do programa
 typedef struct GameInfo {

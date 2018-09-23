@@ -20,6 +20,8 @@ typedef struct Scene_Map {
     int charNumber;
     Server* testServer;
     SDL_Thread* serverThread;
+    bool waitingConnection;
+    int sockFd;
 } Scene_Map;
 
 Scene_Map* SceneMap_new();

@@ -19,6 +19,7 @@ void Network_ShutdownSockets();
 typedef struct Address {
     unsigned int address;
     unsigned short port;
+    char addrString[20];
 } Address;
 
 Address* NewAddress(unsigned char a, unsigned char b, unsigned char c, unsigned char d, unsigned short port);

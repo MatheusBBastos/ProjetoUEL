@@ -19,6 +19,7 @@ Address* NewAddress(unsigned char a, unsigned char b, unsigned char c, unsigned 
     Address* newAddr = malloc(sizeof(Address));
     newAddr->address = (a << 24) | (b << 16) | (c << 8) | d;
     newAddr->port = port;
+    sprintf(newAddr->addrString, "%u.%u.%u.%u", a, b, c, d);
     return newAddr;
 }
 
@@ -76,8 +77,16 @@ int Socket_Receive(int socketFd, Address* sender, char* data, int size) {
     socklen_t fromLength = sizeof(from);
     #endif
     int bytes = recvfrom(socketFd, data, size, 0, (struct sockaddr*) &from, &fromLength);
-    sender->address = ntohl(from.sin_addr.s_addr);
-    sender->port = ntohs(from.sin_port);
+    if(bytes > 0) {
+        sender->address = ntohl(from.sin_addr.s_addr);
+        sender->port = ntohs(from.sin_port);
+        unsigned char ipParts[4];
+        ipParts[0] = sender->address & 0xFF;
+        ipParts[1] = (sender->address >> 8) & 0xFF;
+        ipParts[2] = (sender->address >> 16) & 0xFF;
+        ipParts[3] = (sender->address >> 24) & 0xFF;
+        sprintf(sender->addrString, "%d.%d.%d.%d", ipParts[3], ipParts[2], ipParts[1], ipParts[0]);
+    }
     return bytes;
 }
 
