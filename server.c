@@ -77,12 +77,33 @@ void Server_CheckInactiveClients(Server* s) {
     }
 }
 
+void Server_SendToAll(Server* s, char* data, int id) {
+    for(int i = 0; i < s->maxClients; i++) {
+        if(s->clients[i] != NULL && i != id) {
+            Socket_Send(s->sockfd, s->clients[i]->addr, data, strlen(data));
+        }
+    }
+}
+
+void Server_Shutdown(Server* s) {
+    char data[] = "SSD";
+    for(int i = 0; i < s->maxClients; i++) {
+        if(s->clients[i] != NULL) {
+            Socket_Send(s->sockfd, s->clients[i]->addr, data, sizeof(data));
+        }
+    }
+}
+
 void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
     int cId = Server_FindClient(s, sender);
     if(cId != -1) {
         s->clients[cId]->lastMessage = SDL_GetTicks();
     } else {
-        if(strncmp("CON", buffer, 3) == 0) {
+        if(strncmp("INF", buffer, 3) == 0) {
+            char sendData[16];
+            sprintf(sendData, "INF %d %d", s->connectedClients, s->maxClients);
+            Socket_Send(s->sockfd, sender, sendData, strlen(sendData));
+        } else if(strncmp("CON", buffer, 3) == 0) {
             int version;
             sscanf(buffer + 4, "%3d", &version);
             printf("Client trying to connect with version %d\n", version);
@@ -127,6 +148,7 @@ int Server_InitLoop(Server* s) {
         }
         SDL_Delay(s->delayMs - delay);
     }
+    Server_Shutdown(s);
     printf("Closing server...\n");
     Socket_Close(s->sockfd);
     return 0;
