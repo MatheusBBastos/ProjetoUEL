@@ -4,6 +4,7 @@
 #include "headers.h"
 #include "widgets.h"
 #include "map.h"
+#include "network.h"
 
 typedef struct Character {
     int id;
@@ -15,6 +16,7 @@ typedef struct Character {
     int animationIndex;
     int animationCount;
     bool animPart;
+    char spriteFile[32];
 } Character;
 
 Character* Character_Create(char* spritePath, int id);

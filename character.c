@@ -2,6 +2,7 @@
 
 Character* Character_Create(char* spritePath, int id) {
     Character* newCharacter = malloc(sizeof(Character));
+    strcpy(newCharacter->spriteFile, spritePath);
     newCharacter->sprite = WD_CreateTexture();
     WD_TextureLoadFromFile(newCharacter->sprite, spritePath);
     newCharacter->id = id;
@@ -59,7 +60,7 @@ void Character_Update(Character* c, Map* m, Character** characters, int charNumb
         if(Map_Passable(m, &collisionBox)) {
             bool noCollision = true;
             for(int i = 0; i < charNumber; i++) {
-                if(characters[i]->id == c->id)
+                if(characters[i] == NULL || characters[i]->id == c->id)
                     continue;
                 SDL_Rect otherCollisionBox;
                 Character_GetCollisionBox(characters[i], &otherCollisionBox, 0, 0);
@@ -73,6 +74,11 @@ void Character_Update(Character* c, Map* m, Character** characters, int charNumb
                 }
             }
             if(noCollision) {
+                char sendData[32];
+                sprintf(sendData, "POS %d %d", newX, newY);
+                printf("%s\n", sendData);
+                printf("%d\n", gInfo.sockFd);
+                Socket_Send(gInfo.sockFd, gInfo.serverAddress, sendData, strlen(sendData) + 1);
                 c->x = newX;
                 c->y = newY;
             }

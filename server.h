@@ -3,11 +3,13 @@
 
 #include "headers.h"
 #include "network.h"
+#include "character.h"
 
 typedef struct Client {
     Address* addr;
     int id;
     Uint32 lastMessage;
+    Character* character;
 } Client;
 
 Client* Client_New(Address* addr, int id);

@@ -38,8 +38,10 @@
 #define TILE_SIZE 32
 // Comprimento da imagem do Tileset
 #define TILESET_WIDTH 256
-
+// Tickrate do servidor (por segundo)
 #define SERVER_TICKRATE 60
+
+typedef struct Address Address;
 
 // Estrutura que carrega os elementos globais do programa
 typedef struct GameInfo {
@@ -69,6 +71,12 @@ typedef struct GameInfo {
     TTF_Font* mainMenu_botoes;
     // Modo debug
     bool debug;
+
+    bool connectedToServer;
+    bool serverHost;
+    Address* serverAddress;
+
+    int sockFd;
 } GameInfo;
 
 typedef struct SceneManager SceneManager;
