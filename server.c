@@ -103,7 +103,8 @@ void Server_SendCharacters(Server* s, Address* addr, int id) {
     for(int i = 0; i < s->maxClients; i++) {
         if(s->clients[i] != NULL && i != id) {
             char sendData[80];
-            sprintf(sendData, "CHR %d %d %d %s", s->clients[i]->character->x, s->clients[i]->character->y, i, s->clients[i]->character->spriteFile);
+            Character* c = s->clients[i]->character;
+            sprintf(sendData, "CHR %d %d %d %d %s", c->x, c->y, c->direction, i, c->spriteFile);
             Socket_Send(s->sockfd, addr, sendData, sizeof(sendData));
         }
     }
@@ -114,12 +115,13 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
     if(cId != -1) {
         s->clients[cId]->lastMessage = SDL_GetTicks();
         if(strncmp("POS", buffer, 3) == 0) {
-            int newX, newY;
-            sscanf(buffer + 4, "%d %d", &newX, &newY);
+            int newX, newY, dir;
+            sscanf(buffer + 4, "%d %d %d", &newX, &newY, &dir);
             s->clients[cId]->character->x = newX;
             s->clients[cId]->character->y = newY;
-            char sendData[25];
-            sprintf(sendData, "POS %d %d %d", cId, newX, newY);
+            s->clients[cId]->character->direction = dir;
+            char sendData[32];
+            sprintf(sendData, "POS %d %d %d %d", cId, newX, newY, dir);
             Server_SendToAll(s, sendData, cId);
         }
         
@@ -148,7 +150,7 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
                 s->clients[cId]->character = Character_Create("content/testcharacter.png", cId);
                 char sendData3[80];
                 // Enviar as informações do novo player para todos os jogadores
-                sprintf(sendData3, "CHR %d %d %d %s", 0, 0, cId, s->clients[cId]->character->spriteFile);
+                sprintf(sendData3, "CHR %d %d %d %d %s", 0, 0, 0, cId, s->clients[cId]->character->spriteFile);
                 Server_SendToAll(s, sendData3, -1);
                 char sendData4[16];
                 // Enviar o ID do novo player para ele

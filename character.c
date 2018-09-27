@@ -10,6 +10,11 @@ Character* Character_Create(char* spritePath, int id) {
     newCharacter->moving = false;
     newCharacter->x = 0;
     newCharacter->y = 0;
+    newCharacter->renderX = 0;
+    newCharacter->renderY = 0;
+    newCharacter->x4 = 0;
+    newCharacter->y4 = 0;
+    newCharacter->moveSpeed = 2;
     newCharacter->animationIndex = 0;
     newCharacter->animationCount = 0;
     newCharacter->animPart = false;
@@ -23,7 +28,92 @@ void Character_GetCollisionBox(Character* c, SDL_Rect* box, int offsetX, int off
     box->y = c->y + offsetY + (c->sprite->h / 4 - box->h);
 }
 
+void Character_TryToMove(Character* c, int dir, Map* m, Character** characters, int charNumber) {
+    c->direction = dir;
+    SDL_Rect collisionBox;
+    int newX = c->x, newY = c->y;
+    int distance = TILE_SIZE / MOVEMENT_PARTS;
+    if(c->direction == 0) {
+        Character_GetCollisionBox(c, &collisionBox, 0, distance);
+        newY += distance;
+    } else if(c->direction == 1) {
+        Character_GetCollisionBox(c, &collisionBox, -distance, 0);
+        newX -= distance;
+    } else if(c->direction == 2) {
+        Character_GetCollisionBox(c, &collisionBox, distance, 0);
+        newX += distance;
+    } else if(c->direction == 3) {
+        Character_GetCollisionBox(c, &collisionBox, 0, -distance);
+        newY -= distance;
+    }
+    if(Map_Passable(m, &collisionBox)) {
+        bool noCollision = true;
+        for(int i = 0; i < charNumber; i++) {
+            if(characters[i] == NULL || characters[i]->id == c->id)
+                continue;
+            SDL_Rect otherCollisionBox;
+            Character_GetCollisionBox(characters[i], &otherCollisionBox, 0, 0);
+            //printf("TESTANDO TESTANDO TESTANDO\n"); 
+            if(collisionBox.x < otherCollisionBox.x + otherCollisionBox.w &&
+                    collisionBox.x + collisionBox.w > otherCollisionBox.x &&
+                    collisionBox.y < otherCollisionBox.y + otherCollisionBox.h &&
+                    collisionBox.y + collisionBox.h > otherCollisionBox.y) {
+                noCollision = false;
+                break;
+            }
+        }
+        if(noCollision) {
+            char sendData[32];
+            sprintf(sendData, "POS %d %d %d", newX, newY, c->direction);
+            //printf("%s\n", sendData);
+            //printf("%d\n", gInfo.sockFd);
+            Socket_Send(gInfo.sockFd, gInfo.serverAddress, sendData, strlen(sendData) + 1);
+            c->x = newX;
+            c->y = newY;
+        }
+    }
+}
+
 void Character_Update(Character* c, Map* m, Character** characters, int charNumber) {
+    if(c->x != c->renderX || c->y != c->renderY) {
+        c->moving = true;
+        int x4 = c->x * 4;
+        int y4 = c->y * 4;
+        int distance = (1 << c->moveSpeed);
+        if(c->renderX < c->x) {
+            if(c->x4 + distance > x4) {
+                c->x4 = x4;
+            } else {
+                c->x4 += distance;
+            }
+        } else {
+            if(c->x4 - distance < x4) {
+                c->x4 = x4;
+            } else {
+                c->x4 -= distance;
+            }
+        }
+        if(c->renderY < c->y) {
+            if(c->y4 + distance > y4) {
+                c->y4 = y4;
+            } else {
+                c->y4 += distance;
+            }
+        } else {
+            if(c->y4 - distance < y4) {
+                c->y4 = y4;
+            } else {
+                c->y4 -= distance;
+            }
+        }
+        c->renderX = c->x4 / 4;
+        c->renderY = c->y4 / 4;
+    } else {
+        c->moving = false;
+        c->animationIndex = 1;
+        c->animationCount = 7;
+        c->animPart = !c->animPart;
+    }
     if(c->moving) {
         c->animationCount++;
         if(c->animationCount == 8) {
@@ -42,56 +132,12 @@ void Character_Update(Character* c, Map* m, Character** characters, int charNumb
                 }
             }
         }
-        SDL_Rect collisionBox;
-        int newX = c->x, newY = c->y;
-        if(c->direction == 0) {
-            Character_GetCollisionBox(c, &collisionBox, 0, 1);
-            newY += 1;
-        } else if(c->direction == 1) {
-            Character_GetCollisionBox(c, &collisionBox, -1, 0);
-            newX -= 1;
-        } else if(c->direction == 2) {
-            Character_GetCollisionBox(c, &collisionBox, 1, 0);
-            newX += 1;
-        } else if(c->direction == 3) {
-            Character_GetCollisionBox(c, &collisionBox, 0, -1);
-            newY -= 1;
-        }
-        if(Map_Passable(m, &collisionBox)) {
-            bool noCollision = true;
-            for(int i = 0; i < charNumber; i++) {
-                if(characters[i] == NULL || characters[i]->id == c->id)
-                    continue;
-                SDL_Rect otherCollisionBox;
-                Character_GetCollisionBox(characters[i], &otherCollisionBox, 0, 0);
-                //printf("TESTANDO TESTANDO TESTANDO\n"); 
-                if(collisionBox.x < otherCollisionBox.x + otherCollisionBox.w &&
-                      collisionBox.x + collisionBox.w > otherCollisionBox.x &&
-                      collisionBox.y < otherCollisionBox.y + otherCollisionBox.h &&
-                      collisionBox.y + collisionBox.h > otherCollisionBox.y) {
-                    noCollision = false;
-                    break;
-                }
-            }
-            if(noCollision) {
-                char sendData[32];
-                sprintf(sendData, "POS %d %d", newX, newY);
-                printf("%s\n", sendData);
-                printf("%d\n", gInfo.sockFd);
-                Socket_Send(gInfo.sockFd, gInfo.serverAddress, sendData, strlen(sendData) + 1);
-                c->x = newX;
-                c->y = newY;
-            }
-        }
-    } else {
-        c->animationCount = 0;
-        c->animationIndex = 1;
     }
 }
 
 void Character_Render(Character* c, int screenX, int screenY) {
-    int realX = c->x - screenX;
-    int realY = c->y - screenY;
+    int realX = round(c->renderX) - screenX;
+    int realY = round(c->renderY) - screenY;
     if(realX + c->sprite->w >= 0 && realY + c->sprite->h >= 0 && realX < gInfo.screenWidth && realY < gInfo.screenHeight) {
         SDL_Rect clip = {c->sprite->w / 3 * c->animationIndex, c->sprite->h / 4 * c->direction, c->sprite->w / 3, c->sprite->h / 4};
         WD_TextureRenderEx(c->sprite, realX, realY, &clip, 0.0, NULL, SDL_FLIP_NONE);

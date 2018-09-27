@@ -29,10 +29,24 @@ Scene_Map* SceneMap_new() {
     newScene->player = NULL;
     newScene->charNumber = 0;
     newScene->characters = NULL;
+    newScene->renderCharacters = NULL;
     //newScene->player = newScene->characters[0];
     newScene->waitingConnection = false;
     newScene->testServer = NULL;
     return newScene;
+}
+
+int compareCharacters(const void * a, const void * b) {
+    Character** chars = sMng.sMap->characters;
+    int i = *(int*)a;
+    int j = *(int*)b;
+    if(i == -1 || chars[i] == NULL) {
+        return -1;
+    }
+    if(j == -1 || chars[j] == NULL) {
+        return 1;
+    }
+    return ( chars[i]->renderY - chars[j]->renderY );
 }
 
 void SceneMap_update(Scene_Map* s) {
@@ -66,29 +80,37 @@ void SceneMap_update(Scene_Map* s) {
                                 Character_Destroy(s->characters[i]);
                         }
                         free(s->characters);
+                        free(s->renderCharacters);
                     }
                     sscanf(data + 4, "%d", &s->charNumber);
                     s->characters = malloc(s->charNumber * sizeof(Character*));
+                    s->renderCharacters = malloc(s->charNumber * sizeof(int));
                     for(int i = 0; i < s->charNumber; i++) {
                         s->characters[i] = NULL;
                     }
                 } else if(strncmp("CHR", data, 3) == 0) {
                     int id;
-                    int x, y;
+                    int x, y, dir;
                     char file[64];
-                    sscanf(data + 4, "%d %d %d %s", &x, &y, &id, file);
+                    sscanf(data + 4, "%d %d %d %d %s", &x, &y, &dir, &id, file);
                     if(s->characters[id] != NULL) {
                         Character_Destroy(s->characters[id]);
                     }
                     s->characters[id] = Character_Create(file, id);
                     s->characters[id]->x = x;
+                    s->characters[id]->renderX = x;
+                    s->characters[id]->x4 = x * 4;
                     s->characters[id]->y = y;
+                    s->characters[id]->renderY = y;
+                    s->characters[id]->y4 = y * 4;
+                    s->characters[id]->direction = dir;
                 } else if(strncmp("POS", data, 3) == 0) {
-                    int id, x, y;
-                    sscanf(data + 4, "%d %d %d", &id, &x, &y);
+                    int id, x, y, dir;
+                    sscanf(data + 4, "%d %d %d %d", &id, &x, &y, &dir);
                     if(s->characters != NULL && s->characters[id] != NULL) {
                         s->characters[id]->x = x;
                         s->characters[id]->y = y;
+                        s->characters[id]->direction = dir;
                     }
                 } else if(strncmp("PLY", data, 3) == 0) {
                     int id;
@@ -108,8 +130,8 @@ void SceneMap_update(Scene_Map* s) {
         }
     }
     if(s->player != NULL) {
-        s->screenX = (s->player->x + s->player->sprite->w / 6) - (gInfo.screenWidth) / 2;
-        s->screenY = (s->player->y + s->player->sprite->h / 8) - (gInfo.screenHeight) / 2;
+        s->screenX = ((int) s->player->renderX + s->player->sprite->w / 6) - (gInfo.screenWidth) / 2;
+        s->screenY = ((int) s->player->renderY + s->player->sprite->h / 8) - (gInfo.screenHeight) / 2;
     }
     if(s->screenX > s->map->width * TILE_SIZE - gInfo.screenWidth) {
         s->screenX = s->map->width * TILE_SIZE - gInfo.screenWidth;
@@ -139,36 +161,27 @@ void SceneMap_update(Scene_Map* s) {
     //Map_Render(s->map, s->tileMap, s->screenX, s->screenY);
 
     // MUDAR, TÁ MUITO RUIM (realmente)
-    /*
-    const Uint8 *state = SDL_GetKeyboardState(NULL);
-    if (state[SDL_SCANCODE_UP]) {
-        s->player->direction = 3;
-        if(!s->player->moving) {
-            s->player->moving = true;
-            s->player->animationIndex = 0;
+    if(s->player != NULL) {
+        const Uint8 *state = SDL_GetKeyboardState(NULL);
+        if (state[SDL_SCANCODE_UP]) {
+            if(s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
+                Character_TryToMove(s->player, 3, s->map, s->characters, s->charNumber);
+            }
+        } else if(state[SDL_SCANCODE_DOWN]) {
+            if(s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
+                Character_TryToMove(s->player, 0, s->map, s->characters, s->charNumber);
+            }
+        } else if(state[SDL_SCANCODE_LEFT]) {
+            if(s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
+                Character_TryToMove(s->player, 1, s->map, s->characters, s->charNumber);
+            }
+        } else if(state[SDL_SCANCODE_RIGHT]) {
+            if(s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
+                Character_TryToMove(s->player, 2, s->map, s->characters, s->charNumber);
+            }
         }
-    } else if(state[SDL_SCANCODE_DOWN]) {
-        s->player->direction = 0;
-        if(!s->player->moving) {
-            s->player->moving = true;
-            s->player->animationIndex = 0;
-        }
-    } else if(state[SDL_SCANCODE_LEFT]) {
-        s->player->direction = 1;
-        if(!s->player->moving) {
-            s->player->moving = true;
-            s->player->animationIndex = 0;
-        }
-    } else if(state[SDL_SCANCODE_RIGHT]) {
-        s->player->direction = 2;
-        if(!s->player->moving) {
-            s->player->moving = true;
-            s->player->animationIndex = 0;
-        }
-    } else {
-        s->player->moving = false;
     }
-    */
+    
 
 
 
@@ -179,12 +192,16 @@ void SceneMap_update(Scene_Map* s) {
     for(int i = 0; i < s->charNumber; i++) {
         if(s->characters[i] != NULL) {
             Character_Update(s->characters[i], s->map, s->characters, s->charNumber);
+            s->renderCharacters[i] = i;
+        } else {
+            s->renderCharacters[i] = -1;
         }
     }
+    qsort(s->renderCharacters, s->charNumber, sizeof(int), compareCharacters);
     //Character_Render(s->player, s->screenX, s->screenY);
     for(int i = 0; i < s->charNumber; i++) {
-        if(s->characters[i] != NULL) {
-            Character_Render(s->characters[i], s->screenX, s->screenY);
+        if(s->renderCharacters[i] != -1 && s->characters[s->renderCharacters[i]] != NULL) {
+            Character_Render(s->characters[s->renderCharacters[i]], s->screenX, s->screenY);
         }
     }
 }
@@ -192,48 +209,40 @@ void SceneMap_update(Scene_Map* s) {
 void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
     if(e->type == SDL_KEYDOWN) {
         //Atualiza estado da tecla se o evento dela for mais recente
-        if(s->player != NULL) {
+        /*if(s->player != NULL) {
             if (e->key.timestamp > s->lastTimeStamp) {
                 switch (e->key.keysym.scancode) {
                 case SDL_SCANCODE_DOWN:
-                    s->player->direction = 0;
                     s->keyDown = true;
                     if (!s->player->moving) {
-                        s->player->moving = true;
-                        s->player->animationIndex = 0;
+                        Character_TryToMove(s->player, 0, s->map, s->characters, s->charNumber);
                     }
                     break;
                 case SDL_SCANCODE_UP:
-                    s->player->direction = 3;
                     s->keyUp = true;
                     if (!s->player->moving) {
-                        s->player->moving = true;
-                        s->player->animationIndex = 0;
+                        Character_TryToMove(s->player, 3, s->map, s->characters, s->charNumber);
                     }
                     break;
                 case SDL_SCANCODE_LEFT:
-                    s->player->direction = 1;
                     s->keyLeft = true;
                     if (!s->player->moving) {
-                        s->player->moving = true;
-                        s->player->animationIndex = 0;
+                        Character_TryToMove(s->player, 1, s->map, s->characters, s->charNumber);
                     }
                     break;
                 case SDL_SCANCODE_RIGHT:
                     s->keyRight = true;
-                    s->player->direction = 2;
                     if (!s->player->moving) {
-                        s->player->moving = true;
-                        s->player->animationIndex = 0;
+                        Character_TryToMove(s->player, 2, s->map, s->characters, s->charNumber);
                     }
                     break;
                 default:
-                    s->player->moving = false;
+                    //s->player->moving = false;
                     break;
                 }
                 
             }
-        }
+        }*/
 
 
 
@@ -270,7 +279,7 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
             }
         }
     }
-    else if (e->type == SDL_KEYUP) {
+    /*else if (e->type == SDL_KEYUP) {
         if(s->player != NULL) {
             //Atualiza estado da tecla
             bool acotezeo = false;
@@ -293,34 +302,18 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
                 break;
             }
 
-            if (acotezeo) {
+            if (acotezeo && !s->player->moving) {
                 if (s->keyDown) {
-                    s->player->direction = 0;
-                    if (!s->player->moving) {
-                        s->player->moving = true;
-                        s->player->animationIndex = 0;
-                    }
+                    Character_TryToMove(s->player, 0, s->map, s->characters, s->charNumber);
                 }
                 else if (s->keyUp) {
-                    s->player->direction = 3;
-                    if (!s->player->moving) {
-                        s->player->moving = true;
-                        s->player->animationIndex = 0;
-                    }
+                    Character_TryToMove(s->player, 3, s->map, s->characters, s->charNumber);
                 }
                 else if (s->keyLeft) {
-                    s->player->direction = 1;
-                    if (!s->player->moving) {
-                        s->player->moving = true;
-                        s->player->animationIndex = 0;
-                    }
+                    Character_TryToMove(s->player, 1, s->map, s->characters, s->charNumber);
                 }
                 else if (s->keyRight) {
-                    s->player->direction = 2;
-                    if (!s->player->moving) {
-                        s->player->moving = true;
-                        s->player->animationIndex = 0;
-                    }
+                    Character_TryToMove(s->player, 2, s->map, s->characters, s->charNumber);
                 }
             
             }
@@ -328,9 +321,9 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
     }
     if(s->player != NULL) {
         if (!s->keyDown && !s->keyLeft && !s->keyRight && !s->keyUp) {
-            s->player->moving = false;
+            //s->player->moving = false;
         }
-    }
+    }*/
 
 
 }
@@ -343,6 +336,10 @@ void SceneMap_destroy(Scene_Map* s) {
     for(int i = 0; i < s->charNumber; i++) {
         if(s->characters[i] != NULL)
             Character_Destroy(s->characters[i]);
+    }
+    if(s->characters != NULL) {
+        free(s->characters);
+        free(s->renderCharacters);
     }
     free(s);
 }

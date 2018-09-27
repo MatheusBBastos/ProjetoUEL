@@ -13,6 +13,9 @@ typedef struct Character {
     short int direction;
     bool moving;
     int x, y;
+    int renderX, renderY;
+    int x4, y4;
+    int moveSpeed;
     int animationIndex;
     int animationCount;
     bool animPart;
@@ -22,6 +25,8 @@ typedef struct Character {
 Character* Character_Create(char* spritePath, int id);
 
 void Character_GetCollisionBox(Character* c, SDL_Rect* box, int offsetX, int offsetY);
+
+void Character_TryToMove(Character* c, int dir, Map* m, Character** characters, int charNumber);
 
 void Character_Update(Character* c, Map* m, Character** characters, int charNumber);
 

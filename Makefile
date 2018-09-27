@@ -1,7 +1,7 @@
 OBJS = *.c
 CC = gcc
 COMPILER_FLAGS = -w -std=c11
-LINKER_FLAGS = -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
+LINKER_FLAGS = -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lm
 OBJ_NAME = game
 
 all: $(OBJS)

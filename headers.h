@@ -40,6 +40,8 @@
 #define TILESET_WIDTH 256
 // Tickrate do servidor (por segundo)
 #define SERVER_TICKRATE 60
+// Quantidade de partes que o os tiles serão divididos para movimentação dos personagens
+#define MOVEMENT_PARTS 4
 
 typedef struct Address Address;
 

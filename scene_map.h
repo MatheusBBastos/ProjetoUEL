@@ -17,6 +17,7 @@ typedef struct Scene_Map {
     int screenX, screenY;
     Character* player;
     Character** characters;
+    int* renderCharacters;
     int charNumber;
     Server* testServer;
     SDL_Thread* serverThread;
