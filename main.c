@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
     if(!initialize()) {
         printf("Falha ao inicializar!\n");
     } else {
-        bool quit = false;
+        sMng.quit = false;
         // Fontes
         gInfo.mainFont = TTF_OpenFont("content/Fipps-Regular.ttf", 36 * gInfo.screenMulti);
         gInfo.telaLogin = TTF_OpenFont("content/Minecraft.ttf", 72 * gInfo.screenMulti);
@@ -85,10 +85,10 @@ int main(int argc, char* argv[]) {
         sMng.currentScene = SCENE_LOGIN;
         sMng.sLogin = SceneLogin_new();
         SDL_Event e;
-        while(!quit) {
+        while(!sMng.quit) {
             while(SDL_PollEvent(&e) != 0) {
                 if(e.type == SDL_QUIT) {
-                    quit = true;
+                    sMng.quit = true;
                 } else {
                     SceneManager_handleEvent(&e);
                 }
