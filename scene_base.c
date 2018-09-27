@@ -29,6 +29,7 @@ void SceneManager_changeScene(int newScene) {
             break;
         case SCENE_TUTORIAL:
             SceneTutorial_destroy(sMng.sTutorial);
+            break;
     }
     sMng.currentScene = newScene;
     switch(newScene) {
