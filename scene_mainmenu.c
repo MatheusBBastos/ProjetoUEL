@@ -95,12 +95,18 @@ void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e) {
     if(sMng.inTransition)
         return;
     if(e->type == SDL_KEYDOWN) {
-        if(e->key.keysym.sym == SDLK_RETURN) {
+        if(e->key.keysym.sym == SDLK_TAB) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOGIN);
         } else if((e->key.keysym.sym == SDLK_DOWN ) && s->index < 2) {
             s->index++;
         } else if(e->key.keysym.sym == SDLK_UP && s->index > 0) {
             s->index--;
+        }  else if (e->key.keysym.sym == SDLK_RETURN && s-> index == 0) {
+            SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOBBY);
+        }  else if (e->key.keysym.sym == SDLK_RETURN && s->index == 1) {
+            SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_TUTORIAL);
+        }  else if (e->key.keysym.sym == SDLK_RETURN && s->index == 2) {
+            sMng.quit = true;
         }
     }
     
