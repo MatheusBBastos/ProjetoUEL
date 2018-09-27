@@ -13,7 +13,7 @@ typedef struct Map {
 
 Map* Map_Create();
 
-void Map_Load(Map* map, char* path);
+void Map_Load(Map* map, char* path, bool loadTexture);
 
 int Map_Get(Map* m, int x, int y, int z);
 

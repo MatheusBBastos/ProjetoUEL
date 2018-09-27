@@ -57,16 +57,22 @@ int Server_FindEmptySlot(Server* s) {
     return -1;
 }
 
+void Server_PlayerDisconnect(Server* s, int clientId) {
+    if(s->clients[clientId] != NULL) {
+        char data[16];
+        sprintf(data, "PDC %d", clientId);
+        Server_SendToAll(s, data, clientId);
+        Client_Destroy(s->clients[clientId]);
+        s->clients[clientId] = NULL;
+        s->connectedClients--;
+    }
+}
+
 void Server_KickPlayer(Server* s, int clientId) {
     if(s->clients[clientId] != NULL) {
         char data[] = "KCK";
         Socket_Send(s->sockfd, s->clients[clientId]->addr, data, sizeof(data));
-        char data2[16];
-        sprintf(data2, "PDC %d", clientId);
-        Server_SendToAll(s, data2, clientId);
-        Client_Destroy(s->clients[clientId]);
-        s->clients[clientId] = NULL;
-        s->connectedClients--;
+        Server_PlayerDisconnect(s, clientId);
     }
 }
 
@@ -123,6 +129,8 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
             char sendData[32];
             sprintf(sendData, "POS %d %d %d %d", cId, newX, newY, dir);
             Server_SendToAll(s, sendData, cId);
+        } else if(strncmp("DCS", buffer, 3) == 0) {
+            Server_PlayerDisconnect(s, cId);
         }
         
     } else {
@@ -147,7 +155,7 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
                 Socket_Send(s->sockfd, sender, sendData2, sizeof(sendData2));
                 // Enviar as informações dos players conectados atualmente
                 Server_SendCharacters(s, sender, cId);
-                s->clients[cId]->character = Character_Create("content/testcharacter.png", cId);
+                s->clients[cId]->character = Character_Create("content/testcharacter.png", cId, true);
                 char sendData3[80];
                 // Enviar as informações do novo player para todos os jogadores
                 sprintf(sendData3, "CHR %d %d %d %d %s", 0, 0, 0, cId, s->clients[cId]->character->spriteFile);

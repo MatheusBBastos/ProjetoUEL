@@ -1,10 +1,14 @@
 #include "character.h"
 
-Character* Character_Create(char* spritePath, int id) {
+Character* Character_Create(char* spritePath, int id, bool noTexture) {
     Character* newCharacter = malloc(sizeof(Character));
     strcpy(newCharacter->spriteFile, spritePath);
-    newCharacter->sprite = WD_CreateTexture();
-    WD_TextureLoadFromFile(newCharacter->sprite, spritePath);
+    if(!noTexture) {
+        newCharacter->sprite = WD_CreateTexture();
+        WD_TextureLoadFromFile(newCharacter->sprite, spritePath);
+    } else {
+        newCharacter->sprite = NULL;
+    }
     newCharacter->id = id;
     newCharacter->direction = 0;
     newCharacter->moving = false;
@@ -151,6 +155,7 @@ void Character_Render(Character* c, int screenX, int screenY) {
 }
 
 void Character_Destroy(Character* c) {
-    WD_TextureDestroy(c->sprite);
+    if(c->sprite != NULL)
+        WD_TextureDestroy(c->sprite);
     free(c);
 }

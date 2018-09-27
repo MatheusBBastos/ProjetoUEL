@@ -11,7 +11,7 @@ Map* Map_Create() {
     return newMap;
 }
 
-void Map_Load(Map* map, char* path) {
+void Map_Load(Map* map, char* path, bool loadTexture) {
     if(map->loaded) {
         free(map->data);
         for(int i = 0; i < MAP_LAYERS; i++) {
@@ -21,8 +21,10 @@ void Map_Load(Map* map, char* path) {
     }
     FILE* mapFile = fopen(path, "r");
     fscanf(mapFile, "%d %d", &map->width, &map->height);
-    for(int i = 0; i < MAP_LAYERS; i++) {
-        map->layers[i] = SDL_CreateTexture(gInfo.renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, map->width * TILE_SIZE, map->height * TILE_SIZE);
+    if(loadTexture) {
+        for(int i = 0; i < MAP_LAYERS; i++) {
+            map->layers[i] = SDL_CreateTexture(gInfo.renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, map->width * TILE_SIZE, map->height * TILE_SIZE);
+        }
     }
     map->data = malloc(MAP_LAYERS * map->width * map->height * sizeof(int));
     int x, y, z;

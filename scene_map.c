@@ -11,26 +11,14 @@ Scene_Map* SceneMap_new() {
     newScene->tileMap = WD_CreateTexture();
     WD_TextureLoadFromFile(newScene->tileMap, "content/001-Grassland01.png");
     newScene->map = Map_Create();
-    Map_Load(newScene->map, "map.txt");
+    Map_Load(newScene->map, "map.txt", true);
     Map_RenderFull(newScene->map, newScene->tileMap);
     newScene->screenX = 0;
     newScene->screenY = 0;
-    /*newScene->charNumber = 4;
-    newScene->characters = malloc(newScene->charNumber * sizeof(Character*));
-    for(int i = 0; i < newScene->charNumber; i++) {
-        if(i == 0) {
-            newScene->characters[i] = Character_Create("content/dragon.png", i);
-        } else {
-            newScene->characters[i] = Character_Create("content/testcharacter.png", i);
-            newScene->characters[i]->x += 10 + i * 30;
-            newScene->characters[i]->moving = true;
-        }
-    }*/
     newScene->player = NULL;
     newScene->charNumber = 0;
     newScene->characters = NULL;
     newScene->renderCharacters = NULL;
-    //newScene->player = newScene->characters[0];
     newScene->waitingConnection = false;
     newScene->testServer = NULL;
     return newScene;
@@ -96,7 +84,7 @@ void SceneMap_update(Scene_Map* s) {
                     if(s->characters[id] != NULL) {
                         Character_Destroy(s->characters[id]);
                     }
-                    s->characters[id] = Character_Create(file, id);
+                    s->characters[id] = Character_Create(file, id, false);
                     s->characters[id]->x = x;
                     s->characters[id]->renderX = x;
                     s->characters[id]->x4 = x * 4;
@@ -125,6 +113,21 @@ void SceneMap_update(Scene_Map* s) {
                         Character_Destroy(s->characters[id]);
                         s->characters[id] = NULL;
                     }
+                } else if(strncmp("SSD", data, 3) == 0) {
+                    for(int i = 0; i < s->charNumber; i++) {
+                        if(s->characters[i] != NULL)
+                            Character_Destroy(s->characters[i]);
+                    }
+                    if(s->characters != NULL) {
+                        free(s->characters);
+                        free(s->renderCharacters);
+                        s->characters = NULL;
+                        s->renderCharacters = NULL;
+                    }
+                    s->charNumber = 0;
+                    s->player = NULL;
+                    gInfo.connectedToServer = false;
+                    Socket_Close(gInfo.sockFd);
                 }
             }
         }
@@ -330,6 +333,11 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
 
 
 void SceneMap_destroy(Scene_Map* s) {
+    if(gInfo.connectedToServer) {
+        char sendData[] = "DCS";
+        Socket_Send(gInfo.sockFd, gInfo.serverAddress, sendData, 4);
+        gInfo.connectedToServer = false;
+    }
     Socket_Close(gInfo.sockFd);
     WD_TextureDestroy(s->tileMap);
     Map_Destroy(s->map);

@@ -39,7 +39,7 @@
 // Comprimento da imagem do Tileset
 #define TILESET_WIDTH 256
 // Tickrate do servidor (por segundo)
-#define SERVER_TICKRATE 60
+#define SERVER_TICKRATE 120
 // Quantidade de partes que o os tiles serão divididos para movimentação dos personagens
 #define MOVEMENT_PARTS 4
 

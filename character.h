@@ -22,7 +22,7 @@ typedef struct Character {
     char spriteFile[32];
 } Character;
 
-Character* Character_Create(char* spritePath, int id);
+Character* Character_Create(char* spritePath, int id, bool noTexture);
 
 void Character_GetCollisionBox(Character* c, SDL_Rect* box, int offsetX, int offsetY);
 
