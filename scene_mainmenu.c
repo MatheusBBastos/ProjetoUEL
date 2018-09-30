@@ -70,7 +70,7 @@ static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
 }
 
 int getRank(char res[5][20]) {
-    SOCKET s;
+    int s;
     struct sockaddr_in server;
     char *message, server_reply[2000];
     int recv_size;
@@ -78,7 +78,7 @@ int getRank(char res[5][20]) {
 
 
     //Create a socket
-    if ((s = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
+    if ((s = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
         printf("Could not create socket : %d", WSAGetLastError());
         return 1;
@@ -106,7 +106,7 @@ int getRank(char res[5][20]) {
     }
 
     //Receive a reply from the server
-    if ((recv_size = recv(s, server_reply, 2000, 0)) == SOCKET_ERROR)
+    if ((recv_size = recv(s, server_reply, 2000, 0)) == -1)
     {
         puts("recv failed");
         return 1;
