@@ -80,7 +80,7 @@ int getRank(char res[5][20]) {
     //Create a socket
     if ((s = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
-        printf("Could not create socket : %d", WSAGetLastError());
+        printf("Could not create socket : %d");
         return 1;
     }
 
