@@ -27,6 +27,93 @@ void DestroyAddress(Address* addr) {
     free(addr);
 }
 
+int TCPSocket_Open() {
+    int socketFd = socket(AF_INET, SOCK_STREAM, 0);
+    if(socketFd <= 0) {
+        printf("Falha ao criar socket!\n");
+        return 0;
+    }
+    #if PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+        int a = 1;
+        if(fcntl(socketFd, F_SETFL, O_NONBLOCK, a) == -1) {
+            printf("Falha na criação da socket\n");
+            return 0;
+        }
+    #elif PLATFORM == PLATFORM_WINDOWS
+        DWORD a = 1;
+        if(ioctlsocket(socketFd, FIONBIO, &a) != 0) {
+            printf("Falha na criação da socket\n");
+            return 0;
+        }
+    #endif
+    return socketFd;
+}
+
+void TCPSocket_Connect(int socketFd, char* addr, unsigned short port) {
+    struct sockaddr_in server;
+    server.sin_addr.s_addr = inet_addr(addr);
+    server.sin_family = AF_INET;
+    server.sin_port = htons(port);
+    connect(socketFd, (struct sockaddr*) &server, sizeof(server));
+}
+
+int TCPSocket_CheckConnectionStatus(int socketFd) {
+    fd_set writeSet;
+    struct timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+    FD_ZERO(&writeSet);
+    FD_SET(socketFd, &writeSet);
+    int r = select(socketFd + 1, NULL, &writeSet, NULL, &timeout);
+    if(r < 0) {
+        printf("Socket select error\n");
+        return -1;
+    } else if(r == 0) {
+        return 0;
+    } else {
+        char junk;
+        if(send(socketFd, &junk, 0, 0L) == 0) {
+            // Conexão bem-sucedida
+            return 1;
+        } else {
+            // Conexão falhou
+            return -1;
+        }
+    }
+}
+
+int TCPSocket_Send(int socketFd, void* data, int size) {
+    int sent = send(socketFd, data, size, 0);
+    if(sent != size) {
+        return -1;
+    } else {
+        return 0;
+    }
+}
+
+int TCPSocket_Receive(int socketFd, char* data, int size) {
+    fd_set readSet;
+    struct timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+    FD_ZERO(&readSet);
+    FD_SET(socketFd, &readSet);
+    int r = select(socketFd + 1, &readSet, NULL, NULL, &timeout);
+    if(r < 0) {
+        printf("Socket select error\n");
+        return -1;
+    } else if(r == 0) {
+        return 0;
+    } else {
+        int bytes = recv(socketFd, data, size, 0);
+        if(bytes == 0) {
+            return -1;
+        } else {
+            return bytes;
+        }
+    }
+}
+
 int Socket_Open(unsigned short port) {
     int socketFd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if(socketFd <= 0) {

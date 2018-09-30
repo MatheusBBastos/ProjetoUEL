@@ -10,6 +10,7 @@
     #include <sys/socket.h>
     #include <netinet/in.h>
     #include <fcntl.h>
+    #include <sys/select.h>
 #endif
 
 bool Network_InitSockets();
@@ -25,6 +26,12 @@ typedef struct Address {
 Address* NewAddress(unsigned char a, unsigned char b, unsigned char c, unsigned char d, unsigned short port);
 Address* NewAddressJoined(unsigned int address, unsigned short port);
 void DestroyAddress(Address* addr);
+
+int TCPSocket_Open();
+void TCPSocket_Connect(int socketFd, char* addr, unsigned short port);
+int TCPSocket_CheckConnectionStatus(int socketFd);
+int TCPSocket_Send(int socketFd, void* data, int size);
+int TCPSocket_Receive(int socketFd, char* data, int size);
 
 int Socket_Open(unsigned short port);
 void Socket_Close(int socketFd);

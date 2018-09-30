@@ -24,12 +24,16 @@ Scene_MainMenu* SceneMainMenu_new() {
     SDL_Color colorSelected = {255, 66, 0};
     SDL_Color colorNotSelected = {255, 255, 255};
 
+    newScene->connected = false;
+    newScene->dataReceived = false;
+    newScene->socketFd = TCPSocket_Open();
+    TCPSocket_Connect(newScene->socketFd, "35.198.20.77", 3122);
+
     char anw[5][20];
-    if (getRank(anw)) {
-        for (int i = 0; i < 5; i++) {
-            strcpy(anw[i], "NULL");
-        }
+    for (int i = 0; i < 5; i++) {
+        strcpy(anw[i], "Carregando...");
     }
+
     for (int i = 0; i < 5; i++) {
         newScene->rank[i] = WD_CreateTexture();
         WD_TextureLoadFromText(newScene->rank[i], anw[i], gInfo.rank, colorNotSelected);
@@ -69,63 +73,13 @@ static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
     return -1;
 }
 
-int getRank(char res[5][20]) {
-    int s;
-    struct sockaddr_in server;
-    char *message, server_reply[2000];
-    int recv_size;
-
-
-
-    //Create a socket
-    if ((s = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-    {
-        printf("Could not create socket : %d");
-        return 1;
-    }
-
-
-    server.sin_addr.s_addr = inet_addr("35.198.20.77");
-    server.sin_family = AF_INET;
-    server.sin_port = htons(3122);
-
-    //Connect to remote server
-    if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
-    {
-        puts("connect error");
-        return 1;
-    }
-
-
-    //Send some data
-    message = "{\"cmd\":\"getRank\"}\n";
-    if (send(s, message, strlen(message), 0) < 0)
-    {
-        puts("Send failed");
-        return 1;
-    }
-
-    //Receive a reply from the server
-    if ((recv_size = recv(s, server_reply, 2000, 0)) == -1)
-    {
-        puts("recv failed");
-        return 1;
-    }
-
-
-    //Add a NULL terminating character to make it a proper string before printing
-    server_reply[recv_size] = '\0';
-    puts(server_reply);
-
-
-    ///////////////START THE JSON PARSING
-
+int getRank(char res[5][20], char* data) {
     int r;
     jsmn_parser p;
     jsmntok_t t[128];
 
     jsmn_init(&p);
-    r = jsmn_parse(&p, server_reply, strlen(server_reply), t, sizeof(t) / sizeof(t[0]));
+    r = jsmn_parse(&p, data, strlen(data), t, sizeof(t) / sizeof(t[0]));
     if (r < 0) {
         printf("Failed to parse JSON: %d\n", r);
         return 1;
@@ -136,21 +90,50 @@ int getRank(char res[5][20]) {
 
     for (int i1 = 3, i2 = 5, i3 = 0; i3 < 5; i1 += 6, i2 += 6, i3++) {
         sprintf(nomes[i3], "%.*s", t[i2 + 1].end - t[i2 + 1].start,
-            server_reply + t[i2 + 1].start);
+            data + t[i2 + 1].start);
         sprintf(scores[i3], "%.*s", t[i1 + 1].end - t[i1 + 1].start,
-            server_reply + t[i1 + 1].start);
+            data + t[i1 + 1].start);
     }
 
     for (int i = 0; i < 5; i++) {
         sprintf(res[i],"#%d %s   %s", i+1, nomes[i], scores[i]);
     }
     return 0;
-    
 }
 
 
 
 void SceneMainMenu_update(Scene_MainMenu* s) {
+    if(!s->dataReceived) {
+        if(!s->connected) {
+            int c = TCPSocket_CheckConnectionStatus(s->socketFd);
+            if(c == 1) {
+                s->connected = true;
+                char message[] = "{\"cmd\":\"getRank\"}\n";
+                TCPSocket_Send(s->socketFd, message, strlen(message));
+            } else if(c == -1) {
+                Socket_Close(s->socketFd);
+            }
+        } else {
+            char data[2000];
+            int c = TCPSocket_Receive(s->socketFd, data, 2000);
+            if(c > 0) {
+                char anw[5][20];
+                data[c] = '\0';
+                puts(data);
+                if(getRank(anw, data) == 0) {
+                    SDL_Color colorNotSelected = {255, 255, 255};
+                    for (int i = 0; i < 5; i++) {
+                        WD_TextureLoadFromText(s->rank[i], anw[i], gInfo.rank, colorNotSelected);
+                    }
+                }
+                s->dataReceived = true;
+                Socket_Close(s->socketFd);
+            } else if(c == -1) {
+                Socket_Close(s->socketFd);
+            }
+        }
+    }
     //SDL_SetRenderDrawColor(gInfo.renderer, 0x12, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(gInfo.renderer);
     WD_TextureRenderDest(s->backgroundTexture, &s->renderQuad);

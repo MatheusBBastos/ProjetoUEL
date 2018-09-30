@@ -11,7 +11,8 @@ typedef struct Scene_MainMenu {
     WTexture* backgroundTexture;
     SDL_Rect renderQuad;
     short int index;
-
+    int socketFd;
+    bool connected, dataReceived;
     WTexture* seta;//
     WTexture* bemvindo  ;
     WTexture* nome;
@@ -32,6 +33,6 @@ void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e);
 
 void SceneMainMenu_destroy(Scene_MainMenu* s);
 
-int getRank(char s[5][20]);
+int getRank(char s[5][20], char* data);
 
 #endif
