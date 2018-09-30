@@ -22,7 +22,7 @@ typedef struct Scene_MainMenu {
     WTexture* jogarOff;
     WTexture* tutorialOff;
     WTexture* logoutOff;
-    WTexture* rank[5];
+    WTexture* rank[6];
 } Scene_MainMenu;
 
 Scene_MainMenu * SceneMainMenu_new();
@@ -33,6 +33,6 @@ void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e);
 
 void SceneMainMenu_destroy(Scene_MainMenu* s);
 
-int getRank(char s[5][20], char* data);
+int getRank(char s[6][20], char* data);
 
 #endif
