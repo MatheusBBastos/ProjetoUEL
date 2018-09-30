@@ -1,4 +1,8 @@
 #include "scene_mainmenu.h"
+#include "network.h"
+#include "jsmn.h"
+#define BUFFER_SIZE 5000
+#define MAX_TOKEN_COUNT 128
 
 Scene_MainMenu* SceneMainMenu_new() {
     Scene_MainMenu* newScene = malloc(sizeof(Scene_MainMenu));
@@ -14,10 +18,23 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->seta =  WD_CreateTexture();//
     newScene->index = 0;
 
+
     SDL_Color colorBemvindo = {141,38,38}; 
     SDL_Color colorNome = {255, 255, 255};
     SDL_Color colorSelected = {255, 66, 0};
     SDL_Color colorNotSelected = {255, 255, 255};
+
+    char anw[5][20];
+    if (getRank(anw)) {
+        for (int i = 0; i < 5; i++) {
+            strcpy(anw[i], "NULL");
+        }
+    }
+    for (int i = 0; i < 5; i++) {
+        newScene->rank[i] = WD_CreateTexture();
+        WD_TextureLoadFromText(newScene->rank[i], anw[i], gInfo.rank, colorNotSelected);
+    }
+
 
     WD_TextureLoadFromText(newScene->bemvindo,"Bem Vindo", gInfo.mainMenu, colorBemvindo);
     WD_TextureLoadFromText(newScene->nome, "Basto Forte", gInfo.mainMenu, colorNome);
@@ -44,6 +61,99 @@ Scene_MainMenu* SceneMainMenu_new() {
     return newScene;
 }
 
+static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
+    if (tok->type == JSMN_STRING && (int)strlen(s) == tok->end - tok->start &&
+        strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
+        return 0;
+    }
+    return -1;
+}
+
+int getRank(char res[5][20]) {
+    WSADATA wsa;
+    SOCKET s;
+    struct sockaddr_in server;
+    char *message, server_reply[2000];
+    int recv_size;
+
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+    {
+        printf("Failed. Error Code : %d", WSAGetLastError());
+        return 1;
+    }
+
+
+    //Create a socket
+    if ((s = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
+    {
+        printf("Could not create socket : %d", WSAGetLastError());
+        return 1;
+    }
+
+
+    server.sin_addr.s_addr = inet_addr("35.198.20.77");
+    server.sin_family = AF_INET;
+    server.sin_port = htons(3122);
+
+    //Connect to remote server
+    if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
+    {
+        puts("connect error");
+        return 1;
+    }
+
+
+    //Send some data
+    message = "{\"cmd\":\"getRank\"}\n";
+    if (send(s, message, strlen(message), 0) < 0)
+    {
+        puts("Send failed");
+        return 1;
+    }
+
+    //Receive a reply from the server
+    if ((recv_size = recv(s, server_reply, 2000, 0)) == SOCKET_ERROR)
+    {
+        puts("recv failed");
+        return 1;
+    }
+
+
+    //Add a NULL terminating character to make it a proper string before printing
+    server_reply[recv_size] = '\0';
+    puts(server_reply);
+
+
+    ///////////////START THE JSON PARSING
+
+    int r;
+    jsmn_parser p;
+    jsmntok_t t[128];
+
+    jsmn_init(&p);
+    r = jsmn_parse(&p, server_reply, strlen(server_reply), t, sizeof(t) / sizeof(t[0]));
+    if (r < 0) {
+        printf("Failed to parse JSON: %d\n", r);
+        return 1;
+    }
+
+    char nomes[5][50];
+    char scores[5][50];
+
+    for (int i1 = 3, i2 = 5, i3 = 0; i3 < 5; i1 += 6, i2 += 6, i3++) {
+        sprintf(nomes[i3], "%.*s", t[i2 + 1].end - t[i2 + 1].start,
+            server_reply + t[i2 + 1].start);
+        sprintf(scores[i3], "%.*s", t[i1 + 1].end - t[i1 + 1].start,
+            server_reply + t[i1 + 1].start);
+    }
+
+    for (int i = 0; i < 5; i++) {
+        sprintf(res[i],"#%d %s   %s", i+1, nomes[i], scores[i]);
+    }
+    return 0;
+    
+}
+
 
 
 void SceneMainMenu_update(Scene_MainMenu* s) {
@@ -55,6 +165,10 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
     //WD_TextureRender(s->jogar, 156 * gInfo.screenMulti, 720 * gInfo.screenMulti);
     //WD_TextureRender(s->tutorial, 156 * gInfo.screenMulti, 804 * gInfo.screenMulti);
     //WD_TextureRender(s->logout, 156 * gInfo.screenMulti, 892 * gInfo.screenMulti);
+
+    for (int i = 0; i < 5; i++) {
+        WD_TextureRender(s->rank[i], 900 * gInfo.screenMulti, (590 + ((i)*70))* gInfo.screenMulti);
+    }
 
     if(s->index == 0) {
         WD_TextureRender(s->seta, 76 * gInfo.screenMulti, 750 * gInfo.screenMulti);
@@ -107,7 +221,7 @@ void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_TUTORIAL);
         }  else if (e->key.keysym.sym == SDLK_RETURN && s->index == 2) {
             sMng.quit = true;
-        }
+        } 
     }
     
 

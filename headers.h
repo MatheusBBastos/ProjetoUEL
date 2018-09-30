@@ -74,6 +74,8 @@ typedef struct GameInfo {
     // Modo debug
     bool debug;
 
+    TTF_Font* rank;
+
     bool connectedToServer;
     bool serverHost;
     Address* serverAddress;
