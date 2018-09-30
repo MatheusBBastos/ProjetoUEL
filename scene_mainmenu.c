@@ -70,17 +70,11 @@ static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
 }
 
 int getRank(char res[5][20]) {
-    WSADATA wsa;
     SOCKET s;
     struct sockaddr_in server;
     char *message, server_reply[2000];
     int recv_size;
 
-    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-    {
-        printf("Failed. Error Code : %d", WSAGetLastError());
-        return 1;
-    }
 
 
     //Create a socket
