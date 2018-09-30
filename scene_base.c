@@ -82,7 +82,7 @@ void SceneManager_updateScene() {
             // Renderizar na cor preta
             SDL_SetRenderDrawColor(gInfo.renderer, 0x00, 0x00, 0x00, 0xFF);
             // Retângulo que varia de tamanho conforme o tempo
-            SDL_Rect fillRect = {0, 0, sMng.transitionFrame * gInfo.screenWidth / sMng.transitionDuration, gInfo.screenHeight};
+            SDL_Rect fillRect = {0, 0, (sMng.transitionFrame + 2) * gInfo.screenWidth / sMng.transitionDuration, gInfo.screenHeight};
             SDL_RenderFillRect(gInfo.renderer, &fillRect);
             SDL_SetRenderDrawColor(gInfo.renderer, 0xFF, 0xFF, 0xFF, 0xFF);
             sMng.transitionFrame++;
