@@ -71,7 +71,7 @@ void Character_TryToMove(Character* c, int dir, Map* m, Character** characters, 
             sprintf(sendData, "POS %d %d %d", newX, newY, c->direction);
             //printf("%s\n", sendData);
             //printf("%d\n", gInfo.sockFd);
-            Socket_Send(gInfo.sockFd, gInfo.serverAddress, sendData, strlen(sendData) + 1);
+            Socket_Send(Network.sockFd, Network.serverAddress, sendData, strlen(sendData) + 1);
             c->x = newX;
             c->y = newY;
         }
