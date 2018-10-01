@@ -13,6 +13,8 @@ typedef struct Scene_MainMenu {
     short int index;
     int socketFd;
     bool connected, dataReceived;
+    bool btnJogar;
+    bool mult;
     WTexture* seta;//
     WTexture* bemvindo  ;
     WTexture* nome;
@@ -23,6 +25,8 @@ typedef struct Scene_MainMenu {
     WTexture* tutorialOff;
     WTexture* logoutOff;
     WTexture* rank[6];
+    WTexture* multiplayer;
+    WTexture* singleplayer;
 } Scene_MainMenu;
 
 Scene_MainMenu * SceneMainMenu_new();

@@ -16,11 +16,15 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->tutorialOff = WD_CreateTexture();
     newScene->logoutOff = WD_CreateTexture();
     newScene->seta =  WD_CreateTexture();//
+    newScene->multiplayer = WD_CreateTexture();
+    newScene->singleplayer = WD_CreateTexture();
     newScene->index = 0;
+    newScene->btnJogar=false;
+    newScene->mult=true;
 
 
     SDL_Color colorBemvindo = {141,38,38}; 
-    SDL_Color colorNome = {255, 255, 255};
+    SDL_Color colorWhite = {255, 255, 255};
     SDL_Color colorSelected = {255, 66, 0};
     SDL_Color colorNotSelected = {255, 255, 255};
 
@@ -42,7 +46,7 @@ Scene_MainMenu* SceneMainMenu_new() {
 
 
     WD_TextureLoadFromText(newScene->bemvindo,"Bem Vindo", gInfo.mainMenu, colorBemvindo);
-    WD_TextureLoadFromText(newScene->nome, "Basto Forte", gInfo.mainMenu, colorNome);
+    WD_TextureLoadFromText(newScene->nome, "Basto Forte", gInfo.mainMenu, colorWhite);
 
     WD_TextureLoadFromText(newScene->jogar, "Jogar", gInfo.mainMenu_botoes, colorSelected);
     WD_TextureLoadFromText(newScene->tutorial, "Tutorial", gInfo.mainMenu_botoes, colorSelected);
@@ -50,6 +54,9 @@ Scene_MainMenu* SceneMainMenu_new() {
     WD_TextureLoadFromText(newScene->jogarOff, "Jogar", gInfo.mainMenu_botoes, colorNotSelected);
     WD_TextureLoadFromText(newScene->tutorialOff, "Tutorial", gInfo.mainMenu_botoes, colorNotSelected);
     WD_TextureLoadFromText(newScene->logoutOff, "Logout", gInfo.mainMenu_botoes, colorNotSelected);
+
+    WD_TextureLoadFromText(newScene->multiplayer, "Multiplayer", gInfo.mainMenu_botoes, colorWhite);
+    WD_TextureLoadFromText(newScene->singleplayer, "Singleplayer", gInfo.mainMenu_botoes, colorWhite);
 
     WD_TextureLoadFromFile(newScene->seta, "content/seta.png");
     WD_TextureLoadFromFile(newScene->backgroundTexture, "content/BG_mainMenu.png");
@@ -152,16 +159,30 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
     }
 
     if(s->index == 0) {
-        WD_TextureRender(s->seta, 76 * gInfo.screenMulti, 750 * gInfo.screenMulti);
         WD_TextureRender(s->jogar, 156 * gInfo.screenMulti, 720 * gInfo.screenMulti);
-        WD_TextureRender(s->tutorialOff, 156 * gInfo.screenMulti, 804 * gInfo.screenMulti);
-        WD_TextureRender(s->logoutOff, 156 * gInfo.screenMulti, 892 * gInfo.screenMulti);
-    } else if(s->index == 1) {
+        if(!s->btnJogar) {
+            WD_TextureRender(s->seta, 76 * gInfo.screenMulti, 750 * gInfo.screenMulti);
+            WD_TextureRender(s->tutorialOff, 156 * gInfo.screenMulti, 804 * gInfo.screenMulti);
+            WD_TextureRender(s->logoutOff, 156 * gInfo.screenMulti, 892 * gInfo.screenMulti);
+        } else {
+            if(s->mult) {
+                WD_TextureRender(s->seta, 160 * gInfo.screenMulti, 824 * gInfo.screenMulti);
+                SDL_SetTextureColorMod(s->multiplayer->mTexture, 255, 66, 0);
+                SDL_SetTextureColorMod(s->singleplayer->mTexture, 255, 255, 255);
+            } else {
+                WD_TextureRender(s->seta, 160 * gInfo.screenMulti, 912 * gInfo.screenMulti);
+                SDL_SetTextureColorMod(s->multiplayer->mTexture, 255, 255, 255);
+                SDL_SetTextureColorMod(s->singleplayer->mTexture, 255, 66, 0);
+            }
+            WD_TextureRender(s->multiplayer, 240 * gInfo.screenMulti, 804 * gInfo.screenMulti);
+            WD_TextureRender(s->singleplayer, 240 * gInfo.screenMulti, 892 * gInfo.screenMulti);
+        }
+    } else if(s->index == 1 && !s->btnJogar) {
         WD_TextureRender(s->seta, 76 * gInfo.screenMulti, 834 * gInfo.screenMulti);
         WD_TextureRender(s->jogarOff, 156 * gInfo.screenMulti, 720 * gInfo.screenMulti);
         WD_TextureRender(s->tutorial, 156 * gInfo.screenMulti, 804 * gInfo.screenMulti);
         WD_TextureRender(s->logoutOff, 156 * gInfo.screenMulti, 892 * gInfo.screenMulti);
-    } else {
+    } else if(s->index == 2 && !s->btnJogar){
         WD_TextureRender(s->seta, 76 * gInfo.screenMulti, 922 * gInfo.screenMulti);
         WD_TextureRender(s->jogarOff, 156 * gInfo.screenMulti, 720 * gInfo.screenMulti);
         WD_TextureRender(s->tutorialOff, 156 * gInfo.screenMulti, 804 * gInfo.screenMulti);
@@ -181,6 +202,8 @@ void SceneMainMenu_destroy(Scene_MainMenu* s) {
     WD_TextureDestroy(s->tutorialOff);
     WD_TextureDestroy(s->logoutOff);
     WD_TextureDestroy(s->seta);
+    WD_TextureDestroy(s->multiplayer);
+    WD_TextureDestroy(s->singleplayer);
     free(s);
     
 }
@@ -193,16 +216,26 @@ void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e) {
         if(e->key.keysym.sym == SDLK_TAB) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOGIN);
         } else if((e->key.keysym.sym == SDLK_DOWN ) && s->index < 2) {
-            s->index++;
-        } else if(e->key.keysym.sym == SDLK_UP && s->index > 0) {
-            s->index--;
+            if(s->btnJogar)
+                s->mult=false;
+            else
+                s->index++;
+        } else if(e->key.keysym.sym == SDLK_UP && s->index >= 0) {
+            if(s->btnJogar)
+                s->mult=true;
+            else
+                s->index--;
         }  else if (e->key.keysym.sym == SDLK_RETURN && s-> index == 0) {
-            SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOBBY);
+            //SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOBBY);
+            s->btnJogar = true;
         }  else if (e->key.keysym.sym == SDLK_RETURN && s->index == 1) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_TUTORIAL);
         }  else if (e->key.keysym.sym == SDLK_RETURN && s->index == 2) {
             sMng.quit = true;
-        } 
+        }  else if (e->key.keysym.sym == SDLK_ESCAPE && s->btnJogar) {
+            s->btnJogar = false;
+            s->mult = true;
+        }
     }
     
 

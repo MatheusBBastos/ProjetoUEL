@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
         gInfo.telaLogin = TTF_OpenFont("content/Minecraft.ttf", 72 * gInfo.screenMulti);
         gInfo.inputFont = TTF_OpenFont("content/Minecraft.ttf", 46 * gInfo.screenMulti);
         gInfo.mainMenu = TTF_OpenFont("content/RC.ttf", 65 * gInfo.screenMulti);
-        gInfo.mainMenu_botoes = TTF_OpenFont("content/RC.ttf", 72 * gInfo.screenMulti);
+        gInfo.mainMenu_botoes = TTF_OpenFont("content/RC.ttf", 54 * gInfo.screenMulti);
         gInfo.rank = TTF_OpenFont("content/Gamer.ttf", 96 * gInfo.screenMulti);
 
         SDL_RenderPresent(gInfo.renderer);
