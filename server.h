@@ -31,6 +31,8 @@ int Server_FindClient(Server* s, Address* addr);
 
 int Server_FindEmptySlot(Server* s);
 
+void Server_PlayerDisconnect(Server* s, int clientId);
+
 void Server_KickPlayer(Server* s, int clientId);
 
 void Server_CheckInactiveClients(Server* s);
@@ -38,6 +40,8 @@ void Server_CheckInactiveClients(Server* s);
 void Server_SendToAll(Server* s, char* data, int id);
 
 void Server_Shutdown(Server* s);
+
+void Server_SendCharacters(Server* s, Address* addr, int id);
 
 void Server_HandleMessage(Server* s, Address* sender, char* buffer);
 

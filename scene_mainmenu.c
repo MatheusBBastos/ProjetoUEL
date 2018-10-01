@@ -25,7 +25,8 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->connected = false;
     newScene->dataReceived = false;
     newScene->socketFd = TCPSocket_Open();
-    TCPSocket_Connect(newScene->socketFd, "35.198.20.77", 3122);
+    if(newScene->socketFd != 0)
+        TCPSocket_Connect(newScene->socketFd, "35.198.20.77", 3122);
 
     char anw[6][20];
     for (int i = 0; i < 5; i++) {
@@ -97,7 +98,7 @@ int getRank(char res[6][20], char* data) {
 
 
 void SceneMainMenu_update(Scene_MainMenu* s) {
-    if(!s->dataReceived) {
+    if(s->socketFd != 0 && !s->dataReceived) {
         if(!s->connected) {
             int c = TCPSocket_CheckConnectionStatus(s->socketFd);
             if(c == 1) {
