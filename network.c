@@ -71,12 +71,12 @@ int TCPSocket_CheckConnectionStatus(int socketFd) {
     } else if(r == 0) {
         return 0;
     } else {
-        char junk;
-        if(send(socketFd, &junk, 0, 0L) == 0) {
-            // Conexão bem-sucedida
+        struct sockaddr_in junk;
+        socklen_t length = sizeof(junk);
+        memset(&junk, 0, sizeof(junk));
+        if(getpeername(socketFd, (struct sockaddr *)&junk, &length) == 0) {
             return 1;
         } else {
-            // Conexão falhou
             return -1;
         }
     }

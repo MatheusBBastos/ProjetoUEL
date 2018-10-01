@@ -1,8 +1,6 @@
 #include "scene_mainmenu.h"
 #include "network.h"
 #include "jsmn.h"
-#define BUFFER_SIZE 5000
-#define MAX_TOKEN_COUNT 128
 
 Scene_MainMenu* SceneMainMenu_new() {
     Scene_MainMenu* newScene = malloc(sizeof(Scene_MainMenu));
@@ -27,7 +25,6 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->socketFd = TCPSocket_Open();
     if(newScene->socketFd != 0)
         TCPSocket_Connect(newScene->socketFd, "35.198.20.77", 3122);
-
     char anw[6][20];
     for (int i = 0; i < 5; i++) {
         strcpy(anw[i], "Carregando...");
@@ -64,13 +61,6 @@ Scene_MainMenu* SceneMainMenu_new() {
     return newScene;
 }
 
-static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
-    if (tok->type == JSMN_STRING && (int)strlen(s) == tok->end - tok->start &&
-        strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
-        return 0;
-    }
-    return -1;
-}
 
 int getRank(char res[6][20], char* data) {
     int r;
@@ -114,6 +104,7 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
                 TCPSocket_Send(s->socketFd, message, strlen(message));
             } else if(c == -1) {
                 Socket_Close(s->socketFd);
+                s->socketFd = 0;
             }
         } else {
             char data[2000];
