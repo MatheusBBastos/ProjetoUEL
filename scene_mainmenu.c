@@ -27,7 +27,6 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->socketFd = TCPSocket_Open();
     if(newScene->socketFd != 0)
         TCPSocket_Connect(newScene->socketFd, "35.198.20.77", 3122);
-
     char anw[6][20];
     for (int i = 0; i < 5; i++) {
         strcpy(anw[i], "Carregando...");
@@ -107,6 +106,7 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
                 TCPSocket_Send(s->socketFd, message, strlen(message));
             } else if(c == -1) {
                 Socket_Close(s->socketFd);
+                s->socketFd = 0;
             }
         } else {
             char data[2000];
