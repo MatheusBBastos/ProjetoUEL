@@ -1,5 +1,4 @@
 #include "scene_map.h"
-#include "stdio.h"
 
 Scene_Map* SceneMap_new() {
     Scene_Map* newScene = malloc(sizeof(Scene_Map));
@@ -132,6 +131,7 @@ void SceneMap_update(Scene_Map* s) {
             }
         }
     }
+    // Centralizar a câmera no jogador
     if(s->player != NULL) {
         s->screenX = ((int) s->player->renderX + s->player->sprite->w / 6) - (gInfo.screenWidth) / 2;
         s->screenY = ((int) s->player->renderY + s->player->sprite->h / 8) - (gInfo.screenHeight) / 2;
@@ -159,39 +159,26 @@ void SceneMap_update(Scene_Map* s) {
     else
         dstHeight = gInfo.screenHeight;
     SDL_Rect dstRect = {0, 0, dstWidth, dstHeight};
+    // Renderizar as camadas do mapa
     SDL_RenderCopy(gInfo.renderer, s->map->layers[0], &renderQuad, &dstRect);
     SDL_RenderCopy(gInfo.renderer, s->map->layers[1], &renderQuad, &dstRect);
-    //Map_Render(s->map, s->tileMap, s->screenX, s->screenY);
 
     // MUDAR, TÁ MUITO RUIM (realmente)
-    if(s->player != NULL) {
+    if(s->player != NULL && s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
         const Uint8 *state = SDL_GetKeyboardState(NULL);
         if (state[SDL_SCANCODE_UP]) {
-            if(s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
-                Character_TryToMove(s->player, 3, s->map, s->characters, s->charNumber);
-            }
+            Character_TryToMove(s->player, 3, s->map, s->characters, s->charNumber);
         } else if(state[SDL_SCANCODE_DOWN]) {
-            if(s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
-                Character_TryToMove(s->player, 0, s->map, s->characters, s->charNumber);
-            }
+            Character_TryToMove(s->player, 0, s->map, s->characters, s->charNumber);
         } else if(state[SDL_SCANCODE_LEFT]) {
-            if(s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
-                Character_TryToMove(s->player, 1, s->map, s->characters, s->charNumber);
-            }
+            Character_TryToMove(s->player, 1, s->map, s->characters, s->charNumber);
         } else if(state[SDL_SCANCODE_RIGHT]) {
-            if(s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
-                Character_TryToMove(s->player, 2, s->map, s->characters, s->charNumber);
-            }
+            Character_TryToMove(s->player, 2, s->map, s->characters, s->charNumber);
         }
     }
-    
-
-
-
-
     // ------------------------------------ //
 
-    //Character_Update(s->player, s->map, s->characters, s->charNumber);
+    // Atualização dos personagens
     for(int i = 0; i < s->charNumber; i++) {
         if(s->characters[i] != NULL) {
             Character_Update(s->characters[i], s->map, s->characters, s->charNumber);
@@ -200,8 +187,11 @@ void SceneMap_update(Scene_Map* s) {
             s->renderCharacters[i] = -1;
         }
     }
+    
+    // Ordenar a lista de renderização dos personagens com base em suas alturas
     qsort(s->renderCharacters, s->charNumber, sizeof(int), compareCharacters);
-    //Character_Render(s->player, s->screenX, s->screenY);
+    
+    // Renderizar os personagens
     for(int i = 0; i < s->charNumber; i++) {
         if(s->renderCharacters[i] != -1 && s->characters[s->renderCharacters[i]] != NULL) {
             Character_Render(s->characters[s->renderCharacters[i]], s->screenX, s->screenY);
@@ -266,7 +256,7 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
                 gInfo.sockFd = Socket_Open(0);
             if(gInfo.serverAddress == NULL) {
                 DestroyAddress(gInfo.serverAddress);
-                gInfo.serverAddress = NewAddress(192, 168, 43, 12, 3000);
+                gInfo.serverAddress = NewAddress(127, 0, 0, 1, 3000);
             }
             char data[] = "CON 1";
             Socket_Send(gInfo.sockFd, gInfo.serverAddress, data, sizeof(data));
@@ -337,8 +327,8 @@ void SceneMap_destroy(Scene_Map* s) {
         char sendData[] = "DCS";
         Socket_Send(gInfo.sockFd, gInfo.serverAddress, sendData, 4);
         gInfo.connectedToServer = false;
+        Socket_Close(gInfo.sockFd);   
     }
-    Socket_Close(gInfo.sockFd);
     WD_TextureDestroy(s->tileMap);
     Map_Destroy(s->map);
     for(int i = 0; i < s->charNumber; i++) {
