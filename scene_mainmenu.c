@@ -1,8 +1,6 @@
 #include "scene_mainmenu.h"
 #include "network.h"
 #include "jsmn.h"
-#define BUFFER_SIZE 5000
-#define MAX_TOKEN_COUNT 128
 
 Scene_MainMenu* SceneMainMenu_new() {
     Scene_MainMenu* newScene = malloc(sizeof(Scene_MainMenu));
@@ -65,13 +63,6 @@ Scene_MainMenu* SceneMainMenu_new() {
     return newScene;
 }
 
-static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
-    if (tok->type == JSMN_STRING && (int)strlen(s) == tok->end - tok->start &&
-        strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
-        return 0;
-    }
-    return -1;
-}
 
 int getRank(char res[6][20], char* data) {
     int r;
