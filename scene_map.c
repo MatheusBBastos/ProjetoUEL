@@ -256,7 +256,7 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
                 gInfo.sockFd = Socket_Open(0);
             if(gInfo.serverAddress == NULL) {
                 DestroyAddress(gInfo.serverAddress);
-                gInfo.serverAddress = NewAddress(127, 0, 0, 1, 3000);
+                gInfo.serverAddress = NewAddress(191, 52, 64, 183, 3000);
             }
             char data[] = "CON 1";
             Socket_Send(gInfo.sockFd, gInfo.serverAddress, data, sizeof(data));

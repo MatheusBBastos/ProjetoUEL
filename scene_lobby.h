@@ -8,7 +8,13 @@ typedef struct SceneManager SceneManager;
 #include "widgets.h"
 
 typedef struct Scene_Lobby {
-    WTexture* msg;
+    int frame;
+    WTexture* nome;
+    WTexture* mutiplayer;
+    WTexture* backgroundTexture;
+    WTexture* server;
+    TextBox* boxIp;
+    SDL_Rect renderQuad;
 } Scene_Lobby;
 
 Scene_Lobby* SceneLobby_new();
