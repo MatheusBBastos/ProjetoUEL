@@ -16,12 +16,12 @@ Scene_Lobby* SceneLobby_new() {
     newScene->nomeServer2 = WD_CreateTexture();
     newScene->nomeServer3 = WD_CreateTexture();
     newScene->index = 0;
+    newScene->page = newScene->index/3;
     newScene->esquerda = true;
 
     SDL_Color Cname = {204, 204, 204};
     SDL_Color Cmult = {0, 132, 255};
     SDL_Color Cwhite = {255, 255, 255};
-
 
     newScene->boxIp = WD_CreateTextBox(75 * gInfo.screenMulti, 750 * gInfo.screenMulti, 380 * gInfo.screenMulti, 52 * gInfo.screenMulti, 16, gInfo.lobbyFonte, Cwhite, false);
 
@@ -81,7 +81,7 @@ void SceneLobby_update(Scene_Lobby* s) {
         if(s->esquerda) {
             s->boxIp->active = true;
         } else {
-            SDL_SetTextureColorMod(s->server1->mTexture, 255, 66, 0);
+            SDL_SetTextureColorMod(s->nomeServer1->mTexture, 255, 66, 0);
         }
     } else {
         s->boxIp->active = false;
@@ -91,13 +91,13 @@ void SceneLobby_update(Scene_Lobby* s) {
         if(s->esquerda) {
             SDL_SetTextureColorMod(s->entrar->mTexture, 255, 66, 0);
         } else {
-            SDL_SetTextureColorMod(s->server2->mTexture, 255, 66, 0);
+            SDL_SetTextureColorMod(s->nomeServer2->mTexture, 255, 66, 0);
         }
     } else if(s->index == 2) {
         if(s->esquerda) {
             SDL_SetTextureColorMod(s->servir->mTexture, 255, 66, 0);
         } else {
-            SDL_SetTextureColorMod(s->server3->mTexture, 255, 66, 0);
+            SDL_SetTextureColorMod(s->nomeServer3->mTexture, 255, 66, 0);
         }
     }
 
@@ -134,14 +134,16 @@ void SceneLobby_handleEvent(Scene_Lobby* s, SDL_Event* e) {
         if(e->key.keysym.sym == SDLK_TAB) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
         } else if(e->key.keysym.sym == SDLK_DOWN) {
-            if(s->index < 2)
+            if(s->index < 2 && s->esquerda)
+                s->index++;
+            else if(s->index < 3 && !s->esquerda) //colocar variavel do nmr de servidores
                 s->index++;
         } else if(e->key.keysym.sym == SDLK_UP) {
             if(s->index > 0)
                 s->index--;
         } else if(e->key.keysym.sym == SDLK_RIGHT) {
             s->esquerda = false;
-        } else if(e->key.keysym.sym == SDLK_LEFT) {
+        } else if(e->key.keysym.sym == SDLK_LEFT && s->index < 3) {
             s->esquerda = true;
         }
     }

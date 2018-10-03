@@ -9,8 +9,9 @@ typedef struct SceneManager SceneManager;
 
 typedef struct Scene_Lobby {
     int frame;
-    short int index;
+    short int index, page;
     bool esquerda;
+    char string[20];
     WTexture* nome;
     WTexture* mutiplayer;
     WTexture* backgroundTexture;
