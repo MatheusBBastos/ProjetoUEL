@@ -4,6 +4,7 @@
 
 GameInfo gInfo;
 SceneManager sMng;
+NetworkS Network;
 
 // Tentar inicializar a biblioteca SDL e suas funcionalidades
 bool initialize() {

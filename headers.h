@@ -79,17 +79,24 @@ typedef struct GameInfo {
     bool debug;
 
     TTF_Font* rank;
+} GameInfo;
 
+typedef struct Server Server;
+
+typedef struct NetworkS {
+    int sockFd;
     bool connectedToServer;
     bool serverHost;
     Address* serverAddress;
-
-    int sockFd;
-} GameInfo;
+    Server* server;
+    SDL_Thread* serverThread;
+    uint64_t lastPacketId;
+} NetworkS;
 
 typedef struct SceneManager SceneManager;
 
 extern GameInfo gInfo;
 extern SceneManager sMng;
+extern NetworkS Network;
 
 #endif

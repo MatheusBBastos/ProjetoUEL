@@ -9,10 +9,20 @@ typedef struct SceneManager SceneManager;
 
 typedef struct Scene_Lobby {
     int frame;
+    short int index;
+    bool esquerda;
     WTexture* nome;
     WTexture* mutiplayer;
     WTexture* backgroundTexture;
     WTexture* server;
+    WTexture* entrar;
+    WTexture* servir;
+    WTexture* server1;
+    WTexture* server2;
+    WTexture* server3;
+    WTexture* nomeServer1;
+    WTexture* nomeServer2;
+    WTexture* nomeServer3;
     TextBox* boxIp;
     SDL_Rect renderQuad;
 } Scene_Lobby;

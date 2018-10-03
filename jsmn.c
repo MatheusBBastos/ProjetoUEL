@@ -20,7 +20,19 @@ static jsmntok_t *jsmn_alloc_token(jsmn_parser *parser,
 
 /**
  * Fills token type and boundaries.
+
+
  */
+
+int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
+    if (tok->type == JSMN_STRING && (int)strlen(s) == tok->end - tok->start &&
+        strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
+        return 0;
+    }
+    return -1;
+}
+
+
 static void jsmn_fill_token(jsmntok_t *token, jsmntype_t type,
                             int start, int end) {
 	token->type = type;

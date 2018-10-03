@@ -19,7 +19,7 @@ Scene_Map* SceneMap_new() {
     newScene->characters = NULL;
     newScene->renderCharacters = NULL;
     newScene->waitingConnection = false;
-    newScene->testServer = NULL;
+    //newScene->testServer = NULL;
     return newScene;
 }
 
@@ -40,26 +40,26 @@ void SceneMap_update(Scene_Map* s) {
     if(s->waitingConnection) {
         Address sender;
         char data[512];
-        int bytes = Socket_Receive(gInfo.sockFd, &sender, data, sizeof(data));
-        if(bytes > 0 && sender.address == gInfo.serverAddress->address && sender.port == gInfo.serverAddress->port) {
+        int bytes = Socket_Receive(Network.sockFd, &sender, data, sizeof(data));
+        if(bytes > 0 && sender.address == Network.serverAddress->address && sender.port == Network.serverAddress->port) {
             if(strncmp("CON", data, 3) == 0) {
-                gInfo.connectedToServer = true;
+                Network.connectedToServer = true;
                 printf("[Client] Connection to server estabilished\n");
                 s->waitingConnection = false;
             }
         }
     }
-    if(gInfo.connectedToServer) {
+    if(Network.connectedToServer) {
         char sendData[] = "PNG";
-        Socket_Send(gInfo.sockFd, gInfo.serverAddress, sendData, sizeof(sendData));
+        Socket_Send(Network.sockFd, Network.serverAddress, sendData, sizeof(sendData));
         Address sender;
         char data[512];
-        while(Socket_Receive(gInfo.sockFd, &sender, data, sizeof(data)) > 0) {
-            if(sender.address == gInfo.serverAddress->address && sender.port == gInfo.serverAddress->port) {
+        while(Socket_Receive(Network.sockFd, &sender, data, sizeof(data)) > 0) {
+            if(sender.address == Network.serverAddress->address && sender.port == Network.serverAddress->port) {
                 printf("[Client] Received from server: %s\n", data);
                 if(strncmp("KCK", data, 3) == 0) {
-                    gInfo.connectedToServer = false;
-                    Socket_Close(gInfo.sockFd);
+                    Network.connectedToServer = false;
+                    Socket_Close(Network.sockFd);
                 } else if(strncmp("CNM", data, 3) == 0) {
                     if(s->characters != NULL) {
                         for(int i = 0; i < s->charNumber; i++) {
@@ -125,8 +125,8 @@ void SceneMap_update(Scene_Map* s) {
                     }
                     s->charNumber = 0;
                     s->player = NULL;
-                    gInfo.connectedToServer = false;
-                    Socket_Close(gInfo.sockFd);
+                    Network.connectedToServer = false;
+                    Socket_Close(Network.sockFd);
                 }
             }
         }
@@ -246,29 +246,29 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
         } else if(e->key.keysym.sym == SDLK_F3) {
             gInfo.debug = !gInfo.debug;
         } else if(e->key.keysym.sym == SDLK_F4) {
-            s->testServer = Server_Open(3000);
-            if(s->testServer != NULL) {
+            Network.server = Server_Open(3000);
+            if(Network.server != NULL) {
                 printf("Server open\n");
-                s->serverThread = SDL_CreateThread(Server_InitLoop, "ServerLoop", s->testServer);
+                Network.serverThread = SDL_CreateThread(Server_InitLoop, "ServerLoop", Network.server);
             }
         } else if(e->key.keysym.sym == SDLK_F5) {
-            if(gInfo.connectedToServer == false)
-                gInfo.sockFd = Socket_Open(0);
-            if(gInfo.serverAddress == NULL) {
-                DestroyAddress(gInfo.serverAddress);
-                gInfo.serverAddress = NewAddress(191, 52, 64, 183, 3000);
+            if(Network.connectedToServer == false)
+                Network.sockFd = Socket_Open(0);
+            if(Network.serverAddress == NULL) {
+                DestroyAddress(Network.serverAddress);
+                Network.serverAddress = NewAddress(127, 0, 0, 1, 3000);
             }
             char data[] = "CON 1";
-            Socket_Send(gInfo.sockFd, gInfo.serverAddress, data, sizeof(data));
+            Socket_Send(Network.sockFd, Network.serverAddress, data, sizeof(data));
             s->waitingConnection = true;
         } else if(e->key.keysym.sym == SDLK_F6) {
-            if(s->testServer != NULL && s->testServer->running) {
-                s->testServer->running = false;
+            if(Network.server != NULL && Network.server->running) {
+                Network.server->running = false;
                 int returnValue;
-                SDL_WaitThread(s->serverThread, &returnValue);
+                SDL_WaitThread(Network.serverThread, &returnValue);
                 printf("Thread closed with return value %d\n", returnValue);
-                Server_Destroy(s->testServer);
-                s->testServer = NULL;
+                Server_Destroy(Network.server);
+                Network.server = NULL;
             }
         }
     }
@@ -323,11 +323,11 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
 
 
 void SceneMap_destroy(Scene_Map* s) {
-    if(gInfo.connectedToServer) {
+    if(Network.connectedToServer) {
         char sendData[] = "DCS";
-        Socket_Send(gInfo.sockFd, gInfo.serverAddress, sendData, 4);
-        gInfo.connectedToServer = false;
-        Socket_Close(gInfo.sockFd);   
+        Socket_Send(Network.sockFd, Network.serverAddress, sendData, 4);
+        Network.connectedToServer = false;
+        Socket_Close(Network.sockFd);   
     }
     WD_TextureDestroy(s->tileMap);
     Map_Destroy(s->map);
