@@ -31,6 +31,8 @@ Server* Server_Open(unsigned short port) {
         for(int i = 0; i < newServer->maxClients; i++) {
             newServer->clients[i] = NULL;
         }
+        newServer->map = Map_Create();
+        Map_Load(newServer->map, "map.txt", false);
         return newServer;
     } else {
         return NULL;
@@ -83,6 +85,8 @@ void Server_CheckInactiveClients(Server* s) {
             if(now - s->clients[i]->lastMessage > 5000) {
                 printf("[Server] 5s passed since last received message from client id %d, kicking\n", i);
                 Server_KickPlayer(s, i);
+            } else {
+                Character_Update(s->clients[i]->character, s->map);
             }
         }
     }
@@ -116,23 +120,65 @@ void Server_SendCharacters(Server* s, Address* addr, int id) {
     }
 }
 
+bool Server_CheckMovement(Server* s, int id, int x, int y) {
+    if(s->clients[id] == NULL) {
+        return false;
+    }
+    Character* c = s->clients[id]->character;
+    int maximumDistance = (1 << (c->moveSpeed)) * 2;
+    if(abs(x - c->renderX) > maximumDistance || abs(y - c->renderY) > maximumDistance) {
+        return false;
+    }
+
+    SDL_Rect collisionBox;
+    Character_GetCollisionBox(c, &collisionBox, x - c->x, y - c->y);
+    if(Map_Passable(s->map, &collisionBox)) {
+        bool noCollision = true;
+        for(int i = 0; i < s->maxClients; i++) {
+            if(s->clients[i] == NULL || i == id)
+                continue;
+            SDL_Rect otherCollisionBox;
+            Character_GetCollisionBox(s->clients[i]->character, &otherCollisionBox, 0, 0); 
+            if(collisionBox.x < otherCollisionBox.x + otherCollisionBox.w &&
+                    collisionBox.x + collisionBox.w > otherCollisionBox.x &&
+                    collisionBox.y < otherCollisionBox.y + otherCollisionBox.h &&
+                    collisionBox.y + collisionBox.h > otherCollisionBox.y) {
+                noCollision = false;
+                break;
+            }
+        }
+        return noCollision;
+    } else {
+        return false;
+    }
+}
+
 void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
     int cId = Server_FindClient(s, sender);
     if(cId != -1) {
         s->clients[cId]->lastMessage = SDL_GetTicks();
         if(strncmp("POS", buffer, 3) == 0) {
             int newX, newY, dir;
-            sscanf(buffer + 4, "%d %d %d", &newX, &newY, &dir);
-            s->clients[cId]->character->x = newX;
-            s->clients[cId]->character->y = newY;
-            s->clients[cId]->character->direction = dir;
-            char sendData[32];
-            sprintf(sendData, "POS %d %d %d %d", cId, newX, newY, dir);
-            Server_SendToAll(s, sendData, cId);
+            uint64_t movementId;
+            sscanf(buffer + 4, "%llu %d %d %d", &movementId, &newX, &newY, &dir);
+            if(movementId > s->clients[cId]->character->lastMovementId) {
+                Character* chr = s->clients[cId]->character;
+                char sendData[32];
+                if(Server_CheckMovement(s, cId, newX, newY)) {
+                    chr->x = newX;
+                    chr->y = newY;
+                    chr->direction = dir;
+                    sprintf(sendData, "POS %d %d %d %d", cId, newX, newY, dir);
+                    Server_SendToAll(s, sendData, cId);
+                } else {
+                    sprintf(sendData, "FIX %llu %d %d", movementId, chr->x, chr->y);
+                    Socket_Send(s->sockfd, sender, sendData, strlen(sendData) + 1);
+                }
+                chr->lastMovementId = movementId;
+            }
         } else if(strncmp("DCS", buffer, 3) == 0) {
             Server_PlayerDisconnect(s, cId);
         }
-        
     } else {
         if(strncmp("INF", buffer, 3) == 0) {
             char sendData[16];
@@ -155,7 +201,7 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
                 Socket_Send(s->sockfd, sender, sendData2, sizeof(sendData2));
                 // Enviar as informações dos players conectados atualmente
                 Server_SendCharacters(s, sender, cId);
-                s->clients[cId]->character = Character_Create("content/testcharacter.png", cId, true);
+                s->clients[cId]->character = Character_Create("content/testcharacter.png", cId, false);
                 char sendData3[80];
                 // Enviar as informações do novo player para todos os jogadores
                 sprintf(sendData3, "CHR %d %d %d %d %s", 0, 0, 0, cId, s->clients[cId]->character->spriteFile);
@@ -209,6 +255,7 @@ void Server_Destroy(Server* s) {
         if(s->clients[i] != NULL)
             Client_Destroy(s->clients[i]);
     }
+    Map_Destroy(s->map);
     free(s->clients);
     free(s);
 }

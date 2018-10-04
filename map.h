@@ -3,12 +3,17 @@
 
 #include "headers.h"
 #include "widgets.h"
+#include "character.h"
+
+typedef struct Character Character;
 
 typedef struct Map {
     int* data;
     bool loaded;
     int width, height;
     SDL_Texture** layers;
+    Character** characters;
+    int charNumber;
 } Map;
 
 Map* Map_Create();

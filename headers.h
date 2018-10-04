@@ -86,7 +86,7 @@ typedef struct NetworkS {
     Address* serverAddress;
     Server* server;
     SDL_Thread* serverThread;
-    uint64_t lastPacketId;
+    uint64_t lastMovementId;
 } NetworkS;
 
 typedef struct SceneManager SceneManager;

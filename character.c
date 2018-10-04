@@ -22,6 +22,7 @@ Character* Character_Create(char* spritePath, int id, bool noTexture) {
     newCharacter->animationIndex = 0;
     newCharacter->animationCount = 0;
     newCharacter->animPart = false;
+    newCharacter->lastMovementId = 0;
     return newCharacter;
 }
 
@@ -32,7 +33,31 @@ void Character_GetCollisionBox(Character* c, SDL_Rect* box, int offsetX, int off
     box->y = c->y + offsetY + (c->sprite->h / 4 - box->h);
 }
 
-void Character_TryToMove(Character* c, int dir, Map* m, Character** characters, int charNumber) {
+bool Character_Passable(Character* c, Map* m, int x, int y) {
+    SDL_Rect collisionBox;
+    Character_GetCollisionBox(c, &collisionBox, x - c->x, y - c->y);
+    if(Map_Passable(m, &collisionBox)) {
+        bool noCollision = true;
+        for(int i = 0; i < m->charNumber; i++) {
+            if(m->characters[i] == NULL || m->characters[i]->id == c->id)
+                continue;
+            SDL_Rect otherCollisionBox;
+            Character_GetCollisionBox(m->characters[i], &otherCollisionBox, 0, 0); 
+            if(collisionBox.x < otherCollisionBox.x + otherCollisionBox.w &&
+                    collisionBox.x + collisionBox.w > otherCollisionBox.x &&
+                    collisionBox.y < otherCollisionBox.y + otherCollisionBox.h &&
+                    collisionBox.y + collisionBox.h > otherCollisionBox.y) {
+                noCollision = false;
+                break;
+            }
+        }
+        return noCollision;
+    } else {
+        return false;
+    }
+}
+
+void Character_TryToMove(Character* c, int dir, Map* m) {
     c->direction = dir;
     SDL_Rect collisionBox;
     int newX = c->x, newY = c->y;
@@ -50,13 +75,21 @@ void Character_TryToMove(Character* c, int dir, Map* m, Character** characters, 
         Character_GetCollisionBox(c, &collisionBox, 0, -distance);
         newY -= distance;
     }
+    /* pra testar colisão no servidor
+    c->x = newX;
+    c->y = newY;
+    c->lastMovementId++;
+    char sendData[32];
+    sprintf(sendData, "POS %llu %d %d %d", c->lastMovementId, newX, newY, c->direction);
+    Socket_Send(Network.sockFd, Network.serverAddress, sendData, strlen(sendData) + 1);
+    return;*/
     if(Map_Passable(m, &collisionBox)) {
         bool noCollision = true;
-        for(int i = 0; i < charNumber; i++) {
-            if(characters[i] == NULL || characters[i]->id == c->id)
+        for(int i = 0; i < m->charNumber; i++) {
+            if(m->characters[i] == NULL || m->characters[i]->id == c->id)
                 continue;
             SDL_Rect otherCollisionBox;
-            Character_GetCollisionBox(characters[i], &otherCollisionBox, 0, 0);
+            Character_GetCollisionBox(m->characters[i], &otherCollisionBox, 0, 0);
             //printf("TESTANDO TESTANDO TESTANDO\n"); 
             if(collisionBox.x < otherCollisionBox.x + otherCollisionBox.w &&
                     collisionBox.x + collisionBox.w > otherCollisionBox.x &&
@@ -67,10 +100,9 @@ void Character_TryToMove(Character* c, int dir, Map* m, Character** characters, 
             }
         }
         if(noCollision) {
+            c->lastMovementId++;
             char sendData[32];
-            sprintf(sendData, "POS %d %d %d", newX, newY, c->direction);
-            //printf("%s\n", sendData);
-            //printf("%d\n", gInfo.sockFd);
+            sprintf(sendData, "POS %llu %d %d %d", c->lastMovementId, newX, newY, c->direction);
             Socket_Send(Network.sockFd, Network.serverAddress, sendData, strlen(sendData) + 1);
             c->x = newX;
             c->y = newY;
@@ -78,7 +110,7 @@ void Character_TryToMove(Character* c, int dir, Map* m, Character** characters, 
     }
 }
 
-void Character_Update(Character* c, Map* m, Character** characters, int charNumber) {
+void Character_Update(Character* c, Map* m) {
     if(c->x != c->renderX || c->y != c->renderY) {
         c->moving = true;
         int x4 = c->x * 4;
