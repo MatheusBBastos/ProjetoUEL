@@ -73,6 +73,7 @@ typedef struct GameInfo {
     TTF_Font* mainMenu_botoes;
     // Modo debug
     bool debug;
+    char nome[50];
 
     TTF_Font* rank;
 } GameInfo;

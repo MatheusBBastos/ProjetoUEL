@@ -1,4 +1,5 @@
 #include "scene_login.h"
+#include "jsmn.h"
 
 int posSetaX[2] = { 720,245 };
 int posSetaY = 806;
@@ -22,6 +23,7 @@ int posErroY = 960;
 
 int posLogoX = 215;
 int posLogoY = 200;
+
 Scene_Login* SceneLogin_new() {
     Scene_Login* newScene = malloc(sizeof(Scene_Login));
     newScene->enteringFrame = 0;
@@ -34,6 +36,9 @@ Scene_Login* SceneLogin_new() {
     SDL_Color colorSelected = { 255, 156, 0 }; // Cores dos botões quando selecionados
     SDL_Color colorNotSelected = { 255,255,255 }; // Cores dos botões quando não selecionados
     SDL_Color fullRed = { 255,0,0 };
+
+    newScene->reqq = false;
+    newScene->oncer = true;
 
     newScene->logo[0] = WD_CreateTexture();
     newScene->logo[1] = WD_CreateTexture();
@@ -81,6 +86,74 @@ Scene_Login* SceneLogin_new() {
 }
 
 void SceneLogin_update(Scene_Login* s) {
+    if (s->reqq) {
+
+        if (s->socketFd != 0 && s->oncer) {
+            s->dataReceived = false;
+            s->connected = false;
+            s->socketFd = TCPSocket_Open();
+            TCPSocket_Connect(s->socketFd, "35.198.20.77", 3122);
+            s->oncer = false;
+        }
+
+        if (s->socketFd != 0 && !s->dataReceived) {
+            if (!s->connected) {
+                int c = TCPSocket_CheckConnectionStatus(s->socketFd);
+                if (c == 1) {
+                    s->connected = true;
+                    char message[120];
+                    sprintf(message, "{\"cmd\":\"login\",\"var\":{\"login\":\"%s\",\"senha\":\"%s\"}}\n", s->login->text, s->senha->text);
+                    TCPSocket_Send(s->socketFd, message, strlen(message));
+                }
+                else if (c == -1) {
+                    Socket_Close(s->socketFd);
+                    s->socketFd = 0;
+                }
+            }
+            else {
+                char data[2000];
+                int c = TCPSocket_Receive(s->socketFd, data, 2000);
+                if (c > 0) {
+                    data[c] = '\0';
+                    int r;
+                    jsmn_parser p;
+                    jsmntok_t t[128];
+                    jsmn_init(&p);
+                    r = jsmn_parse(&p, data, strlen(data), t, sizeof(t) / sizeof(t[0]));
+                    if (r < 0) {
+                        printf("Failed to parse JSON: %d\n", r);
+                    }
+
+                    char resposta[50]; bool logado = false;
+                    for (int i = 0; i < r; i++) {
+                        if (jsoneq(data, &t[i], "playerName") == 0) {
+                            sprintf(resposta, "%.*s", t[i + 1].end - t[i + 1].start, data + t[i + 1].start);
+                            logado = true;
+                        }
+                    }
+
+                    if (logado) {
+                        puts(resposta);
+                        strcpy(gInfo.nome, resposta);
+                        SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
+                    }
+                    else {
+                        s->acessonegado = true;
+                    }
+
+                    s->dataReceived = true;
+                    Socket_Close(s->socketFd);
+                    s->reqq = false;
+                    s->oncer = true;
+                }
+                else if (c == -1) {
+                    Socket_Close(s->socketFd);
+                    s->reqq = false;
+                    s->oncer = true;
+                }
+            }
+        }
+    }
     SDL_SetRenderDrawColor(gInfo.renderer, 0x12, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(gInfo.renderer);
     WD_TextureRenderDest(s->backgroundTexture, &s->renderQuad);
@@ -89,15 +162,6 @@ void SceneLogin_update(Scene_Login* s) {
     WD_TextureRender(s->textLogarOff, posLogarX * gInfo.screenMulti, posLogarY * gInfo.screenMulti); //Começa com os dois botoes brancos
     WD_TextureRender(s->textModoOffOff, posModoX * gInfo.screenMulti, posModoY * gInfo.screenMulti);
     WD_TextureRender(s->logo[1], posLogoX * gInfo.screenMulti, posLogoY * gInfo.screenMulti);
-
-    if (s->frame % 5 == 0) {
-        if (s->acessonegado) {
-            s->acessonegado = false;
-        }
-        else {
-            s->acessonegado = true;
-        }
-    }
 
     if (s->acessonegado) {
         WD_TextureRender(s->textError, posErroX * gInfo.screenMulti, posErroY * gInfo.screenMulti);
@@ -158,6 +222,7 @@ void SceneLogin_update(Scene_Login* s) {
 
 }
 
+
 void SceneLogin_destroy(Scene_Login* s) {
     WD_TextureDestroy(s->logo[0]);
     WD_TextureDestroy(s->logo[1]);
@@ -179,8 +244,14 @@ void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
     if(e->type == SDL_KEYDOWN) {
         if(e->key.keysym.sym == SDLK_TAB) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAP);
-        } else if(e->key.keysym.sym == SDLK_RETURN && s->modoOff && s->index == 2 ) {
+        } 
+        if(e->key.keysym.sym == SDLK_RETURN && s->modoOff && s->index == 2 ) {
+            strcpy(gInfo.nome, "User");
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
+        }
+        else if (e->key.keysym.sym == SDLK_RETURN && !s->modoOff && s->index == 2)
+        {
+            s->reqq = true;
         }
         else if (e->key.keysym.sym == SDLK_RIGHT && s->index == 2 || e->key.keysym.sym == SDLK_LEFT && s->index == 2) {
             s->modoOff = !s->modoOff;
@@ -190,14 +261,6 @@ void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
         }
         else if (e->key.keysym.sym == SDLK_UP && s->index > 0) {
             s->index--;
-        }
-        else if (e->key.keysym.sym == SDLK_1) {
-            if (s->acessonegado) {
-                s->acessonegado = false;
-            }
-            else {
-                s->acessonegado = true;
-            }
         }
         else if (e->key.keysym.sym == SDLK_F2) {
             if (Mix_PausedMusic()) {

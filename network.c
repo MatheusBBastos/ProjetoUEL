@@ -72,7 +72,7 @@ int TCPSocket_CheckConnectionStatus(int socketFd) {
         return 0;
     } else {
         struct sockaddr_in junk;
-        socklen_t length = sizeof(junk);
+        int length = sizeof(junk);
         memset(&junk, 0, sizeof(junk));
         if(getpeername(socketFd, (struct sockaddr *)&junk, &length) == 0) {
             return 1;
