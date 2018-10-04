@@ -8,6 +8,8 @@ typedef struct SceneManager SceneManager;
 #include "widgets.h"
 
 typedef struct Scene_Login {
+    int socketFd;
+    bool connected, dataReceived, reqq, oncer;
     int enteringFrame, frame;
     WTexture* backgroundTexture;
     WTexture* textLogar;
