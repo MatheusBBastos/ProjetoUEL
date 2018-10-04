@@ -2,7 +2,6 @@
 
 Scene_Map* SceneMap_new() {
     Scene_Map* newScene = malloc(sizeof(Scene_Map));
-    newScene->lastTimeStamp = 0;
     newScene->keyLeft = false;
     newScene->keyRight = false;
     newScene->keyDown = false;
