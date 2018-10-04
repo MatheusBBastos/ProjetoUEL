@@ -6,6 +6,8 @@
 #include "map.h"
 #include "network.h"
 
+typedef struct Map Map;
+
 typedef struct Character {
     int id;
     bool player;
@@ -20,15 +22,18 @@ typedef struct Character {
     int animationCount;
     bool animPart;
     char spriteFile[32];
+    uint64_t lastMovementId;
 } Character;
 
 Character* Character_Create(char* spritePath, int id, bool noTexture);
 
 void Character_GetCollisionBox(Character* c, SDL_Rect* box, int offsetX, int offsetY);
 
-void Character_TryToMove(Character* c, int dir, Map* m, Character** characters, int charNumber);
+bool Character_Passable(Character* c, Map* m, int x, int y);
 
-void Character_Update(Character* c, Map* m, Character** characters, int charNumber);
+void Character_TryToMove(Character* c, int dir, Map* m);
+
+void Character_Update(Character* c, Map* m);
 
 void Character_Render(Character* c, int screenX, int screenY);
 

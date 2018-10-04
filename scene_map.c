@@ -24,7 +24,7 @@ Scene_Map* SceneMap_new() {
 }
 
 int compareCharacters(const void * a, const void * b) {
-    Character** chars = sMng.sMap->characters;
+    Character** chars = sMng.sMap->map->characters;
     int i = *(int*)a;
     int j = *(int*)b;
     if(i == -1 || chars[i] == NULL) {
@@ -60,70 +60,78 @@ void SceneMap_update(Scene_Map* s) {
                 if(strncmp("KCK", data, 3) == 0) {
                     Network.connectedToServer = false;
                     Socket_Close(Network.sockFd);
+                } else if(strncmp("FIX", data, 3) == 0) {
+                    uint64_t mId;
+                    int x, y;
+                    sscanf(data + 4, "%llu %d %d", &mId, &x, &y);
+                    if(s->player != NULL) {
+                        s->player->x = x;
+                        s->player->y = y;
+                    }
                 } else if(strncmp("CNM", data, 3) == 0) {
-                    if(s->characters != NULL) {
-                        for(int i = 0; i < s->charNumber; i++) {
-                            if(s->characters[i] != NULL)
-                                Character_Destroy(s->characters[i]);
+                    if(s->map->characters != NULL) {
+                        for(int i = 0; i < s->map->charNumber; i++) {
+                            if(s->map->characters[i] != NULL)
+                                Character_Destroy(s->map->characters[i]);
                         }
-                        free(s->characters);
+                        free(s->map->characters);
                         free(s->renderCharacters);
                     }
-                    sscanf(data + 4, "%d", &s->charNumber);
-                    s->characters = malloc(s->charNumber * sizeof(Character*));
-                    s->renderCharacters = malloc(s->charNumber * sizeof(int));
-                    for(int i = 0; i < s->charNumber; i++) {
-                        s->characters[i] = NULL;
+                    sscanf(data + 4, "%d", &s->map->charNumber);
+                    s->map->characters = malloc(s->map->charNumber * sizeof(Character*));
+                    s->renderCharacters = malloc(s->map->charNumber * sizeof(int));
+                    for(int i = 0; i < s->map->charNumber; i++) {
+                        s->map->characters[i] = NULL;
                     }
                 } else if(strncmp("CHR", data, 3) == 0) {
                     int id;
                     int x, y, dir;
                     char file[64];
                     sscanf(data + 4, "%d %d %d %d %s", &x, &y, &dir, &id, file);
-                    if(s->characters[id] != NULL) {
-                        Character_Destroy(s->characters[id]);
+                    if(s->map->characters[id] != NULL) {
+                        Character_Destroy(s->map->characters[id]);
                     }
-                    s->characters[id] = Character_Create(file, id, false);
-                    s->characters[id]->x = x;
-                    s->characters[id]->renderX = x;
-                    s->characters[id]->x4 = x * 4;
-                    s->characters[id]->y = y;
-                    s->characters[id]->renderY = y;
-                    s->characters[id]->y4 = y * 4;
-                    s->characters[id]->direction = dir;
+                    s->map->characters[id] = Character_Create(file, id, false);
+                    s->map->characters[id]->x = x;
+                    s->map->characters[id]->renderX = x;
+                    s->map->characters[id]->x4 = x * 4;
+                    s->map->characters[id]->y = y;
+                    s->map->characters[id]->renderY = y;
+                    s->map->characters[id]->y4 = y * 4;
+                    s->map->characters[id]->direction = dir;
                 } else if(strncmp("POS", data, 3) == 0) {
                     int id, x, y, dir;
                     sscanf(data + 4, "%d %d %d %d", &id, &x, &y, &dir);
-                    if(s->characters != NULL && s->characters[id] != NULL) {
-                        s->characters[id]->x = x;
-                        s->characters[id]->y = y;
-                        s->characters[id]->direction = dir;
+                    if(s->map->characters != NULL && s->map->characters[id] != NULL) {
+                        s->map->characters[id]->x = x;
+                        s->map->characters[id]->y = y;
+                        s->map->characters[id]->direction = dir;
                     }
                 } else if(strncmp("PLY", data, 3) == 0) {
                     int id;
                     sscanf(data + 4, "%d", &id);
-                    if(s->characters[id] != NULL) {
-                        s->player = s->characters[id];
+                    if(s->map->characters[id] != NULL) {
+                        s->player = s->map->characters[id];
                     }
                 } else if(strncmp("PDC", data, 3) == 0) {
                     int id;
                     sscanf(data + 4, "%d", &id);
-                    if(s->characters[id] != NULL) {
-                        Character_Destroy(s->characters[id]);
-                        s->characters[id] = NULL;
+                    if(s->map->characters[id] != NULL) {
+                        Character_Destroy(s->map->characters[id]);
+                        s->map->characters[id] = NULL;
                     }
                 } else if(strncmp("SSD", data, 3) == 0) {
-                    for(int i = 0; i < s->charNumber; i++) {
-                        if(s->characters[i] != NULL)
-                            Character_Destroy(s->characters[i]);
+                    for(int i = 0; i < s->map->charNumber; i++) {
+                        if(s->map->characters[i] != NULL)
+                            Character_Destroy(s->map->characters[i]);
                     }
-                    if(s->characters != NULL) {
-                        free(s->characters);
+                    if(s->map->characters != NULL) {
+                        free(s->map->characters);
                         free(s->renderCharacters);
-                        s->characters = NULL;
+                        s->map->characters = NULL;
                         s->renderCharacters = NULL;
                     }
-                    s->charNumber = 0;
+                    s->map->charNumber = 0;
                     s->player = NULL;
                     Network.connectedToServer = false;
                     Socket_Close(Network.sockFd);
@@ -167,21 +175,21 @@ void SceneMap_update(Scene_Map* s) {
     if(s->player != NULL && s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
         const Uint8 *state = SDL_GetKeyboardState(NULL);
         if (state[SDL_SCANCODE_UP]) {
-            Character_TryToMove(s->player, 3, s->map, s->characters, s->charNumber);
+            Character_TryToMove(s->player, 3, s->map);
         } else if(state[SDL_SCANCODE_DOWN]) {
-            Character_TryToMove(s->player, 0, s->map, s->characters, s->charNumber);
+            Character_TryToMove(s->player, 0, s->map);
         } else if(state[SDL_SCANCODE_LEFT]) {
-            Character_TryToMove(s->player, 1, s->map, s->characters, s->charNumber);
+            Character_TryToMove(s->player, 1, s->map);
         } else if(state[SDL_SCANCODE_RIGHT]) {
-            Character_TryToMove(s->player, 2, s->map, s->characters, s->charNumber);
+            Character_TryToMove(s->player, 2, s->map);
         }
     }
     // ------------------------------------ //
 
     // Atualização dos personagens
-    for(int i = 0; i < s->charNumber; i++) {
-        if(s->characters[i] != NULL) {
-            Character_Update(s->characters[i], s->map, s->characters, s->charNumber);
+    for(int i = 0; i < s->map->charNumber; i++) {
+        if(s->map->characters[i] != NULL) {
+            Character_Update(s->map->characters[i], s->map);
             s->renderCharacters[i] = i;
         } else {
             s->renderCharacters[i] = -1;
@@ -189,12 +197,12 @@ void SceneMap_update(Scene_Map* s) {
     }
     
     // Ordenar a lista de renderização dos personagens com base em suas alturas
-    qsort(s->renderCharacters, s->charNumber, sizeof(int), compareCharacters);
+    qsort(s->renderCharacters, s->map->charNumber, sizeof(int), compareCharacters);
     
     // Renderizar os personagens
-    for(int i = 0; i < s->charNumber; i++) {
-        if(s->renderCharacters[i] != -1 && s->characters[s->renderCharacters[i]] != NULL) {
-            Character_Render(s->characters[s->renderCharacters[i]], s->screenX, s->screenY);
+    for(int i = 0; i < s->map->charNumber; i++) {
+        if(s->renderCharacters[i] != -1 && s->map->characters[s->renderCharacters[i]] != NULL) {
+            Character_Render(s->map->characters[s->renderCharacters[i]], s->screenX, s->screenY);
         }
     }
 }
@@ -208,25 +216,25 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
                 case SDL_SCANCODE_DOWN:
                     s->keyDown = true;
                     if (!s->player->moving) {
-                        Character_TryToMove(s->player, 0, s->map, s->characters, s->charNumber);
+                        Character_TryToMove(s->player, 0, s->map, s->map->characters, s->map->charNumber);
                     }
                     break;
                 case SDL_SCANCODE_UP:
                     s->keyUp = true;
                     if (!s->player->moving) {
-                        Character_TryToMove(s->player, 3, s->map, s->characters, s->charNumber);
+                        Character_TryToMove(s->player, 3, s->map, s->map->characters, s->map->charNumber);
                     }
                     break;
                 case SDL_SCANCODE_LEFT:
                     s->keyLeft = true;
                     if (!s->player->moving) {
-                        Character_TryToMove(s->player, 1, s->map, s->characters, s->charNumber);
+                        Character_TryToMove(s->player, 1, s->map, s->map->characters, s->map->charNumber);
                     }
                     break;
                 case SDL_SCANCODE_RIGHT:
                     s->keyRight = true;
                     if (!s->player->moving) {
-                        Character_TryToMove(s->player, 2, s->map, s->characters, s->charNumber);
+                        Character_TryToMove(s->player, 2, s->map, s->map->characters, s->map->charNumber);
                     }
                     break;
                 default:
@@ -239,7 +247,9 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
 
 
 
-
+        if(e->key.keysym.sym == SDLK_o) {
+            s->player->moveSpeed = 4;
+        }
 
         if(e->key.keysym.sym == SDLK_TAB) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOGIN);
@@ -297,16 +307,16 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
 
             if (acotezeo && !s->player->moving) {
                 if (s->keyDown) {
-                    Character_TryToMove(s->player, 0, s->map, s->characters, s->charNumber);
+                    Character_TryToMove(s->player, 0, s->map, s->map->characters, s->map->charNumber);
                 }
                 else if (s->keyUp) {
-                    Character_TryToMove(s->player, 3, s->map, s->characters, s->charNumber);
+                    Character_TryToMove(s->player, 3, s->map, s->map->characters, s->map->charNumber);
                 }
                 else if (s->keyLeft) {
-                    Character_TryToMove(s->player, 1, s->map, s->characters, s->charNumber);
+                    Character_TryToMove(s->player, 1, s->map, s->map->characters, s->map->charNumber);
                 }
                 else if (s->keyRight) {
-                    Character_TryToMove(s->player, 2, s->map, s->characters, s->charNumber);
+                    Character_TryToMove(s->player, 2, s->map, s->map->characters, s->map->charNumber);
                 }
             
             }
@@ -330,14 +340,9 @@ void SceneMap_destroy(Scene_Map* s) {
         Socket_Close(Network.sockFd);   
     }
     WD_TextureDestroy(s->tileMap);
-    Map_Destroy(s->map);
-    for(int i = 0; i < s->charNumber; i++) {
-        if(s->characters[i] != NULL)
-            Character_Destroy(s->characters[i]);
-    }
-    if(s->characters != NULL) {
-        free(s->characters);
+    if(s->renderCharacters != NULL) {
         free(s->renderCharacters);
     }
+    Map_Destroy(s->map);
     free(s);
 }

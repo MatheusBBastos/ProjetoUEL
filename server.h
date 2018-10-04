@@ -4,12 +4,14 @@
 #include "headers.h"
 #include "network.h"
 #include "character.h"
+#include "map.h"
 
 typedef struct Client {
     Address* addr;
     int id;
     Uint32 lastMessage;
     Character* character;
+    uint64_t lastMovementId;
 } Client;
 
 Client* Client_New(Address* addr, int id);
@@ -23,6 +25,7 @@ typedef struct Server {
     int delayMs;
     Client** clients;
     int connectedClients, maxClients;
+    Map* map;
 } Server;
 
 Server* Server_Open(unsigned short port);
@@ -42,6 +45,8 @@ void Server_SendToAll(Server* s, char* data, int id);
 void Server_Shutdown(Server* s);
 
 void Server_SendCharacters(Server* s, Address* addr, int id);
+
+bool Server_CheckMovement(Server* s, int id, int x, int y);
 
 void Server_HandleMessage(Server* s, Address* sender, char* buffer);
 

@@ -8,6 +8,8 @@ Map* Map_Create() {
     for(int i = 0; i < MAP_LAYERS; i++) {
         newMap->layers[i] = NULL;
     }
+    newMap->characters = NULL;
+    newMap->charNumber = 0;
     return newMap;
 }
 
@@ -79,7 +81,6 @@ void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY) {
     int endX = ((screenX + gInfo.screenWidth) / TILE_SIZE + 1);
     int endY = ((screenY + gInfo.screenHeight) / TILE_SIZE + 1);
     int x, y, z;
-    // RENDERIZANDO APENAS A PRIMEIRA CAMADA POR ENQUANTO
     for(z = 0; z < MAP_LAYERS; z++) {
         for(y = startY; y < endY; y ++) {
             for(x = startX; x < endX; x ++) {
@@ -129,6 +130,13 @@ void Map_Destroy(Map* m) {
         free(m->data);
     for(int i = 0; i < MAP_LAYERS; i++) {
         SDL_DestroyTexture(m->layers[i]);
+    }
+    if(m->characters != NULL) {
+        for(int i = 0; i < m->charNumber; i++) {
+            if(m->characters[i] != NULL)
+                Character_Destroy(m->characters[i]);
+        }
+        free(m->characters);
     }
     free(m->layers);
     free(m);
