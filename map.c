@@ -22,6 +22,10 @@ void Map_Load(Map* map, char* path, bool loadTexture) {
         }
     }
     FILE* mapFile = fopen(path, "r");
+    if(mapFile == NULL) {
+        printf("Falha ao carregar mapa %s!\n", path);
+        return;
+    }
     fscanf(mapFile, "%d %d", &map->width, &map->height);
     if(loadTexture) {
         for(int i = 0; i < MAP_LAYERS; i++) {
