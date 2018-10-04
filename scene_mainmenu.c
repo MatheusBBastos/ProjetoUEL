@@ -208,7 +208,7 @@ void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e) {
                 s->index--;
         }  else if (e->key.keysym.sym == SDLK_RETURN && s-> index == 0) {
             if(s->btnJogar == true)
-                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOBBY);
+                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
             else
                 s->btnJogar = true;
         }  else if (e->key.keysym.sym == SDLK_RETURN && s->index == 1) {

@@ -24,8 +24,8 @@ void SceneManager_changeScene(int newScene) {
         case SCENE_MAP:
             SceneMap_destroy(sMng.sMap);
             break;
-        case SCENE_LOBBY:
-            SceneLobby_destroy(sMng.sLobby);
+        case SCENE_SERVERS:
+            SceneServers_destroy(sMng.sServers);
             break;
         case SCENE_TUTORIAL:
             SceneTutorial_destroy(sMng.sTutorial);
@@ -45,8 +45,8 @@ void SceneManager_changeScene(int newScene) {
         case SCENE_MAP:
             sMng.sMap = SceneMap_new();
             break;
-        case SCENE_LOBBY:
-            sMng.sLobby = SceneLobby_new();
+        case SCENE_SERVERS:
+            sMng.sServers = SceneServers_new();
             break;
         case SCENE_TUTORIAL:
             sMng.sTutorial = SceneTutorial_new();
@@ -69,8 +69,8 @@ void SceneManager_updateScene() {
         case SCENE_MAP:
             SceneMap_update(sMng.sMap);
             break;
-        case SCENE_LOBBY:
-            SceneLobby_update(sMng.sLobby);
+        case SCENE_SERVERS:
+            SceneServers_update(sMng.sServers);
             break;
         case SCENE_TUTORIAL:
             SceneTutorial_update(sMng.sTutorial);
@@ -123,8 +123,8 @@ void SceneManager_handleEvent(SDL_Event* e) {
         case SCENE_MAP:
             SceneMap_handleEvent(sMng.sMap, e);
             break;
-        case SCENE_LOBBY:
-            SceneLobby_handleEvent(sMng.sLobby, e);
+        case SCENE_SERVERS:
+            SceneServers_handleEvent(sMng.sServers, e);
             break;
         case SCENE_TUTORIAL:
             SceneTutorial_handleEvent(sMng.sTutorial, e);
