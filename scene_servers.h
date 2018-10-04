@@ -25,6 +25,7 @@ typedef struct Scene_Servers {
     WTexture* nomeServer1;
     WTexture* nomeServer2;
     WTexture* nomeServer3;
+    WTexture* voltar;
     TextBox* boxIp;
     SDL_Rect renderQuad;
 } Scene_Servers;

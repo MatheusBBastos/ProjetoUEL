@@ -16,6 +16,7 @@ Scene_Servers* SceneServers_new() {
     newScene->nomeServer1 = WD_CreateTexture();
     newScene->nomeServer2 = WD_CreateTexture();
     newScene->nomeServer3 = WD_CreateTexture();
+    newScene->voltar = WD_CreateTexture();
     newScene->indexe = 0;
     newScene-> indexd = 0;
     newScene-> posTela = 0;
@@ -40,6 +41,7 @@ Scene_Servers* SceneServers_new() {
     WD_TextureLoadFromText(newScene->nomeServer1, "Basto forte", gInfo.serversFontd, Cwhite);
     WD_TextureLoadFromText(newScene->nomeServer2, "Melvi forte", gInfo.serversFontd, Cwhite);
     WD_TextureLoadFromText(newScene->nomeServer3, "Tampy fraco ;(", gInfo.serversFontd, Cwhite);
+    WD_TextureLoadFromText(newScene->voltar, "Voltar", gInfo.serversFonte, Cwhite);
 
     WD_TextureLoadFromFile(newScene->backgroundTexture, "content/BG_mainMenu.png");
     int w = newScene->backgroundTexture->w, h = newScene->backgroundTexture->h;
@@ -74,12 +76,14 @@ void SceneServers_update(Scene_Servers* s) {
 
     SDL_SetTextureColorMod(s->entrar->mTexture, 255, 255, 255);
     SDL_SetTextureColorMod(s->servir->mTexture, 255, 255, 255);
+    SDL_SetTextureColorMod(s->voltar->mTexture, 255, 255, 255);
     SDL_SetTextureColorMod(s->server1->mTexture, 0, 132, 255);
     SDL_SetTextureColorMod(s->server2->mTexture, 255, 255, 255);
     SDL_SetTextureColorMod(s->server3->mTexture, 255, 255, 255);
     SDL_SetTextureColorMod(s->nomeServer1->mTexture, 255, 255, 255);
     SDL_SetTextureColorMod(s->nomeServer2->mTexture, 255, 255, 255);
     SDL_SetTextureColorMod(s->nomeServer3->mTexture, 255, 255, 255);
+    
 
     if(s->esquerda) {
         if(s->indexe == 0)
@@ -90,6 +94,8 @@ void SceneServers_update(Scene_Servers* s) {
             SDL_SetTextureColorMod(s->entrar->mTexture, 255, 66, 0);
         else if(s->indexe == 2)
             SDL_SetTextureColorMod(s->servir->mTexture, 255, 66, 0);
+        else if (s->indexe == 3)
+            SDL_SetTextureColorMod(s->voltar->mTexture, 255, 66, 0);
     } else {
         s->boxIp->active = false;
         if(s->posTela == 0)
@@ -102,6 +108,7 @@ void SceneServers_update(Scene_Servers* s) {
 
     WD_TextureRender(s->entrar, 160 * gInfo.screenMulti, 825 * gInfo.screenMulti);
     WD_TextureRender(s->servir, 160 * gInfo.screenMulti, 895 * gInfo.screenMulti);
+    WD_TextureRender(s->voltar, 160 * gInfo.screenMulti, 965 * gInfo.screenMulti);
     WD_TextureRender(s->server1, 700 * gInfo.screenMulti, 515 * gInfo.screenMulti);
     WD_TextureRender(s->nomeServer1, 800 * gInfo.screenMulti, 585 * gInfo.screenMulti);
     WD_TextureRender(s->server2, 700 * gInfo.screenMulti, 655 * gInfo.screenMulti);
@@ -123,6 +130,7 @@ void SceneServers_destroy(Scene_Servers* s) {
     WD_TextureDestroy(s->nomeServer1);
     WD_TextureDestroy(s->nomeServer2);
     WD_TextureDestroy(s->nomeServer3);
+    WD_TextureDestroy(s->voltar);
     free(s);
 }
 
@@ -136,7 +144,7 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
             if(s->posTela < 2 && !s->esquerda)
                 s->posTela++;
 
-            if(s->indexe < 2 && s->esquerda)
+            if(s->indexe < 3 && s->esquerda)
                 s->indexe++;
             else if(s->indexd < s->numServers-1 && !s->esquerda) //colocar variavel do nmr de servidores
                 s->indexd++;
@@ -177,6 +185,12 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
             s->esquerda = false;
         } else if(e->key.keysym.sym == SDLK_LEFT) {
             s->esquerda = true; 
+        } else if(e->key.keysym.sym == SDLK_RETURN) {
+            if(s->esquerda && s->indexe == 1)
+                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOBBY);
+            else if(s->esquerda && s->indexe == 3)
+                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
+
         }
         printf("%d %d %d\n", s->indexe, s->indexd, s->posTela);   
 

@@ -30,6 +30,9 @@ void SceneManager_changeScene(int newScene) {
         case SCENE_TUTORIAL:
             SceneTutorial_destroy(sMng.sTutorial);
             break;
+        case SCENE_LOBBY:
+            SceneLobby_destroy(sMng.sLobby);
+            break;
     }
     sMng.currentScene = newScene;
     switch(newScene) {
@@ -50,6 +53,9 @@ void SceneManager_changeScene(int newScene) {
             break;
         case SCENE_TUTORIAL:
             sMng.sTutorial = SceneTutorial_new();
+            break;
+        case SCENE_LOBBY:
+            sMng.sLobby = SceneLobby_new();
             break;
     }
 }
@@ -74,6 +80,9 @@ void SceneManager_updateScene() {
             break;
         case SCENE_TUTORIAL:
             SceneTutorial_update(sMng.sTutorial);
+            break;
+        case SCENE_LOBBY:
+            SceneLobby_update(sMng.sLobby);
             break;
     }
     if(sMng.inTransition) {
@@ -128,6 +137,9 @@ void SceneManager_handleEvent(SDL_Event* e) {
             break;
         case SCENE_TUTORIAL:
             SceneTutorial_handleEvent(sMng.sTutorial, e);
+            break;
+        case SCENE_LOBBY:
+            SceneLobby_handleEvent(sMng.sLobby, e);
             break;
     }
 }
