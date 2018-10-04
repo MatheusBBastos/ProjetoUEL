@@ -37,7 +37,7 @@ Scene_MainMenu* SceneMainMenu_new() {
 
 
     WD_TextureLoadFromText(newScene->bemvindo,"Bem Vindo", gInfo.mainMenu, colorBemvindo);
-    WD_TextureLoadFromText(newScene->nome, "Basto Forte", gInfo.mainMenu, colorWhite);
+    WD_TextureLoadFromText(newScene->nome, gInfo.nome, gInfo.mainMenu, colorWhite);
 
     WD_TextureLoadFromText(newScene->jogar, "Jogar", gInfo.mainMenu_botoes, colorWhite);
     WD_TextureLoadFromText(newScene->tutorial, "Tutorial", gInfo.mainMenu_botoes, colorWhite);
@@ -214,7 +214,7 @@ void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e) {
         }  else if (e->key.keysym.sym == SDLK_RETURN && s->index == 1) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_TUTORIAL);
         }  else if (e->key.keysym.sym == SDLK_RETURN && s->index == 2) {
-            sMng.quit = true;
+            SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOGIN);
         }  else if (e->key.keysym.sym == SDLK_ESCAPE && s->btnJogar) {
             s->btnJogar = false;
             s->mult = true;
