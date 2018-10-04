@@ -71,6 +71,10 @@ typedef struct GameInfo {
     TTF_Font* mainMenu;
     // Fonte mainmenu - botoes
     TTF_Font* mainMenu_botoes;
+    // Fontes servers
+    TTF_Font* serversFonte;
+    TTF_Font* serversName;
+    TTF_Font* serversFontd;
     // Modo debug
     bool debug;
     char nome[50];

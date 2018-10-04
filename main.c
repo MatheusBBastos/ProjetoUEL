@@ -82,6 +82,10 @@ int main(int argc, char* argv[]) {
         gInfo.mainMenu = TTF_OpenFont("content/RC.ttf", 65 * gInfo.screenMulti);
         gInfo.mainMenu_botoes = TTF_OpenFont("content/RC.ttf", 54 * gInfo.screenMulti);
         gInfo.rank = TTF_OpenFont("content/Gamer.ttf", 96 * gInfo.screenMulti);
+        gInfo.serversFontd = TTF_OpenFont("content/Minecraft.ttf", 56 * gInfo.screenMulti);
+        gInfo.serversFonte = TTF_OpenFont("content/Minecraft.ttf", 48 * gInfo.screenMulti);
+        gInfo.serversName = TTF_OpenFont("content/Minecraft.ttf", 61 * gInfo.screenMulti);
+
 
         SDL_RenderPresent(gInfo.renderer);
         sMng.currentScene = SCENE_LOGIN;

@@ -155,7 +155,7 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
             WD_TextureRender(s->seta, 76 * gInfo.screenMulti, 912 * gInfo.screenMulti);
         }
 
-        WD_TextureRender(s->jogar, 156 * gInfo.screenMulti, 720 * gInfo.screenMulti);
+        WD_TextureRender(s->jogar, 156 * gInfo.screenMulti, 720 *   gInfo.screenMulti);
         WD_TextureRender(s->tutorial, 156 * gInfo.screenMulti, 804 * gInfo.screenMulti);
         WD_TextureRender(s->logout, 156 * gInfo.screenMulti, 892 * gInfo.screenMulti);
     } else {
@@ -207,8 +207,10 @@ void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e) {
             else if(s->index>0)
                 s->index--;
         }  else if (e->key.keysym.sym == SDLK_RETURN && s-> index == 0) {
-            //SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOBBY);
-            s->btnJogar = true;
+            if(s->btnJogar == true)
+                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
+            else
+                s->btnJogar = true;
         }  else if (e->key.keysym.sym == SDLK_RETURN && s->index == 1) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_TUTORIAL);
         }  else if (e->key.keysym.sym == SDLK_RETURN && s->index == 2) {
