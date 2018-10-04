@@ -37,8 +37,8 @@ Scene_Login* SceneLogin_new() {
     SDL_Color colorNotSelected = { 255,255,255 }; // Cores dos botões quando não selecionados
     SDL_Color fullRed = { 255,0,0 };
 
-    newScene->reqq = false;
-    newScene->oncer = true;
+    newScene->loginPressed = false;
+    newScene->connectionNotStarted = true;
 
     newScene->logo[0] = WD_CreateTexture();
     newScene->logo[1] = WD_CreateTexture();
@@ -86,14 +86,14 @@ Scene_Login* SceneLogin_new() {
 }
 
 void SceneLogin_update(Scene_Login* s) {
-    if (s->reqq) {
+    if (s->loginPressed) {
 
-        if (s->socketFd != 0 && s->oncer) {
+        if (s->socketFd != 0 && s->connectionNotStarted) {
             s->dataReceived = false;
             s->connected = false;
             s->socketFd = TCPSocket_Open();
             TCPSocket_Connect(s->socketFd, "35.198.20.77", 3122);
-            s->oncer = false;
+            s->connectionNotStarted = false;
         }
 
         if (s->socketFd != 0 && !s->dataReceived) {
@@ -143,13 +143,13 @@ void SceneLogin_update(Scene_Login* s) {
 
                     s->dataReceived = true;
                     Socket_Close(s->socketFd);
-                    s->reqq = false;
-                    s->oncer = true;
+                    s->loginPressed = false;
+                    s->connectionNotStarted = true;
                 }
                 else if (c == -1) {
                     Socket_Close(s->socketFd);
-                    s->reqq = false;
-                    s->oncer = true;
+                    s->loginPressed = false;
+                    s->connectionNotStarted = true;
                 }
             }
         }
@@ -251,7 +251,7 @@ void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
         }
         else if (e->key.keysym.sym == SDLK_RETURN && !s->modoOff && s->index == 2)
         {
-            s->reqq = true;
+            s->loginPressed = true;
         }
         else if (e->key.keysym.sym == SDLK_RIGHT && s->index == 2 || e->key.keysym.sym == SDLK_LEFT && s->index == 2) {
             s->modoOff = !s->modoOff;
