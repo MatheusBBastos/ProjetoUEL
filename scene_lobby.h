@@ -11,7 +11,7 @@ typedef struct Scene_Lobby {
     int frame;
     short int index, page;
     bool esquerda;
-    char string[20];
+    char string1[20], string2[20], string3[20];
     WTexture* nome;
     WTexture* mutiplayer;
     WTexture* backgroundTexture;

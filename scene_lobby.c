@@ -93,7 +93,7 @@ void SceneLobby_update(Scene_Lobby* s) {
         } else {
             SDL_SetTextureColorMod(s->nomeServer2->mTexture, 255, 66, 0);
         }
-    } else if(s->index == 2) {
+    } else if(s->index >= 2) {
         if(s->esquerda) {
             SDL_SetTextureColorMod(s->servir->mTexture, 255, 66, 0);
         } else {
@@ -130,22 +130,51 @@ void SceneLobby_destroy(Scene_Lobby* s) {
 void SceneLobby_handleEvent(Scene_Lobby* s, SDL_Event* e) {
     if(sMng.inTransition)
         return;
-    if(e->type == SDL_KEYDOWN) {
+    if(e->type == SDL_KEYDOWN) {   
         if(e->key.keysym.sym == SDLK_TAB) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
         } else if(e->key.keysym.sym == SDLK_DOWN) {
             if(s->index < 2 && s->esquerda)
                 s->index++;
-            else if(s->index < 3 && !s->esquerda) //colocar variavel do nmr de servidores
+            else if(s->index < 9 && !s->esquerda) //colocar variavel do nmr de servidores
                 s->index++;
+
+            if(s->index > 2 && !s->esquerda) {
+                SDL_Color color = {255, 255, 255};
+                //s->page = s->index/3;
+                sprintf(s->string1, "Server #%d", s->index-1);
+                sprintf(s->string2, "Server #%d", s->index);
+                sprintf(s->string3, "Server #%d", s->index+1);
+                WD_TextureLoadFromText(s->server1, s->string1, gInfo.lobbyFontd, color);
+                WD_TextureLoadFromText(s->server2, s->string2, gInfo.lobbyFontd, color);
+                WD_TextureLoadFromText(s->server3, s->string3, gInfo.lobbyFontd, color);
+            }
+
         } else if(e->key.keysym.sym == SDLK_UP) {
             if(s->index > 0)
                 s->index--;
+            
+            if(s->index > 1 && !s->esquerda) {
+                SDL_Color color = {255, 255, 255};
+                //s->page = s->index/3;
+                sprintf(s->string1, "Server #%d", s->index-1);
+                sprintf(s->string2, "Server #%d", s->index);
+                sprintf(s->string3, "Server #%d", s->index+1);
+                WD_TextureLoadFromText(s->server1, s->string1, gInfo.lobbyFontd, color);
+                WD_TextureLoadFromText(s->server2, s->string2, gInfo.lobbyFontd, color);
+                WD_TextureLoadFromText(s->server3, s->string3, gInfo.lobbyFontd, color);
+            }
+            
+            
         } else if(e->key.keysym.sym == SDLK_RIGHT) {
             s->esquerda = false;
-        } else if(e->key.keysym.sym == SDLK_LEFT && s->index < 3) {
-            s->esquerda = true;
+        } else if(e->key.keysym.sym == SDLK_LEFT) {
+            if(!s->esquerda && s->index > 2)
+                s->index = 2;
+            s->esquerda = true; 
         }
+        printf("%d\n", s->index);   
+
     }
 
     WD_TextBoxHandleEvent(s->boxIp, e);
