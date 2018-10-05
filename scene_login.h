@@ -11,6 +11,7 @@ typedef struct Scene_Login {
     int socketFd;
     bool connected, dataReceived, reqq, oncer;
     int enteringFrame, frame;
+    WTexture* loading;
     WTexture* backgroundTexture;
     WTexture* textLogar;
     WTexture* textModoOff;

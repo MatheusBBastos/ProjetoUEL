@@ -40,6 +40,7 @@ Scene_Login* SceneLogin_new() {
     newScene->reqq = false;
     newScene->oncer = true;
 
+    newScene->loading = WD_CreateTexture();
     newScene->logo[0] = WD_CreateTexture();
     newScene->logo[1] = WD_CreateTexture();
     newScene->textError = WD_CreateTexture();
@@ -52,6 +53,7 @@ Scene_Login* SceneLogin_new() {
     newScene->modoOff = false;
     newScene->index = 0; // Começar no login
 
+    WD_TextureLoadFromFile(newScene->loading, "content/loading.png");
     WD_TextureLoadFromFile(newScene->logo[0], "content/dalhebomba.png");
     WD_TextureLoadFromFile(newScene->logo[1], "content/logo.png");
     WD_TextureLoadFromFile(newScene->seta, "content/seta.png");
@@ -159,6 +161,12 @@ void SceneLogin_update(Scene_Login* s) {
     WD_TextureRenderDest(s->backgroundTexture, &s->renderQuad);
     SDL_SetRenderDrawColor(gInfo.renderer, 0x00, 0x00, 0x00, 0x00);
 
+    if (s->reqq && s->socketFd != 0 && !s->dataReceived) {
+        double angle = gInfo.screenFreq / 60.0 * 6 * s->frame;
+        int loadingX = (gInfo.screenWidth - 100 * gInfo.screenMulti) / 2, loadingY = gInfo.screenHeight - 100 * gInfo.screenMulti - 20;
+        SDL_Rect c = {loadingX, loadingY, 100 * gInfo.screenMulti, 100 * gInfo.screenMulti};
+        SDL_RenderCopyEx(gInfo.renderer, s->loading->mTexture, NULL, &c, angle, NULL, SDL_FLIP_NONE);
+    }
     WD_TextureRender(s->textLogarOff, posLogarX * gInfo.screenMulti, posLogarY * gInfo.screenMulti); //Começa com os dois botoes brancos
     WD_TextureRender(s->textModoOffOff, posModoX * gInfo.screenMulti, posModoY * gInfo.screenMulti);
     WD_TextureRender(s->logo[1], posLogoX * gInfo.screenMulti, posLogoY * gInfo.screenMulti);
@@ -224,6 +232,7 @@ void SceneLogin_update(Scene_Login* s) {
 
 
 void SceneLogin_destroy(Scene_Login* s) {
+    WD_TextureDestroy(s->loading);
     WD_TextureDestroy(s->logo[0]);
     WD_TextureDestroy(s->logo[1]);
     WD_TextureDestroy(s->backgroundTexture);
