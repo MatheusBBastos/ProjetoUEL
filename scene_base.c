@@ -2,144 +2,144 @@
 
 // Começa uma transiçao entre cenas
 void SceneManager_performTransition(int duration, int newScene) {
-    sMng.inTransition = true;
-    sMng.transitionFrame = 0;
-    sMng.transitionChangedScene = false;
-    sMng.transitionNextScene = newScene;
-    sMng.transitionDuration = duration;
+    SceneManager.inTransition = true;
+    SceneManager.transitionFrame = 0;
+    SceneManager.transitionChangedScene = false;
+    SceneManager.transitionNextScene = newScene;
+    SceneManager.transitionDuration = duration;
 }
 
 // Troca a cena, destruindo a anterior e criando a nova
 void SceneManager_changeScene(int newScene) {
-    switch(sMng.currentScene) {
+    switch(SceneManager.currentScene) {
         case SCENE_LOGIN:
-            SceneLogin_destroy(sMng.sLogin);
+            SceneLogin_destroy(SceneManager.sLogin);
             break;
         case SCENE_SINGLEPLAYER:
-            SceneSingleplayer_destroy(sMng.sSingleplayer);
+            SceneSingleplayer_destroy(SceneManager.sSingleplayer);
             break;
         case SCENE_MAINMENU:
-            SceneMainMenu_destroy(sMng.sMainMenu);
+            SceneMainMenu_destroy(SceneManager.sMainMenu);
             break;
         case SCENE_MAP:
-            SceneMap_destroy(sMng.sMap);
+            SceneMap_destroy(SceneManager.sMap);
             break;
         case SCENE_SERVERS:
-            SceneServers_destroy(sMng.sServers);
+            SceneServers_destroy(SceneManager.sServers);
             break;
         case SCENE_TUTORIAL:
-            SceneTutorial_destroy(sMng.sTutorial);
+            SceneTutorial_destroy(SceneManager.sTutorial);
             break;
         case SCENE_LOBBY:
-            SceneLobby_destroy(sMng.sLobby);
+            SceneLobby_destroy(SceneManager.sLobby);
             break;
     }
-    sMng.currentScene = newScene;
+    SceneManager.currentScene = newScene;
     switch(newScene) {
         case SCENE_LOGIN:
-            sMng.sLogin = SceneLogin_new();
+            SceneManager.sLogin = SceneLogin_new();
             break;
         case SCENE_SINGLEPLAYER:
-            sMng.sSingleplayer = SceneSingleplayer_new();
+            SceneManager.sSingleplayer = SceneSingleplayer_new();
             break;
         case SCENE_MAINMENU:
-            sMng.sMainMenu = SceneMainMenu_new();
+            SceneManager.sMainMenu = SceneMainMenu_new();
             break;
         case SCENE_MAP:
-            sMng.sMap = SceneMap_new();
+            SceneManager.sMap = SceneMap_new();
             break;
         case SCENE_SERVERS:
-            sMng.sServers = SceneServers_new();
+            SceneManager.sServers = SceneServers_new();
             break;
         case SCENE_TUTORIAL:
-            sMng.sTutorial = SceneTutorial_new();
+            SceneManager.sTutorial = SceneTutorial_new();
             break;
         case SCENE_LOBBY:
-            sMng.sLobby = SceneLobby_new();
+            SceneManager.sLobby = SceneLobby_new();
             break;
     }
 }
 
 // Atualiza e renderiza a cena atual, além de mostrar os efeitos de uma transição se for o caso
 void SceneManager_updateScene() {
-    switch(sMng.currentScene) {
+    switch(SceneManager.currentScene) {
         case SCENE_LOGIN:
-            SceneLogin_update(sMng.sLogin);
+            SceneLogin_update(SceneManager.sLogin);
             break;
         case SCENE_SINGLEPLAYER:
-            SceneSingleplayer_update(sMng.sSingleplayer);
+            SceneSingleplayer_update(SceneManager.sSingleplayer);
             break;
         case SCENE_MAINMENU:
-            SceneMainMenu_update(sMng.sMainMenu);
+            SceneMainMenu_update(SceneManager.sMainMenu);
             break;
         case SCENE_MAP:
-            SceneMap_update(sMng.sMap);
+            SceneMap_update(SceneManager.sMap);
             break;
         case SCENE_SERVERS:
-            SceneServers_update(sMng.sServers);
+            SceneServers_update(SceneManager.sServers);
             break;
         case SCENE_TUTORIAL:
-            SceneTutorial_update(sMng.sTutorial);
+            SceneTutorial_update(SceneManager.sTutorial);
             break;
         case SCENE_LOBBY:
-            SceneLobby_update(sMng.sLobby);
+            SceneLobby_update(SceneManager.sLobby);
             break;
     }
-    if(sMng.inTransition) {
+    if(SceneManager.inTransition) {
         // Se, na transição, a cena ainda nao foi trocada (primeira fase)
-        if(!sMng.transitionChangedScene) {
+        if(!SceneManager.transitionChangedScene) {
             // Renderizar na cor preta
-            SDL_SetRenderDrawColor(gInfo.renderer, 0x00, 0x00, 0x00, 0xFF);
+            SDL_SetRenderDrawColor(Game.renderer, 0x00, 0x00, 0x00, 0xFF);
             // Retângulo que varia de tamanho conforme o tempo
-            SDL_Rect fillRect = {0, 0, (sMng.transitionFrame + 2) * gInfo.screenWidth / sMng.transitionDuration, gInfo.screenHeight};
-            SDL_RenderFillRect(gInfo.renderer, &fillRect);
-            SDL_SetRenderDrawColor(gInfo.renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-            sMng.transitionFrame++;
+            SDL_Rect fillRect = {0, 0, (SceneManager.transitionFrame + 2) * Game.screenWidth / SceneManager.transitionDuration, Game.screenHeight};
+            SDL_RenderFillRect(Game.renderer, &fillRect);
+            SDL_SetRenderDrawColor(Game.renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+            SceneManager.transitionFrame++;
             // Já preencheu a tela inteira
-            if(sMng.transitionFrame >= sMng.transitionDuration) {
+            if(SceneManager.transitionFrame >= SceneManager.transitionDuration) {
                 // Mudar a cena e passar para a próxima fase
-                SceneManager_changeScene(sMng.transitionNextScene);
-                sMng.transitionChangedScene = true;
+                SceneManager_changeScene(SceneManager.transitionNextScene);
+                SceneManager.transitionChangedScene = true;
                 // Recomeçar a contagem de quadros
-                sMng.transitionFrame = 0;
+                SceneManager.transitionFrame = 0;
             }
         } else {
             // Segunda fase de transição (retângulo preto diminui o tamanho conforme o tempo)
-            SDL_SetRenderDrawColor(gInfo.renderer, 0x00, 0x00, 0x00, 0xFF);
-            SDL_Rect fillRect = {sMng.transitionFrame * gInfo.screenWidth / sMng.transitionDuration, 0, gInfo.screenWidth, gInfo.screenHeight};
-            SDL_RenderFillRect(gInfo.renderer, &fillRect);
-            SDL_SetRenderDrawColor(gInfo.renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-            sMng.transitionFrame++;
+            SDL_SetRenderDrawColor(Game.renderer, 0x00, 0x00, 0x00, 0xFF);
+            SDL_Rect fillRect = {SceneManager.transitionFrame * Game.screenWidth / SceneManager.transitionDuration, 0, Game.screenWidth, Game.screenHeight};
+            SDL_RenderFillRect(Game.renderer, &fillRect);
+            SDL_SetRenderDrawColor(Game.renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+            SceneManager.transitionFrame++;
             // Fim da transição
-            if(sMng.transitionFrame >= sMng.transitionDuration) {
-                sMng.inTransition = false;
+            if(SceneManager.transitionFrame >= SceneManager.transitionDuration) {
+                SceneManager.inTransition = false;
             }
         }
     }
 }
 
 void SceneManager_handleEvent(SDL_Event* e) {
-    switch(sMng.currentScene) {
+    switch(SceneManager.currentScene) {
         case SCENE_LOGIN:
-            SceneLogin_handleEvent(sMng.sLogin, e);
+            SceneLogin_handleEvent(SceneManager.sLogin, e);
             break;
         case SCENE_SINGLEPLAYER:
-            SceneSingleplayer_handleEvent(sMng.sSingleplayer, e);
+            SceneSingleplayer_handleEvent(SceneManager.sSingleplayer, e);
             break;
         case SCENE_MAINMENU:
-            SceneMainMenu_handleEvent(sMng.sMainMenu, e);
+            SceneMainMenu_handleEvent(SceneManager.sMainMenu, e);
             break;
         case SCENE_MAP:
-            SceneMap_handleEvent(sMng.sMap, e);
+            SceneMap_handleEvent(SceneManager.sMap, e);
             break;
         case SCENE_SERVERS:
-            SceneServers_handleEvent(sMng.sServers, e);
+            SceneServers_handleEvent(SceneManager.sServers, e);
             break;
         case SCENE_TUTORIAL:
-            SceneTutorial_handleEvent(sMng.sTutorial, e);
+            SceneTutorial_handleEvent(SceneManager.sTutorial, e);
             break;
         case SCENE_LOBBY:
-            SceneLobby_handleEvent(sMng.sLobby, e);
+            SceneLobby_handleEvent(SceneManager.sLobby, e);
             break;
     }
 }

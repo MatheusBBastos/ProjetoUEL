@@ -24,7 +24,7 @@ void WD_TextureLoadFromText(WTexture* wtexture, char* newTextStr, TTF_Font* font
         SDL_DestroyTexture(wtexture->mTexture);
     }
     SDL_Surface* textSurface = TTF_RenderUTF8_Blended(font, newTextStr, color);
-    wtexture->mTexture = SDL_CreateTextureFromSurface(gInfo.renderer, textSurface);
+    wtexture->mTexture = SDL_CreateTextureFromSurface(Game.renderer, textSurface);
     wtexture->w = textSurface->w;
     wtexture->h = textSurface->h;
     SDL_FreeSurface(textSurface);
@@ -35,7 +35,7 @@ void WD_TextureLoadFromFile(WTexture* wtexture, char* path) {
     if(wtexture->mTexture != NULL) {
         SDL_DestroyTexture(wtexture->mTexture);
     }
-    wtexture->mTexture = IMG_LoadTexture(gInfo.renderer, path);
+    wtexture->mTexture = IMG_LoadTexture(Game.renderer, path);
     if(wtexture->mTexture == NULL) {
         printf("Falha ao carregar imagem! Erro: %s\n", IMG_GetError());
     } else {
@@ -46,12 +46,12 @@ void WD_TextureLoadFromFile(WTexture* wtexture, char* path) {
 // Renderiza uma textura (necessário que ela já tenha sido alocada e carregada)
 void WD_TextureRender(WTexture* wtexture, int x, int y) {
     SDL_Rect textureRect = {x, y, wtexture->w, wtexture->h};
-    SDL_RenderCopy(gInfo.renderer, wtexture->mTexture, NULL, &textureRect);
+    SDL_RenderCopy(Game.renderer, wtexture->mTexture, NULL, &textureRect);
 }
 
 // Renderiza a textura em um retângulo
 void WD_TextureRenderDest(WTexture* wtexture, SDL_Rect* renderQuad) {
-    SDL_RenderCopy(gInfo.renderer, wtexture->mTexture, NULL, renderQuad);
+    SDL_RenderCopy(Game.renderer, wtexture->mTexture, NULL, renderQuad);
 }
 
 // Renderiza uma textura com mais opções
@@ -65,7 +65,7 @@ void WD_TextureRenderEx(WTexture* wtexture, int x, int y, SDL_Rect* clip, double
         textureRect.w = clip->w;
         textureRect.h = clip->h;
     }
-    SDL_RenderCopyEx(gInfo.renderer, wtexture->mTexture, clip, &textureRect, angle, center, flip);
+    SDL_RenderCopyEx(Game.renderer, wtexture->mTexture, clip, &textureRect, angle, center, flip);
 }
 
 void WD_TextureRenderExCustom(WTexture* wtexture, int x, int y, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip, int w, int h) {
@@ -74,7 +74,7 @@ void WD_TextureRenderExCustom(WTexture* wtexture, int x, int y, SDL_Rect* clip, 
         textureRect.w = w;
         textureRect.h = h;
     }
-    SDL_RenderCopyEx(gInfo.renderer, wtexture->mTexture, clip, &textureRect, angle, center, flip);
+    SDL_RenderCopyEx(Game.renderer, wtexture->mTexture, clip, &textureRect, angle, center, flip);
 }
 
 // Cria um novo botão a partir das informações fornecidas e retorna seu ponteiro
@@ -92,8 +92,8 @@ Button* WD_CreateButton(char* text, int x, int y, TTF_Font* font, SDL_Color text
 
 // Renderiza um botão
 void WD_ButtonRender(Button* button) {
-    SDL_SetRenderDrawColor(gInfo.renderer, button->buttonColor.r, button->buttonColor.g, button->buttonColor.b, button->buttonColor.a);
-    SDL_RenderFillRect(gInfo.renderer, &button->buttonRect);
+    SDL_SetRenderDrawColor(Game.renderer, button->buttonColor.r, button->buttonColor.g, button->buttonColor.b, button->buttonColor.a);
+    SDL_RenderFillRect(Game.renderer, &button->buttonRect);
     WD_TextureRender(button->textW, button->buttonRect.x + 6, button->buttonRect.y + (button->clicking ? 4 : 3));
 }
 
@@ -176,11 +176,11 @@ void WD_TextBoxRender(TextBox* t, unsigned frameCount) {
     }
     // Renderizar o texto
     WD_TextureRenderEx(t->textTexture, t->x + 4, t->y + 4, &t->textClip, 0.0, NULL, SDL_FLIP_NONE);
-    if(t->active && frameCount >= gInfo.screenFreq / 2) {
+    if(t->active && frameCount >= Game.screenFreq / 2) {
         SDL_Rect cursorRect = {t->cursorX, t->y + 2, 1, t->height - 4};
-        SDL_SetRenderDrawColor(gInfo.renderer, 70, 70, 70, 255);
+        SDL_SetRenderDrawColor(Game.renderer, 70, 70, 70, 255);
         // Renderizar o cursor
-        SDL_RenderFillRect(gInfo.renderer, &cursorRect);
+        SDL_RenderFillRect(Game.renderer, &cursorRect);
     }
 }
 

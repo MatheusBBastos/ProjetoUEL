@@ -34,8 +34,8 @@ enum SceneTypes {
     SCENE_UNDEFINED
 };
 
-// Estrutura SceneManager: carrega dados para controlar as cenas
-typedef struct SceneManager {
+// Estrutura SceneManagerS: carrega dados para controlar as cenas
+typedef struct SceneManagerS {
     // Identificador da cena atual
     int currentScene;
     // No meio de uma transição entre cenas
@@ -57,7 +57,7 @@ typedef struct SceneManager {
     Scene_Tutorial* sTutorial;
     Scene_Lobby* sLobby;
     bool quit;
-} SceneManager;
+} SceneManagerS;
 
 // Fazer transição entre cenas
 void SceneManager_performTransition(int duration, int newScene);

@@ -57,28 +57,28 @@ Scene_Login* SceneLogin_new() {
     WD_TextureLoadFromFile(newScene->logo[0], "content/dalhebomba.png");
     WD_TextureLoadFromFile(newScene->logo[1], "content/logo.png");
     WD_TextureLoadFromFile(newScene->seta, "content/seta.png");
-    WD_TextureLoadFromText(newScene->textLogar, "Logar", gInfo.telaLogin, colorSelected);
-    WD_TextureLoadFromText(newScene->textLogarOff, "Logar", gInfo.telaLogin, colorNotSelected);
-    WD_TextureLoadFromText(newScene->textModoOff, "Modo offline", gInfo.telaLogin, colorSelected);
-    WD_TextureLoadFromText(newScene->textModoOffOff, "Modo offline", gInfo.telaLogin, colorNotSelected);
-    WD_TextureLoadFromText(newScene->textError, "ACESSO NEGADO", gInfo.telaLogin, fullRed);
+    WD_TextureLoadFromText(newScene->textLogar, "Logar", Game.telaLogin, colorSelected);
+    WD_TextureLoadFromText(newScene->textLogarOff, "Logar", Game.telaLogin, colorNotSelected);
+    WD_TextureLoadFromText(newScene->textModoOff, "Modo offline", Game.telaLogin, colorSelected);
+    WD_TextureLoadFromText(newScene->textModoOffOff, "Modo offline", Game.telaLogin, colorNotSelected);
+    WD_TextureLoadFromText(newScene->textError, "ACESSO NEGADO", Game.telaLogin, fullRed);
 
 
     newScene->logo[0]->h *= 0.5; newScene->logo[0]->w *= 0.5;
-    newScene->logo[1]->h *= gInfo.screenMulti; newScene->logo[1]->w *= gInfo.screenMulti;
+    newScene->logo[1]->h *= Game.screenMulti; newScene->logo[1]->w *= Game.screenMulti;
 
-    newScene->seta->h *= gInfo.screenMulti;
-    newScene->seta->w *= gInfo.screenMulti;
+    newScene->seta->h *= Game.screenMulti;
+    newScene->seta->w *= Game.screenMulti;
 
     WD_TextureLoadFromFile(newScene->backgroundTexture, "content/BG_Login.png");
     int w = newScene->backgroundTexture->w, h = newScene->backgroundTexture->h;
     newScene->renderQuad.x = 0;
     newScene->renderQuad.y = 0;
-    newScene->renderQuad.w = w * gInfo.screenMulti;
-    newScene->renderQuad.h = h * gInfo.screenMulti;
+    newScene->renderQuad.w = w * Game.screenMulti;
+    newScene->renderQuad.h = h * Game.screenMulti;
     SDL_Color textColor = { 50, 50, 50, 255 };
-    newScene->login = WD_CreateTextBox(posLoginX * gInfo.screenMulti, posLoginY * gInfo.screenMulti, sizeLogin[0] * gInfo.screenMulti, sizeLogin[1] * gInfo.screenMulti, 30, gInfo.inputFont, textColor, false);
-    newScene->senha = WD_CreateTextBox(posSenhaX* gInfo.screenMulti, posSenhaY* gInfo.screenMulti, sizeSenha[0] * gInfo.screenMulti, sizeSenha[1] * gInfo.screenMulti, 30, gInfo.inputFont, textColor, true);
+    newScene->login = WD_CreateTextBox(posLoginX * Game.screenMulti, posLoginY * Game.screenMulti, sizeLogin[0] * Game.screenMulti, sizeLogin[1] * Game.screenMulti, 30, Game.inputFont, textColor, false);
+    newScene->senha = WD_CreateTextBox(posSenhaX* Game.screenMulti, posSenhaY* Game.screenMulti, sizeSenha[0] * Game.screenMulti, sizeSenha[1] * Game.screenMulti, 30, Game.inputFont, textColor, true);
 
     newScene->acessonegado = false;
     SDL_StartTextInput();
@@ -136,7 +136,7 @@ void SceneLogin_update(Scene_Login* s) {
 
                     if (logado) {
                         puts(resposta);
-                        strcpy(gInfo.nome, resposta);
+                        strcpy(Game.nome, resposta);
                         SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
                     }
                     else {
@@ -156,41 +156,41 @@ void SceneLogin_update(Scene_Login* s) {
             }
         }
     }
-    SDL_SetRenderDrawColor(gInfo.renderer, 0x12, 0xFF, 0xFF, 0xFF);
-    SDL_RenderClear(gInfo.renderer);
+    SDL_SetRenderDrawColor(Game.renderer, 0x12, 0xFF, 0xFF, 0xFF);
+    SDL_RenderClear(Game.renderer);
     WD_TextureRenderDest(s->backgroundTexture, &s->renderQuad);
-    SDL_SetRenderDrawColor(gInfo.renderer, 0x00, 0x00, 0x00, 0x00);
+    SDL_SetRenderDrawColor(Game.renderer, 0x00, 0x00, 0x00, 0x00);
 
     if (s->loginPressed && s->socketFd != 0 && !s->dataReceived) {
-        double angle = gInfo.screenFreq / 60.0 * 6 * s->frame;
-        int loadingX = (gInfo.screenWidth - 100 * gInfo.screenMulti) / 2, loadingY = gInfo.screenHeight - 100 * gInfo.screenMulti - 20;
-        SDL_Rect c = {loadingX, loadingY, 100 * gInfo.screenMulti, 100 * gInfo.screenMulti};
-        SDL_RenderCopyEx(gInfo.renderer, s->loading->mTexture, NULL, &c, angle, NULL, SDL_FLIP_NONE);
+        double angle = Game.screenFreq / 60.0 * 6 * s->frame;
+        int loadingX = (Game.screenWidth - 100 * Game.screenMulti) / 2, loadingY = Game.screenHeight - 100 * Game.screenMulti - 20;
+        SDL_Rect c = {loadingX, loadingY, 100 * Game.screenMulti, 100 * Game.screenMulti};
+        SDL_RenderCopyEx(Game.renderer, s->loading->mTexture, NULL, &c, angle, NULL, SDL_FLIP_NONE);
     }
-    WD_TextureRender(s->textLogarOff, posLogarX * gInfo.screenMulti, posLogarY * gInfo.screenMulti); //Começa com os dois botoes brancos
-    WD_TextureRender(s->textModoOffOff, posModoX * gInfo.screenMulti, posModoY * gInfo.screenMulti);
-    WD_TextureRender(s->logo[1], posLogoX * gInfo.screenMulti, posLogoY * gInfo.screenMulti);
+    WD_TextureRender(s->textLogarOff, posLogarX * Game.screenMulti, posLogarY * Game.screenMulti); //Começa com os dois botoes brancos
+    WD_TextureRender(s->textModoOffOff, posModoX * Game.screenMulti, posModoY * Game.screenMulti);
+    WD_TextureRender(s->logo[1], posLogoX * Game.screenMulti, posLogoY * Game.screenMulti);
 
     if (s->acessonegado) {
-        WD_TextureRender(s->textError, posErroX * gInfo.screenMulti, posErroY * gInfo.screenMulti);
+        WD_TextureRender(s->textError, posErroX * Game.screenMulti, posErroY * Game.screenMulti);
     }
 
     if (s->modoOff && s->index == 2) {
-        WD_TextureRender(s->textLogarOff, posLogarX * gInfo.screenMulti, posLogarY * gInfo.screenMulti);
-        WD_TextureRender(s->textModoOff, posModoX * gInfo.screenMulti, posModoY * gInfo.screenMulti);
-        WD_TextureRender(s->seta, posSetaX[0] * gInfo.screenMulti, posSetaY * gInfo.screenMulti);
+        WD_TextureRender(s->textLogarOff, posLogarX * Game.screenMulti, posLogarY * Game.screenMulti);
+        WD_TextureRender(s->textModoOff, posModoX * Game.screenMulti, posModoY * Game.screenMulti);
+        WD_TextureRender(s->seta, posSetaX[0] * Game.screenMulti, posSetaY * Game.screenMulti);
     }
     else if (!s->modoOff && s->index == 2) {
-        WD_TextureRender(s->textLogar, posLogarX * gInfo.screenMulti, posLogarY * gInfo.screenMulti);
-        WD_TextureRender(s->textModoOffOff, posModoX * gInfo.screenMulti, posModoY * gInfo.screenMulti);
-        WD_TextureRender(s->seta, posSetaX[1] * gInfo.screenMulti, posSetaY * gInfo.screenMulti);
+        WD_TextureRender(s->textLogar, posLogarX * Game.screenMulti, posLogarY * Game.screenMulti);
+        WD_TextureRender(s->textModoOffOff, posModoX * Game.screenMulti, posModoY * Game.screenMulti);
+        WD_TextureRender(s->seta, posSetaX[1] * Game.screenMulti, posSetaY * Game.screenMulti);
     }
-    SDL_SetRenderDrawBlendMode(gInfo.renderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(gInfo.renderer, 0xFF, 0xFF, 0xFF, 100);
-    SDL_Rect rect = { 480 * gInfo.screenMulti, 580 * gInfo.screenMulti, 520 * gInfo.screenMulti, 52 * gInfo.screenMulti };
-    SDL_RenderFillRect(gInfo.renderer, &rect);
-    rect.y += 90 * gInfo.screenMulti;
-    SDL_RenderFillRect(gInfo.renderer, &rect);
+    SDL_SetRenderDrawBlendMode(Game.renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(Game.renderer, 0xFF, 0xFF, 0xFF, 100);
+    SDL_Rect rect = { 480 * Game.screenMulti, 580 * Game.screenMulti, 520 * Game.screenMulti, 52 * Game.screenMulti };
+    SDL_RenderFillRect(Game.renderer, &rect);
+    rect.y += 90 * Game.screenMulti;
+    SDL_RenderFillRect(Game.renderer, &rect);
     if (s->index == 0) {
         s->login->active = true;
     }
@@ -206,13 +206,13 @@ void SceneLogin_update(Scene_Login* s) {
     WD_TextBoxRender(s->login, s->frame);
     WD_TextBoxRender(s->senha, s->frame);
     if (s->enteringFrame < 100) {
-        SDL_SetRenderDrawColor(gInfo.renderer, 0x00, 0x00, 0x00, 255 - 2.5 * s->enteringFrame);
-        SDL_Rect fillRect = { 0, 0, gInfo.screenWidth, gInfo.screenHeight };
-        SDL_RenderFillRect(gInfo.renderer, &fillRect);
+        SDL_SetRenderDrawColor(Game.renderer, 0x00, 0x00, 0x00, 255 - 2.5 * s->enteringFrame);
+        SDL_Rect fillRect = { 0, 0, Game.screenWidth, Game.screenHeight };
+        SDL_RenderFillRect(Game.renderer, &fillRect);
         s->enteringFrame++;
     }
     s->frame++;
-    if(s->frame >= gInfo.screenFreq) {
+    if(s->frame >= Game.screenFreq) {
         s->frame = 0;
     }
 
@@ -248,14 +248,14 @@ void SceneLogin_destroy(Scene_Login* s) {
 }
 
 void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
-    if (sMng.inTransition)
+    if (SceneManager.inTransition)
         return;
     if(e->type == SDL_KEYDOWN) {
         if(e->key.keysym.sym == SDLK_TAB) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAP);
         } 
         if(e->key.keysym.sym == SDLK_RETURN && s->modoOff && s->index == 2 ) {
-            strcpy(gInfo.nome, "User");
+            strcpy(Game.nome, "User");
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
         }
         else if (e->key.keysym.sym == SDLK_RETURN && !s->modoOff && s->index == 2)

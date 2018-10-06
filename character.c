@@ -174,15 +174,15 @@ void Character_Update(Character* c, Map* m) {
 void Character_Render(Character* c, int screenX, int screenY) {
     int realX = round(c->renderX) - screenX;
     int realY = round(c->renderY) - screenY;
-    if(realX + c->sprite->w >= 0 && realY + c->sprite->h >= 0 && realX < gInfo.screenWidth && realY < gInfo.screenHeight) {
+    if(realX + c->sprite->w >= 0 && realY + c->sprite->h >= 0 && realX < Game.screenWidth && realY < Game.screenHeight) {
         SDL_Rect clip = {c->sprite->w / 3 * c->animationIndex, c->sprite->h / 4 * c->direction, c->sprite->w / 3, c->sprite->h / 4};
         WD_TextureRenderEx(c->sprite, realX, realY, &clip, 0.0, NULL, SDL_FLIP_NONE);
     }
-    if(gInfo.debug) {
+    if(Game.debug) {
         SDL_Rect box;
         Character_GetCollisionBox(c, &box, -screenX, -screenY);
-        SDL_SetRenderDrawColor(gInfo.renderer, 255, 0, 0, 150);
-        SDL_RenderFillRect(gInfo.renderer, &box);
+        SDL_SetRenderDrawColor(Game.renderer, 255, 0, 0, 150);
+        SDL_RenderFillRect(Game.renderer, &box);
     }
 }
 

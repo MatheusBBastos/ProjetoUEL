@@ -5,11 +5,11 @@ Scene_Singleplayer* SceneSingleplayer_new() {
     Scene_Singleplayer* newScene = malloc(sizeof(Scene_Singleplayer));
     SDL_Color color = {0, 255, 0};
     newScene->textTexture = WD_CreateTexture();
-    WD_TextureLoadFromText(newScene->textTexture, "Uhulll", gInfo.mainFont, color);
+    WD_TextureLoadFromText(newScene->textTexture, "Uhulll", Game.mainFont, color);
     newScene->testTexture = WD_CreateTexture();
     WD_TextureLoadFromFile(newScene->testTexture, "content/img.png");
-    newScene->renderQuad.x = (gInfo.screenWidth - newScene->textTexture->w) / 2;
-    newScene->renderQuad.y = (gInfo.screenHeight - newScene->textTexture->h) / 2;
+    newScene->renderQuad.x = (Game.screenWidth - newScene->textTexture->w) / 2;
+    newScene->renderQuad.y = (Game.screenHeight - newScene->textTexture->h) / 2;
     newScene->cont = 0;
     newScene->socketFd = Socket_Open(3000);
     newScene->s2 = Socket_Open(0);
@@ -25,8 +25,8 @@ void SceneSingleplayer_update(Scene_Singleplayer* s) {
         printf("%s\n", data);
     }
     free(sender);
-    SDL_SetRenderDrawColor(gInfo.renderer, 0x34, 0x92, 0x22, 0xFF);
-    SDL_RenderClear(gInfo.renderer);
+    SDL_SetRenderDrawColor(Game.renderer, 0x34, 0x92, 0x22, 0xFF);
+    SDL_RenderClear(Game.renderer);
     WD_TextureRender(s->textTexture, s->renderQuad.x, s->renderQuad.y);
     WD_TextureRender(s->testTexture, 15 * s->cont, 100);
     s->cont++;
@@ -44,7 +44,7 @@ void SceneSingleplayer_destroy(Scene_Singleplayer* s) {
 }
 
 void SceneSingleplayer_handleEvent(Scene_Singleplayer* s, SDL_Event* e) {
-    if(sMng.inTransition)
+    if(SceneManager.inTransition)
         return;
     if(e->type == SDL_KEYDOWN) {
         if(e->key.keysym.sym == SDLK_RETURN) {
@@ -52,7 +52,7 @@ void SceneSingleplayer_handleEvent(Scene_Singleplayer* s, SDL_Event* e) {
         } else if(e->key.keysym.sym == SDLK_TAB) {
             Address* ad = NewAddress(127, 0, 0, 1, 3000);
             char data[] = "Testando";
-            Socket_Send(sMng.sSingleplayer->s2, ad, data, sizeof(data));
+            Socket_Send(SceneManager.sSingleplayer->s2, ad, data, sizeof(data));
             free(ad);
         }
     }

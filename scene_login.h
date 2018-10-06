@@ -1,7 +1,7 @@
 #ifndef SCENE_LOGIN_H
 #define SCENE_LOGIN_H
 
-typedef struct SceneManager SceneManager;
+typedef struct SceneManagerS SceneManagerS;
 
 #include "headers.h"
 #include "scene_base.h"

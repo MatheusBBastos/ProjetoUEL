@@ -32,31 +32,31 @@ Scene_MainMenu* SceneMainMenu_new() {
 
     for (int i = 0; i < 5; i++) {
         newScene->rank[i] = WD_CreateTexture();
-        WD_TextureLoadFromText(newScene->rank[i], anw[i], gInfo.rank, colorWhite);
+        WD_TextureLoadFromText(newScene->rank[i], anw[i], Game.rank, colorWhite);
     }
 
 
-    WD_TextureLoadFromText(newScene->bemvindo,"Bem Vindo", gInfo.mainMenu, colorBemvindo);
-    WD_TextureLoadFromText(newScene->nome, gInfo.nome, gInfo.mainMenu, colorWhite);
+    WD_TextureLoadFromText(newScene->bemvindo,"Bem Vindo", Game.mainMenu, colorBemvindo);
+    WD_TextureLoadFromText(newScene->nome, Game.nome, Game.mainMenu, colorWhite);
 
-    WD_TextureLoadFromText(newScene->jogar, "Jogar", gInfo.mainMenu_botoes, colorWhite);
-    WD_TextureLoadFromText(newScene->tutorial, "Tutorial", gInfo.mainMenu_botoes, colorWhite);
-    WD_TextureLoadFromText(newScene->logout, "Logout", gInfo.mainMenu_botoes, colorWhite);
+    WD_TextureLoadFromText(newScene->jogar, "Jogar", Game.mainMenu_botoes, colorWhite);
+    WD_TextureLoadFromText(newScene->tutorial, "Tutorial", Game.mainMenu_botoes, colorWhite);
+    WD_TextureLoadFromText(newScene->logout, "Logout", Game.mainMenu_botoes, colorWhite);
 
-    WD_TextureLoadFromText(newScene->multiplayer, "Multiplayer", gInfo.mainMenu_botoes, colorWhite);
-    WD_TextureLoadFromText(newScene->singleplayer, "Singleplayer", gInfo.mainMenu_botoes, colorWhite);
+    WD_TextureLoadFromText(newScene->multiplayer, "Multiplayer", Game.mainMenu_botoes, colorWhite);
+    WD_TextureLoadFromText(newScene->singleplayer, "Singleplayer", Game.mainMenu_botoes, colorWhite);
 
     WD_TextureLoadFromFile(newScene->seta, "content/seta.png");
     WD_TextureLoadFromFile(newScene->backgroundTexture, "content/BG_mainMenu.png");
     int w = newScene->backgroundTexture->w, h = newScene->backgroundTexture->h;
     newScene->renderQuad.x = 0;
     newScene->renderQuad.y = 0;
-    newScene->renderQuad.w = w*gInfo.screenMulti;
-    newScene->renderQuad.h = h*gInfo.screenMulti;
+    newScene->renderQuad.w = w*Game.screenMulti;
+    newScene->renderQuad.h = h*Game.screenMulti;
 
 
-    newScene->seta->h *= gInfo.screenMulti;
-    newScene->seta->w *= gInfo.screenMulti;
+    newScene->seta->h *= Game.screenMulti;
+    newScene->seta->w *= Game.screenMulti;
 
     return newScene;
 }
@@ -116,7 +116,7 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
                 if(getRank(anw, data) == 0) {
                     SDL_Color colorNotSelected = {255, 255, 255};
                     for (int i = 0; i < 5; i++) {
-                        WD_TextureLoadFromText(s->rank[i], anw[i], gInfo.rank, colorNotSelected);
+                        WD_TextureLoadFromText(s->rank[i], anw[i], Game.rank, colorNotSelected);
                     }
                     printf("%s",(anw[5]));
                 }
@@ -128,13 +128,13 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
         }
     }
 
-    SDL_RenderClear(gInfo.renderer);
+    SDL_RenderClear(Game.renderer);
     WD_TextureRenderDest(s->backgroundTexture, &s->renderQuad);
-    WD_TextureRender(s->bemvindo, 84 * gInfo.screenMulti, 566 * gInfo.screenMulti);
-    WD_TextureRender(s->nome, 84 * gInfo.screenMulti, 634 * gInfo.screenMulti);
+    WD_TextureRender(s->bemvindo, 84 * Game.screenMulti, 566 * Game.screenMulti);
+    WD_TextureRender(s->nome, 84 * Game.screenMulti, 634 * Game.screenMulti);
 
     for (int i = 0; i < 5; i++) {
-        WD_TextureRender(s->rank[i], 900 * gInfo.screenMulti, (590 + ((i)*70))* gInfo.screenMulti);
+        WD_TextureRender(s->rank[i], 900 * Game.screenMulti, (590 + ((i)*70))* Game.screenMulti);
     }
 
     if(!s->btnJogar) {
@@ -142,35 +142,35 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
             SDL_SetTextureColorMod(s->jogar->mTexture, 255, 66, 0);
             SDL_SetTextureColorMod(s->tutorial->mTexture, 255, 255, 255);
             SDL_SetTextureColorMod(s->logout->mTexture, 255, 255, 255);
-            WD_TextureRender(s->seta, 76 * gInfo.screenMulti, 740 * gInfo.screenMulti);
+            WD_TextureRender(s->seta, 76 * Game.screenMulti, 740 * Game.screenMulti);
         } else if(s->index == 1) {
             SDL_SetTextureColorMod(s->jogar->mTexture, 255, 255, 255);
             SDL_SetTextureColorMod(s->tutorial->mTexture, 255, 66, 0);
             SDL_SetTextureColorMod(s->logout->mTexture, 255, 255, 255);
-            WD_TextureRender(s->seta, 76 * gInfo.screenMulti, 824 * gInfo.screenMulti);
+            WD_TextureRender(s->seta, 76 * Game.screenMulti, 824 * Game.screenMulti);
         } else if(s->index == 2){
             SDL_SetTextureColorMod(s->jogar->mTexture, 255, 255, 255);
             SDL_SetTextureColorMod(s->tutorial->mTexture, 255, 255, 255);
             SDL_SetTextureColorMod(s->logout->mTexture, 255, 66, 0);
-            WD_TextureRender(s->seta, 76 * gInfo.screenMulti, 912 * gInfo.screenMulti);
+            WD_TextureRender(s->seta, 76 * Game.screenMulti, 912 * Game.screenMulti);
         }
 
-        WD_TextureRender(s->jogar, 156 * gInfo.screenMulti, 720 *   gInfo.screenMulti);
-        WD_TextureRender(s->tutorial, 156 * gInfo.screenMulti, 804 * gInfo.screenMulti);
-        WD_TextureRender(s->logout, 156 * gInfo.screenMulti, 892 * gInfo.screenMulti);
+        WD_TextureRender(s->jogar, 156 * Game.screenMulti, 720 *   Game.screenMulti);
+        WD_TextureRender(s->tutorial, 156 * Game.screenMulti, 804 * Game.screenMulti);
+        WD_TextureRender(s->logout, 156 * Game.screenMulti, 892 * Game.screenMulti);
     } else {
-        WD_TextureRender(s->jogar, 156 * gInfo.screenMulti, 720 * gInfo.screenMulti);
+        WD_TextureRender(s->jogar, 156 * Game.screenMulti, 720 * Game.screenMulti);
         if(s->mult) {
-                WD_TextureRender(s->seta, 160 * gInfo.screenMulti, 824 * gInfo.screenMulti);
+                WD_TextureRender(s->seta, 160 * Game.screenMulti, 824 * Game.screenMulti);
                 SDL_SetTextureColorMod(s->multiplayer->mTexture, 255, 66, 0);
                 SDL_SetTextureColorMod(s->singleplayer->mTexture, 255, 255, 255);
         } else {
-                WD_TextureRender(s->seta, 160 * gInfo.screenMulti, 912 * gInfo.screenMulti);
+                WD_TextureRender(s->seta, 160 * Game.screenMulti, 912 * Game.screenMulti);
                 SDL_SetTextureColorMod(s->multiplayer->mTexture, 255, 255, 255);
                 SDL_SetTextureColorMod(s->singleplayer->mTexture, 255, 66, 0);
         }
-        WD_TextureRender(s->multiplayer, 240 * gInfo.screenMulti, 804 * gInfo.screenMulti);
-        WD_TextureRender(s->singleplayer, 240 * gInfo.screenMulti, 892 * gInfo.screenMulti);
+        WD_TextureRender(s->multiplayer, 240 * Game.screenMulti, 804 * Game.screenMulti);
+        WD_TextureRender(s->singleplayer, 240 * Game.screenMulti, 892 * Game.screenMulti);
     }
 
 }
@@ -191,7 +191,7 @@ void SceneMainMenu_destroy(Scene_MainMenu* s) {
 
 void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e) {
 
-    if(sMng.inTransition)
+    if(SceneManager.inTransition)
         return;
     if(e->type == SDL_KEYDOWN) {
         if(e->key.keysym.sym == SDLK_TAB) {

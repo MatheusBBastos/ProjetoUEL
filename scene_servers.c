@@ -31,27 +31,27 @@ Scene_Servers* SceneServers_new() {
     SDL_Color Cmult = {0, 132, 255};
     SDL_Color Cwhite = {255, 255, 255};
 
-    newScene->boxIp = WD_CreateTextBox(75 * gInfo.screenMulti, 750 * gInfo.screenMulti, 380 * gInfo.screenMulti, 52 * gInfo.screenMulti, 16, gInfo.serversFonte, Cwhite, false);
+    newScene->boxIp = WD_CreateTextBox(75 * Game.screenMulti, 750 * Game.screenMulti, 380 * Game.screenMulti, 52 * Game.screenMulti, 16, Game.serversFonte, Cwhite, false);
 
-    WD_TextureLoadFromText(newScene->nome, "Basto Forte", gInfo.serversName, Cname);
-    WD_TextureLoadFromText(newScene->mutiplayer, "MULTIPLAYER", gInfo.serversFonte, Cmult);
-    WD_TextureLoadFromText(newScene->server, "SERVER: 2", gInfo.serversFonte, Cwhite);
-    WD_TextureLoadFromText(newScene->entrar, "Entrar", gInfo.serversFonte, Cwhite);
-    WD_TextureLoadFromText(newScene->servir, "Servir", gInfo.serversFonte, Cwhite);
-    WD_TextureLoadFromText(newScene->server1, "Server #1", gInfo.serversFontd, Cwhite);
-    WD_TextureLoadFromText(newScene->server2, "Server #2", gInfo.serversFontd, Cwhite);
-    WD_TextureLoadFromText(newScene->server3, "Server #3", gInfo.serversFontd, Cwhite);
-    WD_TextureLoadFromText(newScene->nomeServer1, "Basto forte", gInfo.serversFontd, Cwhite);
-    WD_TextureLoadFromText(newScene->nomeServer2, "Melvi forte", gInfo.serversFontd, Cwhite);
-    WD_TextureLoadFromText(newScene->nomeServer3, "Tampy fraco ;(", gInfo.serversFontd, Cwhite);
-    WD_TextureLoadFromText(newScene->voltar, "Voltar", gInfo.serversFonte, Cwhite);
+    WD_TextureLoadFromText(newScene->nome, "Basto Forte", Game.serversName, Cname);
+    WD_TextureLoadFromText(newScene->mutiplayer, "MULTIPLAYER", Game.serversFonte, Cmult);
+    WD_TextureLoadFromText(newScene->server, "SERVER: 2", Game.serversFonte, Cwhite);
+    WD_TextureLoadFromText(newScene->entrar, "Entrar", Game.serversFonte, Cwhite);
+    WD_TextureLoadFromText(newScene->servir, "Servir", Game.serversFonte, Cwhite);
+    WD_TextureLoadFromText(newScene->server1, "Server #1", Game.serversFontd, Cwhite);
+    WD_TextureLoadFromText(newScene->server2, "Server #2", Game.serversFontd, Cwhite);
+    WD_TextureLoadFromText(newScene->server3, "Server #3", Game.serversFontd, Cwhite);
+    WD_TextureLoadFromText(newScene->nomeServer1, "Basto forte", Game.serversFontd, Cwhite);
+    WD_TextureLoadFromText(newScene->nomeServer2, "Melvi forte", Game.serversFontd, Cwhite);
+    WD_TextureLoadFromText(newScene->nomeServer3, "Tampy fraco ;(", Game.serversFontd, Cwhite);
+    WD_TextureLoadFromText(newScene->voltar, "Voltar", Game.serversFonte, Cwhite);
 
     WD_TextureLoadFromFile(newScene->backgroundTexture, "content/BG_mainMenu.png");
     int w = newScene->backgroundTexture->w, h = newScene->backgroundTexture->h;
     newScene->renderQuad.x = 0;
     newScene->renderQuad.y = 0;
-    newScene->renderQuad.w = w*gInfo.screenMulti;
-    newScene->renderQuad.h = h*gInfo.screenMulti;
+    newScene->renderQuad.w = w*Game.screenMulti;
+    newScene->renderQuad.h = h*Game.screenMulti;
     newScene->frame = 0;
     SDL_StartTextInput();
 
@@ -75,20 +75,20 @@ void SceneServers_update(Scene_Servers* s) {
             }
         }
     }
-    SDL_RenderClear(gInfo.renderer);
+    SDL_RenderClear(Game.renderer);
     WD_TextureRenderDest(s->backgroundTexture, &s->renderQuad);
-    WD_TextureRender(s->nome, 75 * gInfo.screenMulti, 515 * gInfo.screenMulti);
-    WD_TextureRender(s->mutiplayer, 75 * gInfo.screenMulti, 585 * gInfo.screenMulti);
-    WD_TextureRender(s->server, 120 * gInfo.screenMulti, 655 * gInfo.screenMulti);
+    WD_TextureRender(s->nome, 75 * Game.screenMulti, 515 * Game.screenMulti);
+    WD_TextureRender(s->mutiplayer, 75 * Game.screenMulti, 585 * Game.screenMulti);
+    WD_TextureRender(s->server, 120 * Game.screenMulti, 655 * Game.screenMulti);
     
     //box
-    SDL_SetRenderDrawBlendMode(gInfo.renderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(gInfo.renderer, 0xFF, 0xFF, 0xFF, 100);
-    SDL_Rect rect = { 75 * gInfo.screenMulti, 750 * gInfo.screenMulti, 380 * gInfo.screenMulti, 52 * gInfo.screenMulti };
-    SDL_RenderFillRect(gInfo.renderer, &rect);
+    SDL_SetRenderDrawBlendMode(Game.renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(Game.renderer, 0xFF, 0xFF, 0xFF, 100);
+    SDL_Rect rect = { 75 * Game.screenMulti, 750 * Game.screenMulti, 380 * Game.screenMulti, 52 * Game.screenMulti };
+    SDL_RenderFillRect(Game.renderer, &rect);
     WD_TextBoxRender(s->boxIp, s->frame);
     s->frame++;
-    if(s->frame >= gInfo.screenFreq) {
+    if(s->frame >= Game.screenFreq) {
         s->frame = 0;
     }
 
@@ -124,15 +124,15 @@ void SceneServers_update(Scene_Servers* s) {
             SDL_SetTextureColorMod(s->nomeServer3->mTexture, 255, 66, 0);
     }
 
-    WD_TextureRender(s->entrar, 160 * gInfo.screenMulti, 825 * gInfo.screenMulti);
-    WD_TextureRender(s->servir, 160 * gInfo.screenMulti, 895 * gInfo.screenMulti);
-    WD_TextureRender(s->voltar, 160 * gInfo.screenMulti, 965 * gInfo.screenMulti);
-    WD_TextureRender(s->server1, 700 * gInfo.screenMulti, 515 * gInfo.screenMulti);
-    WD_TextureRender(s->nomeServer1, 800 * gInfo.screenMulti, 585 * gInfo.screenMulti);
-    WD_TextureRender(s->server2, 700 * gInfo.screenMulti, 655 * gInfo.screenMulti);
-    WD_TextureRender(s->nomeServer2, 800 * gInfo.screenMulti, 725 * gInfo.screenMulti);
-    WD_TextureRender(s->server3, 700 * gInfo.screenMulti, 795 * gInfo.screenMulti);
-    WD_TextureRender(s->nomeServer3, 800 * gInfo.screenMulti, 865 * gInfo.screenMulti);
+    WD_TextureRender(s->entrar, 160 * Game.screenMulti, 825 * Game.screenMulti);
+    WD_TextureRender(s->servir, 160 * Game.screenMulti, 895 * Game.screenMulti);
+    WD_TextureRender(s->voltar, 160 * Game.screenMulti, 965 * Game.screenMulti);
+    WD_TextureRender(s->server1, 700 * Game.screenMulti, 515 * Game.screenMulti);
+    WD_TextureRender(s->nomeServer1, 800 * Game.screenMulti, 585 * Game.screenMulti);
+    WD_TextureRender(s->server2, 700 * Game.screenMulti, 655 * Game.screenMulti);
+    WD_TextureRender(s->nomeServer2, 800 * Game.screenMulti, 725 * Game.screenMulti);
+    WD_TextureRender(s->server3, 700 * Game.screenMulti, 795 * Game.screenMulti);
+    WD_TextureRender(s->nomeServer3, 800 * Game.screenMulti, 865 * Game.screenMulti);
 }
 
 void SceneServers_destroy(Scene_Servers* s) {
@@ -155,7 +155,7 @@ void SceneServers_destroy(Scene_Servers* s) {
 }
 
 void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
-    if(sMng.inTransition)
+    if(SceneManager.inTransition)
         return;
     if(e->type == SDL_KEYDOWN) {   
         if(e->key.keysym.sym == SDLK_TAB) {
@@ -175,9 +175,9 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
                 sprintf(s->string1, "Server #%d", s->indexd-1);
                 sprintf(s->string2, "Server #%d", s->indexd);   
                 sprintf(s->string3, "Server #%d", s->indexd+1);
-                WD_TextureLoadFromText(s->server1, s->string1, gInfo.serversFontd, color);
-                WD_TextureLoadFromText(s->server2, s->string2, gInfo.serversFontd, color);
-                WD_TextureLoadFromText(s->server3, s->string3, gInfo.serversFontd, color);
+                WD_TextureLoadFromText(s->server1, s->string1, Game.serversFontd, color);
+                WD_TextureLoadFromText(s->server2, s->string2, Game.serversFontd, color);
+                WD_TextureLoadFromText(s->server3, s->string3, Game.serversFontd, color);
             }
 
         } else if(e->key.keysym.sym == SDLK_UP) {
@@ -195,9 +195,9 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
                 sprintf(s->string1, "Server #%d", s->indexd+1);
                 sprintf(s->string2, "Server #%d", s->indexd+2);
                 sprintf(s->string3, "Server #%d", s->indexd+3);
-                WD_TextureLoadFromText(s->server1, s->string1, gInfo.serversFontd, color);
-                WD_TextureLoadFromText(s->server2, s->string2, gInfo.serversFontd, color);
-                WD_TextureLoadFromText(s->server3, s->string3, gInfo.serversFontd, color);
+                WD_TextureLoadFromText(s->server1, s->string1, Game.serversFontd, color);
+                WD_TextureLoadFromText(s->server2, s->string2, Game.serversFontd, color);
+                WD_TextureLoadFromText(s->server3, s->string3, Game.serversFontd, color);
             }
             
             

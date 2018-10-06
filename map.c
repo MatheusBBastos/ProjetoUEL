@@ -29,7 +29,7 @@ void Map_Load(Map* map, char* path, bool loadTexture) {
     fscanf(mapFile, "%d %d", &map->width, &map->height);
     if(loadTexture) {
         for(int i = 0; i < MAP_LAYERS; i++) {
-            map->layers[i] = SDL_CreateTexture(gInfo.renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, map->width * TILE_SIZE, map->height * TILE_SIZE);
+            map->layers[i] = SDL_CreateTexture(Game.renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, map->width * TILE_SIZE, map->height * TILE_SIZE);
         }
     }
     map->data = malloc(MAP_LAYERS * map->width * map->height * sizeof(int));
@@ -62,7 +62,7 @@ void Map_Set(Map* m, int x, int y, int z, int value) {
 void Map_RenderFull(Map* m, WTexture* tileMap) {
     int x, y, z;
     for(z = 0; z < MAP_LAYERS; z++) {
-        SDL_SetRenderTarget(gInfo.renderer, m->layers[z]);
+        SDL_SetRenderTarget(Game.renderer, m->layers[z]);
         SDL_SetTextureBlendMode(m->layers[z], SDL_BLENDMODE_BLEND);
         for(y = 0; y < m->height; y ++) {
             for(x = 0; x < m->width; x ++) {
@@ -74,7 +74,7 @@ void Map_RenderFull(Map* m, WTexture* tileMap) {
             }
         }
     }
-    SDL_SetRenderTarget(gInfo.renderer, NULL);
+    SDL_SetRenderTarget(Game.renderer, NULL);
 }
 
 void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY) {
@@ -82,8 +82,8 @@ void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY) {
     int offsetY = screenY % TILE_SIZE;
     int startX = (int) (screenX / TILE_SIZE);
     int startY = (int) (screenY / TILE_SIZE);
-    int endX = ((screenX + gInfo.screenWidth) / TILE_SIZE + 1);
-    int endY = ((screenY + gInfo.screenHeight) / TILE_SIZE + 1);
+    int endX = ((screenX + Game.screenWidth) / TILE_SIZE + 1);
+    int endY = ((screenY + Game.screenHeight) / TILE_SIZE + 1);
     int x, y, z;
     for(z = 0; z < MAP_LAYERS; z++) {
         for(y = startY; y < endY; y ++) {
@@ -112,12 +112,12 @@ bool Map_Passable(Map* m, SDL_Rect* box) {
     for(int z = 0; z < MAP_LAYERS; z++) {
         for(int y = firstTileY; y <= lastTileY; y++) {
             for(int x = firstTileX; x <= lastTileX; x++) {
-                if(gInfo.debug) {
-                    int offX = sMng.sMap->screenX;
-                    int offY = sMng.sMap->screenY;
+                if(Game.debug) {
+                    int offX = SceneManager.sMap->screenX;
+                    int offY = SceneManager.sMap->screenY;
                     SDL_Rect r = {x * TILE_SIZE - offX, y * TILE_SIZE - offY, TILE_SIZE, TILE_SIZE};
-                    SDL_SetRenderDrawColor(gInfo.renderer, 0, 255, 0, 60);
-                    SDL_RenderFillRect(gInfo.renderer, &r);
+                    SDL_SetRenderDrawColor(Game.renderer, 0, 255, 0, 60);
+                    SDL_RenderFillRect(Game.renderer, &r);
                 }
                 int tile = Map_Get(m, x, y, z);
                 if(tile == 4 || tile == -1) {

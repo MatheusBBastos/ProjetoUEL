@@ -99,10 +99,10 @@ typedef struct NetworkS {
     uint64_t lastMovementId;
 } NetworkS;
 
-typedef struct SceneManager SceneManager;
+typedef struct SceneManagerS SceneManagerS;
 
-extern GameInfo gInfo;
-extern SceneManager sMng;
+extern GameInfo Game;
+extern SceneManagerS SceneManager;
 extern NetworkS Network;
 
 #endif

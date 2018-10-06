@@ -23,7 +23,7 @@ Scene_Map* SceneMap_new() {
 }
 
 int compareCharacters(const void * a, const void * b) {
-    Character** chars = sMng.sMap->map->characters;
+    Character** chars = SceneManager.sMap->map->characters;
     int i = *(int*)a;
     int j = *(int*)b;
     if(i == -1 || chars[i] == NULL) {
@@ -140,35 +140,35 @@ void SceneMap_update(Scene_Map* s) {
     }
     // Centralizar a câmera no jogador
     if(s->player != NULL) {
-        s->screenX = ((int) s->player->renderX + s->player->sprite->w / 6) - (gInfo.screenWidth) / 2;
-        s->screenY = ((int) s->player->renderY + s->player->sprite->h / 8) - (gInfo.screenHeight) / 2;
+        s->screenX = ((int) s->player->renderX + s->player->sprite->w / 6) - (Game.screenWidth) / 2;
+        s->screenY = ((int) s->player->renderY + s->player->sprite->h / 8) - (Game.screenHeight) / 2;
     }
-    if(s->screenX > s->map->width * TILE_SIZE - gInfo.screenWidth) {
-        s->screenX = s->map->width * TILE_SIZE - gInfo.screenWidth;
+    if(s->screenX > s->map->width * TILE_SIZE - Game.screenWidth) {
+        s->screenX = s->map->width * TILE_SIZE - Game.screenWidth;
     }
-    if(s->screenY > s->map->height * TILE_SIZE - gInfo.screenHeight) {
-        s->screenY = s->map->height * TILE_SIZE - gInfo.screenHeight;
+    if(s->screenY > s->map->height * TILE_SIZE - Game.screenHeight) {
+        s->screenY = s->map->height * TILE_SIZE - Game.screenHeight;
     }
     if(s->screenX < 0)
         s->screenX = 0;
     if(s->screenY < 0)
         s->screenY = 0;
-    SDL_SetRenderDrawColor(gInfo.renderer, 0x00, 0x00, 0x00, 0xFF);
-    SDL_RenderClear(gInfo.renderer);
-    SDL_Rect renderQuad = {s->screenX, s->screenY, gInfo.screenWidth, gInfo.screenHeight};
+    SDL_SetRenderDrawColor(Game.renderer, 0x00, 0x00, 0x00, 0xFF);
+    SDL_RenderClear(Game.renderer);
+    SDL_Rect renderQuad = {s->screenX, s->screenY, Game.screenWidth, Game.screenHeight};
     int dstWidth, dstHeight;
-    if(s->map->width * TILE_SIZE < gInfo.screenWidth)
+    if(s->map->width * TILE_SIZE < Game.screenWidth)
         dstWidth = s->map->width * TILE_SIZE;
     else
-        dstWidth = gInfo.screenWidth;
-    if(s->map->height * TILE_SIZE < gInfo.screenHeight)
+        dstWidth = Game.screenWidth;
+    if(s->map->height * TILE_SIZE < Game.screenHeight)
         dstHeight = s->map->width * TILE_SIZE;
     else
-        dstHeight = gInfo.screenHeight;
+        dstHeight = Game.screenHeight;
     SDL_Rect dstRect = {0, 0, dstWidth, dstHeight};
     // Renderizar as camadas do mapa
-    SDL_RenderCopy(gInfo.renderer, s->map->layers[0], &renderQuad, &dstRect);
-    SDL_RenderCopy(gInfo.renderer, s->map->layers[1], &renderQuad, &dstRect);
+    SDL_RenderCopy(Game.renderer, s->map->layers[0], &renderQuad, &dstRect);
+    SDL_RenderCopy(Game.renderer, s->map->layers[1], &renderQuad, &dstRect);
 
     // MUDAR, TÁ MUITO RUIM (realmente) 
     /*
@@ -275,7 +275,7 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
         if(e->key.keysym.sym == SDLK_TAB) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOGIN);
         } else if(e->key.keysym.sym == SDLK_F3) {
-            gInfo.debug = !gInfo.debug;
+            Game.debug = !Game.debug;
         } else if(e->key.keysym.sym == SDLK_F4) {
             Network.server = Server_Open(3000);
             if(Network.server != NULL) {

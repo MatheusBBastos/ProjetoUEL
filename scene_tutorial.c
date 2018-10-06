@@ -5,14 +5,14 @@ Scene_Tutorial* SceneTutorial_new() {
 
     newScene->msg = WD_CreateTexture();
     SDL_Color Cmsg = {255, 255, 255};
-    WD_TextureLoadFromText(newScene->msg, "Tutorial", gInfo.mainFont, Cmsg);
+    WD_TextureLoadFromText(newScene->msg, "Tutorial", Game.mainFont, Cmsg);
 
 
     return newScene;
 }
 
 void SceneTutorial_update(Scene_Tutorial* s) {
-    WD_TextureRender(s->msg, 500 * gInfo.screenMulti, 500 * gInfo.screenMulti);
+    WD_TextureRender(s->msg, 500 * Game.screenMulti, 500 * Game.screenMulti);
 }
 
 void SceneTutorial_destroy(Scene_Tutorial* s) {
@@ -20,7 +20,7 @@ void SceneTutorial_destroy(Scene_Tutorial* s) {
 }
 
 void SceneTutorial_handleEvent(Scene_Tutorial* s, SDL_Event* e) {
-    if(sMng.inTransition)
+    if(SceneManager.inTransition)
         return;
     if(e->type == SDL_KEYDOWN) {
         if(e->key.keysym.sym == SDLK_TAB) {
