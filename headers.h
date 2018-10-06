@@ -42,8 +42,11 @@
 #define SERVER_TICKRATE 120
 // Quantidade de partes que o os tiles serão divididos para movimentação dos personagens
 #define MOVEMENT_PARTS 4
+// Porta padrão do servidor
+#define SERVER_DEFAULT_PORT 7567
 
 typedef struct Address Address;
+typedef struct Map Map;
 
 // Estrutura que carrega os elementos globais do programa
 typedef struct GameInfo {
@@ -80,6 +83,8 @@ typedef struct GameInfo {
     char nome[50];
 
     TTF_Font* rank;
+
+    Map* map;
 } GameInfo;
 
 typedef struct Server Server;

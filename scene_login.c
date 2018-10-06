@@ -161,7 +161,7 @@ void SceneLogin_update(Scene_Login* s) {
     WD_TextureRenderDest(s->backgroundTexture, &s->renderQuad);
     SDL_SetRenderDrawColor(gInfo.renderer, 0x00, 0x00, 0x00, 0x00);
 
-    if (s->reqq && s->socketFd != 0 && !s->dataReceived) {
+    if (s->loginPressed && s->socketFd != 0 && !s->dataReceived) {
         double angle = gInfo.screenFreq / 60.0 * 6 * s->frame;
         int loadingX = (gInfo.screenWidth - 100 * gInfo.screenMulti) / 2, loadingY = gInfo.screenHeight - 100 * gInfo.screenMulti - 20;
         SDL_Rect c = {loadingX, loadingY, 100 * gInfo.screenMulti, 100 * gInfo.screenMulti};

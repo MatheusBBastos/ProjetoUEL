@@ -2,6 +2,9 @@
 
 Scene_Lobby* SceneLobby_new() {
     Scene_Lobby* newScene = malloc(sizeof(Scene_Lobby));
+    for(int i = 0; i < 4; i++) {
+        sprintf(newScene->playerNames[i], "Slot #%d", i + 1);
+    }
     newScene->player1 = WD_CreateTexture();
     newScene->player2 = WD_CreateTexture();
     newScene->player3 = WD_CreateTexture();
@@ -9,16 +12,39 @@ Scene_Lobby* SceneLobby_new() {
     newScene->iniciar = WD_CreateTexture();
     newScene->sair = WD_CreateTexture();
 
+    gInfo.map = Map_Create();
+    
+    SceneLobby_Receive(newScene);
+
     SDL_Color Cmsg = {255, 255, 255};
 
-    WD_TextureLoadFromText(newScene->player1, "player1", gInfo.inputFont, Cmsg);
-    WD_TextureLoadFromText(newScene->player2, "player2", gInfo.inputFont, Cmsg);
-    WD_TextureLoadFromText(newScene->player3, "player3", gInfo.inputFont, Cmsg);
-    WD_TextureLoadFromText(newScene->player4, "player4", gInfo.inputFont, Cmsg);
+    WD_TextureLoadFromText(newScene->player1, newScene->playerNames[0], gInfo.inputFont, Cmsg);
+    WD_TextureLoadFromText(newScene->player2, newScene->playerNames[1], gInfo.inputFont, Cmsg);
+    WD_TextureLoadFromText(newScene->player3, newScene->playerNames[2], gInfo.inputFont, Cmsg);
+    WD_TextureLoadFromText(newScene->player4, newScene->playerNames[3], gInfo.inputFont, Cmsg);
     WD_TextureLoadFromText(newScene->iniciar, "Iniciar", gInfo.inputFont, Cmsg);
     WD_TextureLoadFromText(newScene->sair, "Sair", gInfo.inputFont, Cmsg);
 
     return newScene;
+}
+
+void SceneLobby_Receive(Scene_Lobby* s) {
+    Address sender;
+    char data[256];
+    while(Socket_Receive(Network.sockFd, &sender, data, 256) > 0) {
+        if(sender.address == Network.serverAddress->address && sender.port == Network.serverAddress->port) {
+            printf("[Client] Received from server: %s\n", data);
+            if(strncmp("KCK", data, 3) == 0) {
+                Network.connectedToServer = false;
+                Socket_Close(Network.sockFd);
+            } else if(strncmp("PNM", data, 3) == 0) {
+                int id;
+                char name[32];
+                sscanf(data + 4, "%d %s", &id, name);
+                strcpy(s->playerNames[id], name);
+            }
+        }
+    }
 }
 
 void SceneLobby_update(Scene_Lobby* s) {

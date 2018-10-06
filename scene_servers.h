@@ -9,6 +9,7 @@ typedef struct SceneManager SceneManager;
 
 typedef struct Scene_Servers {
     int numServers; //tirar dps
+    bool waitingConnection;
     int frame;
     short int indexd, indexe, page, posTela;
     bool esquerda;

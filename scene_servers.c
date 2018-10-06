@@ -2,6 +2,8 @@
 
 
 Scene_Servers* SceneServers_new() {
+    Network.sockFd = Socket_Open(0);
+
     Scene_Servers* newScene = malloc(sizeof(Scene_Servers));
 
     newScene->nome = WD_CreateTexture();
@@ -23,6 +25,7 @@ Scene_Servers* SceneServers_new() {
     newScene->page = newScene->indexd/3;
     newScene->esquerda = true;
     newScene->numServers = 10;
+    newScene->waitingConnection = false;
 
     SDL_Color Cname = {204, 204, 204};
     SDL_Color Cmult = {0, 132, 255};
@@ -57,6 +60,21 @@ Scene_Servers* SceneServers_new() {
 
 
 void SceneServers_update(Scene_Servers* s) {
+    if(s->waitingConnection) {
+        Address sender;
+        char data[32];
+        int bytes = Socket_Receive(Network.sockFd, &sender, data, sizeof(data));
+        if(bytes > 0 && sender.address == Network.serverAddress->address && sender.port == Network.serverAddress->port) {
+            if(strncmp("CON", data, 3) == 0) {
+                Network.connectedToServer = true;
+                printf("[Client] Connection to server estabilished\n");
+                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOBBY);
+            } else if(strncmp("FLL", data, 3) == 0) {
+                printf("[Client] Server full");
+                s->waitingConnection = false;
+            }
+        }
+    }
     SDL_RenderClear(gInfo.renderer);
     WD_TextureRenderDest(s->backgroundTexture, &s->renderQuad);
     WD_TextureRender(s->nome, 75 * gInfo.screenMulti, 515 * gInfo.screenMulti);
@@ -118,6 +136,8 @@ void SceneServers_update(Scene_Servers* s) {
 }
 
 void SceneServers_destroy(Scene_Servers* s) {
+    Socket_Close(Network.sockFd);
+    Network.sockFd = 0;
     WD_TextureDestroy(s->nome);
     WD_TextureDestroy(s->mutiplayer);
     WD_TextureDestroy(s->backgroundTexture);
@@ -188,6 +208,19 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
         } else if(e->key.keysym.sym == SDLK_RETURN) {
             if(s->esquerda && s->indexe == 1)
                 SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOBBY);
+            else if(s->esquerda && s->indexe == 2) {
+                Network.serverHost = true;
+                Network.server = Server_Open(SERVER_DEFAULT_PORT);
+                if(Network.server != NULL) {
+                    printf("Server open\n");
+                    Network.serverThread = SDL_CreateThread(Server_InitLoop, "ServerLoop", Network.server);
+                    if(Network.serverAddress != NULL)
+                        DestroyAddress(Network.serverAddress);
+                    Network.serverAddress = NewAddress(127, 0, 0, 1, SERVER_DEFAULT_PORT);
+                    char data[] = "CON 1";
+                    Socket_Send(Network.sockFd, Network.serverAddress, data, sizeof(data));
+                }
+            }
             else if(s->esquerda && s->indexe == 3)
                 SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
 
