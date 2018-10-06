@@ -23,7 +23,7 @@ typedef struct Scene_Map {
     SDL_Thread* serverThread;
     bool waitingConnection;
     int sockFd;
-    Uint32 lastTimeStamp;
+    char lastMov;
     bool keyUp, keyDown, keyRight, keyLeft;
 } Scene_Map;
 

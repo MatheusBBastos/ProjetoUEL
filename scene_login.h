@@ -9,7 +9,7 @@ typedef struct SceneManager SceneManager;
 
 typedef struct Scene_Login {
     int socketFd;
-    bool connected, dataReceived, reqq, oncer;
+    bool connected, dataReceived, loginPressed, connectionNotStarted;
     int enteringFrame, frame;
     WTexture* loading;
     WTexture* backgroundTexture;

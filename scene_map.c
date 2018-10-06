@@ -2,7 +2,6 @@
 
 Scene_Map* SceneMap_new() {
     Scene_Map* newScene = malloc(sizeof(Scene_Map));
-    newScene->lastTimeStamp = 0;
     newScene->keyLeft = false;
     newScene->keyRight = false;
     newScene->keyDown = false;
@@ -171,7 +170,8 @@ void SceneMap_update(Scene_Map* s) {
     SDL_RenderCopy(gInfo.renderer, s->map->layers[0], &renderQuad, &dstRect);
     SDL_RenderCopy(gInfo.renderer, s->map->layers[1], &renderQuad, &dstRect);
 
-    // MUDAR, TÁ MUITO RUIM (realmente)
+    // MUDAR, TÁ MUITO RUIM (realmente) 
+    /*
     if(s->player != NULL && s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
         const Uint8 *state = SDL_GetKeyboardState(NULL);
         if (state[SDL_SCANCODE_UP]) {
@@ -182,6 +182,27 @@ void SceneMap_update(Scene_Map* s) {
             Character_TryToMove(s->player, 1, s->map);
         } else if(state[SDL_SCANCODE_RIGHT]) {
             Character_TryToMove(s->player, 2, s->map);
+        }
+    }*/
+
+
+    if (s->player != NULL && s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
+        if(s->player->moving) {
+            switch (s->lastMov) {
+            case 'U':
+                Character_TryToMove(s->player, 3, s->map);
+                break;
+            case 'D':
+                Character_TryToMove(s->player, 0, s->map);
+                break;
+            case 'L':
+                Character_TryToMove(s->player, 1, s->map);
+                break;
+            case 'R':
+                Character_TryToMove(s->player, 2, s->map);
+                break;
+            }
+
         }
     }
     // ------------------------------------ //
@@ -210,40 +231,40 @@ void SceneMap_update(Scene_Map* s) {
 void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
     if(e->type == SDL_KEYDOWN) {
         //Atualiza estado da tecla se o evento dela for mais recente
-        /*if(s->player != NULL) {
-            if (e->key.timestamp > s->lastTimeStamp) {
+        if(s->player != NULL) {
                 switch (e->key.keysym.scancode) {
                 case SDL_SCANCODE_DOWN:
                     s->keyDown = true;
+                    s->lastMov = 'D';
                     if (!s->player->moving) {
-                        Character_TryToMove(s->player, 0, s->map, s->map->characters, s->map->charNumber);
+                        s->player->moving = true;
                     }
                     break;
                 case SDL_SCANCODE_UP:
                     s->keyUp = true;
+                    s->lastMov = 'U';
                     if (!s->player->moving) {
-                        Character_TryToMove(s->player, 3, s->map, s->map->characters, s->map->charNumber);
+                        s->player->moving = true;
                     }
                     break;
                 case SDL_SCANCODE_LEFT:
                     s->keyLeft = true;
+                    s->lastMov = 'L';
                     if (!s->player->moving) {
-                        Character_TryToMove(s->player, 1, s->map, s->map->characters, s->map->charNumber);
+                        s->player->moving = true;
                     }
                     break;
                 case SDL_SCANCODE_RIGHT:
+                    s->lastMov = 'R';
                     s->keyRight = true;
                     if (!s->player->moving) {
-                        Character_TryToMove(s->player, 2, s->map, s->map->characters, s->map->charNumber);
+                        s->player->moving = true;
                     }
-                    break;
-                default:
-                    //s->player->moving = false;
                     break;
                 }
                 
-            }
-        }*/
+            
+        }
 
 
 
@@ -282,51 +303,57 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
             }
         }
     }
-    /*else if (e->type == SDL_KEYUP) {
+    else if (e->type == SDL_KEYUP) {
         if(s->player != NULL) {
             //Atualiza estado da tecla
-            bool acotezeo = false;
+            bool keyChanged = false;
             switch (e->key.keysym.scancode) {
             case SDL_SCANCODE_DOWN:
                 s->keyDown = false;
-                acotezeo = true;
+                keyChanged = true;
                 break;
             case SDL_SCANCODE_UP:
                 s->keyUp = false;
-                acotezeo = true;
+                keyChanged = true;
                 break;
             case SDL_SCANCODE_LEFT:
                 s->keyLeft = false;
-                acotezeo = true;
+                keyChanged = true;
                 break;
             case SDL_SCANCODE_RIGHT:
                 s->keyRight = false;
-                acotezeo = true;
+                keyChanged = true;
                 break;
             }
 
-            if (acotezeo && !s->player->moving) {
+            if (keyChanged) {
                 if (s->keyDown) {
-                    Character_TryToMove(s->player, 0, s->map, s->map->characters, s->map->charNumber);
+                    s->lastMov = 'D';
+                    s->player->moving = true;
                 }
                 else if (s->keyUp) {
-                    Character_TryToMove(s->player, 3, s->map, s->map->characters, s->map->charNumber);
+                    s->lastMov = 'U';
+                    s->player->moving = true;
                 }
                 else if (s->keyLeft) {
-                    Character_TryToMove(s->player, 1, s->map, s->map->characters, s->map->charNumber);
+                    s->lastMov = 'L';
+                    s->player->moving = true;
                 }
                 else if (s->keyRight) {
-                    Character_TryToMove(s->player, 2, s->map, s->map->characters, s->map->charNumber);
+                    s->lastMov = 'R';
+                    s->player->moving = true;
                 }
+           
             
             }
         }
     }
     if(s->player != NULL) {
         if (!s->keyDown && !s->keyLeft && !s->keyRight && !s->keyUp) {
-            //s->player->moving = false;
+            s->player->moving = false;
+            s->lastMov = 'N';
         }
-    }*/
+    }
 
 
 }
