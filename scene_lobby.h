@@ -11,10 +11,8 @@ typedef struct SceneManagerS SceneManagerS;
 
 typedef struct Scene_Lobby {
     char playerNames[4][32];
-    WTexture* player1;
-    WTexture* player2;
-    WTexture* player3;
-    WTexture* player4;
+    int pingCount;
+    WTexture** players;
     WTexture* iniciar;
     WTexture* sair;
 } Scene_Lobby;

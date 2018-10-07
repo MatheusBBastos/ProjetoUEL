@@ -25,17 +25,31 @@ Server* Server_Open(unsigned short port) {
         newServer->sockfd = sockFd;
         newServer->running = false;
         newServer->delayMs = round(1.0 / SERVER_TICKRATE * 1000);
-        newServer->maxClients = 4;
+        newServer->maxClients = MAX_PLAYERS;
         newServer->connectedClients = 0;
         newServer->clients = malloc(newServer->maxClients * sizeof(Client*));
         for(int i = 0; i < newServer->maxClients; i++) {
             newServer->clients[i] = NULL;
         }
+        newServer->hostId = -1;
+        newServer->inGame = false;
         newServer->map = Map_Create();
         Map_Load(newServer->map, "map.txt", false);
         return newServer;
     } else {
         return NULL;
+    }
+}
+
+void Server_Close(Server* s) {
+    if(s != NULL && s->running) {
+        s->running = false;
+        int returnValue;
+        SDL_WaitThread(Network.serverThread, &returnValue);
+        printf("Thread closed with return value %d\n", returnValue);
+        Server_Destroy(s);
+        Network.server = NULL;
+        Network.serverHost = false;
     }
 }
 
@@ -120,12 +134,22 @@ void Server_SendCharacters(Server* s, Address* addr, int id) {
     }
 }
 
+void Server_SendInfos(Server* s, Address* addr) {
+    for(int i = 0; i < s->maxClients; i++) {
+        if(s->clients[i] != NULL) {
+            char sendData[40];
+            sprintf(sendData, "PNM %d %s", i, s->clients[i]->username);
+            Socket_Send(s->sockfd, addr, sendData, sizeof(sendData));
+        }
+    }
+}
+
 bool Server_CheckMovement(Server* s, int id, int x, int y) {
     if(s->clients[id] == NULL) {
         return false;
     }
     Character* c = s->clients[id]->character;
-    int maximumDistance = (1 << (c->moveSpeed)) * 2;
+    int maximumDistance = (1 << (c->moveSpeed)) * 2 ;
     if(abs(x - c->renderX) > maximumDistance || abs(y - c->renderY) > maximumDistance) {
         return false;
     }
@@ -150,6 +174,29 @@ bool Server_CheckMovement(Server* s, int id, int x, int y) {
         return noCollision;
     } else {
         return false;
+    }
+}
+
+void Server_CheckName(Server* s, int cId, int number) {
+    bool found = false;
+    char compstr[32];
+    if(number != 0) {
+        sprintf(compstr, "%s(%d)", s->clients[cId]->username, number);
+    } else {
+        strcpy(compstr, s->clients[cId]->username);
+    }
+    for(int i = 0; i < s->maxClients; i++) {
+        if(s->clients[i] != NULL && i != cId) {
+            if(strcmp(s->clients[i]->username, compstr) == 0) {
+                number++;
+                Server_CheckName(s, cId, number);
+                found = true;
+                break;
+            }
+        }
+    }
+    if(!found && number > 0) {
+        strcpy(s->clients[cId]->username, compstr);
     }
 }
 
@@ -186,30 +233,40 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
             Socket_Send(s->sockfd, sender, sendData, strlen(sendData));
         } else if(strncmp("CON", buffer, 3) == 0) {
             int version;
-            sscanf(buffer + 4, "%3d", &version);
+            char username[32];
+            int host;
+            sscanf(buffer + 4, "%3d %1d %s", &version, &host, username);
             printf("[Server] Client trying to connect with version %d\n", version);
             if(s->connectedClients < s->maxClients) {
-                cId = Server_FindEmptySlot(s);
-                s->clients[cId] = Client_New(sender, cId);
-                s->connectedClients++;
-                printf("[Server] New client connected\n");
-                char sendData[] = "CON";
-                Socket_Send(s->sockfd, sender, sendData, sizeof(sendData));
-                char sendData2[8];
-                // Enviar número máximo de players
-                sprintf(sendData2, "CNM %d", s->maxClients);
-                Socket_Send(s->sockfd, sender, sendData2, sizeof(sendData2));
-                // Enviar as informações dos players conectados atualmente
-                Server_SendCharacters(s, sender, cId);
-                s->clients[cId]->character = Character_Create("content/testcharacter.png", cId, false);
-                char sendData3[80];
-                // Enviar as informações do novo player para todos os jogadores
-                sprintf(sendData3, "CHR %d %d %d %d %s", 0, 0, 0, cId, s->clients[cId]->character->spriteFile);
-                Server_SendToAll(s, sendData3, -1);
-                char sendData4[16];
-                // Enviar o ID do novo player para ele
-                sprintf(sendData4, "PLY %d", cId);
-                Socket_Send(s->sockfd, sender, sendData4, strlen(sendData4) + 1);
+                if(s->inGame) {
+                    printf("[Server] Game in Progress!\n");
+                    char sendData[] = "ING";
+                    Socket_Send(s->sockfd, sender, sendData, sizeof(sendData));
+                } else {
+                    cId = Server_FindEmptySlot(s);
+                    if(host == 1 && s->connectedClients == 0 && sender->address == 2130706433) {
+                        s->hostId = cId;
+                    }
+                    s->clients[cId] = Client_New(sender, cId);
+                    strcpy(s->clients[cId]->username, username);
+                    Server_CheckName(s, cId, 0);
+                    s->connectedClients++;
+                    printf("[Server] New client connected\n");
+                    char sendData[16];
+                    sprintf(sendData, "CON %d", cId);
+                    Socket_Send(s->sockfd, sender, sendData, sizeof(sendData));
+                    char sendData2[8];
+                    // Enviar número máximo de players
+                    sprintf(sendData2, "CNM %d", s->maxClients);
+                    Socket_Send(s->sockfd, sender, sendData2, sizeof(sendData2));
+                    Server_SendInfos(s, sender);
+                    // Enviar as informações dos players conectados atualmente
+                    //Server_SendCharacters(s, sender, cId);
+                    s->clients[cId]->character = Character_Create("content/testcharacter.png", cId, false);
+                    char sendData3[40];
+                    sprintf(sendData3, "PNM %d %s", cId, s->clients[cId]->username);
+                    Server_SendToAll(s, sendData3, cId);
+                }
             } else {
                 printf("[Server] Server is full!\n");
                 char sendData[] = "FLL";

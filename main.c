@@ -60,6 +60,15 @@ bool initialize() {
 
 // Destruir os elementos do SDL
 void destroy() {
+    if(Network.connectedToServer) {
+        char data[] = "DCS";
+        Socket_Send(Network.sockFd, Network.serverAddress, data, 4);
+        Network.connectedToServer = false;
+    }
+    if(Network.serverHost)
+        Server_Close(Network.server);
+    if(Network.sockFd != 0)
+        Socket_Close(Network.sockFd);
     SDL_DestroyRenderer(Game.renderer);
     Game.renderer = NULL;
     SDL_DestroyWindow(Game.window);

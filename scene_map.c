@@ -289,7 +289,7 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
                 DestroyAddress(Network.serverAddress);
                 Network.serverAddress = NewAddress(127, 0, 0, 1, 3000);
             }
-            char data[] = "CON 1";
+            char data[] = "CON 1 1 basto";
             Socket_Send(Network.sockFd, Network.serverAddress, data, sizeof(data));
             s->waitingConnection = true;
         } else if(e->key.keysym.sym == SDLK_F6) {

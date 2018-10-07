@@ -10,10 +10,12 @@ typedef struct SceneManagerS SceneManagerS;
 typedef struct Scene_Servers {
     int numServers; //tirar dps
     bool waitingConnection;
+    int connectionTimeout;
     int frame;
     short int indexd, indexe, page, posTela;
     bool esquerda;
     char string1[20], string2[20], string3[20];
+    WTexture* loading;
     WTexture* nome;
     WTexture* mutiplayer;
     WTexture* backgroundTexture;

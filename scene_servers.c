@@ -2,7 +2,8 @@
 
 
 Scene_Servers* SceneServers_new() {
-    Network.sockFd = Socket_Open(0);
+    if(Network.sockFd == 0)
+        Network.sockFd = Socket_Open(0);
 
     Scene_Servers* newScene = malloc(sizeof(Scene_Servers));
 
@@ -19,6 +20,7 @@ Scene_Servers* SceneServers_new() {
     newScene->nomeServer2 = WD_CreateTexture();
     newScene->nomeServer3 = WD_CreateTexture();
     newScene->voltar = WD_CreateTexture();
+    newScene->loading = WD_CreateTexture();
     newScene->indexe = 0;
     newScene-> indexd = 0;
     newScene-> posTela = 0;
@@ -45,6 +47,7 @@ Scene_Servers* SceneServers_new() {
     WD_TextureLoadFromText(newScene->nomeServer2, "Melvi forte", Game.serversFontd, Cwhite);
     WD_TextureLoadFromText(newScene->nomeServer3, "Tampy fraco ;(", Game.serversFontd, Cwhite);
     WD_TextureLoadFromText(newScene->voltar, "Voltar", Game.serversFonte, Cwhite);
+    WD_TextureLoadFromFile(newScene->loading, "content/loading.png");
 
     WD_TextureLoadFromFile(newScene->backgroundTexture, "content/BG_mainMenu.png");
     int w = newScene->backgroundTexture->w, h = newScene->backgroundTexture->h;
@@ -60,12 +63,13 @@ Scene_Servers* SceneServers_new() {
 
 
 void SceneServers_update(Scene_Servers* s) {
-    if(s->waitingConnection) {
+    if(s->waitingConnection && !SceneManager.inTransition) {
         Address sender;
         char data[32];
         int bytes = Socket_Receive(Network.sockFd, &sender, data, sizeof(data));
         if(bytes > 0 && sender.address == Network.serverAddress->address && sender.port == Network.serverAddress->port) {
             if(strncmp("CON", data, 3) == 0) {
+                sscanf(data + 4, "%d", &Network.clientId);
                 Network.connectedToServer = true;
                 printf("[Client] Connection to server estabilished\n");
                 SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOBBY);
@@ -74,6 +78,11 @@ void SceneServers_update(Scene_Servers* s) {
                 s->waitingConnection = false;
             }
         }
+        s->connectionTimeout++;
+        if(!Network.connectedToServer && s->connectionTimeout >= 3 * Game.screenFreq) {
+            s->waitingConnection = false;
+            printf("timeout\n");
+        }
     }
     SDL_RenderClear(Game.renderer);
     WD_TextureRenderDest(s->backgroundTexture, &s->renderQuad);
@@ -81,6 +90,13 @@ void SceneServers_update(Scene_Servers* s) {
     WD_TextureRender(s->mutiplayer, 75 * Game.screenMulti, 585 * Game.screenMulti);
     WD_TextureRender(s->server, 120 * Game.screenMulti, 655 * Game.screenMulti);
     
+    if (s->waitingConnection) {
+        double angle = Game.screenFreq / 60.0 * 6 * s->frame;
+        int loadingX = 470 * Game.screenMulti, loadingY = 750 * Game.screenMulti;
+        SDL_Rect c = {loadingX, loadingY, 60 * Game.screenMulti, 60 * Game.screenMulti};
+        SDL_RenderCopyEx(Game.renderer, s->loading->mTexture, NULL, &c, angle, NULL, SDL_FLIP_NONE);
+    }
+
     //box
     SDL_SetRenderDrawBlendMode(Game.renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(Game.renderer, 0xFF, 0xFF, 0xFF, 100);
@@ -136,8 +152,6 @@ void SceneServers_update(Scene_Servers* s) {
 }
 
 void SceneServers_destroy(Scene_Servers* s) {
-    Socket_Close(Network.sockFd);
-    Network.sockFd = 0;
     WD_TextureDestroy(s->nome);
     WD_TextureDestroy(s->mutiplayer);
     WD_TextureDestroy(s->backgroundTexture);
@@ -151,6 +165,7 @@ void SceneServers_destroy(Scene_Servers* s) {
     WD_TextureDestroy(s->nomeServer2);
     WD_TextureDestroy(s->nomeServer3);
     WD_TextureDestroy(s->voltar);
+    WD_TextureDestroy(s->loading);
     free(s);
 }
 
@@ -206,9 +221,18 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
         } else if(e->key.keysym.sym == SDLK_LEFT) {
             s->esquerda = true; 
         } else if(e->key.keysym.sym == SDLK_RETURN) {
-            if(s->esquerda && s->indexe == 1)
-                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOBBY);
-            else if(s->esquerda && s->indexe == 2) {
+            if(s->esquerda && s->indexe == 1) {
+                unsigned char ip1, ip2, ip3, ip4;
+                sscanf(s->boxIp->text, "%3u.%3u.%3u.%3u", &ip1, &ip2, &ip3, &ip4);
+                if(Network.serverAddress != NULL)
+                    DestroyAddress(Network.serverAddress);
+                Network.serverAddress = NewAddress(ip1, ip2, ip3, ip4, SERVER_DEFAULT_PORT);
+                char data[32];
+                sprintf(data, "CON 1 0 %s", Game.nome);
+                Socket_Send(Network.sockFd, Network.serverAddress, data, sizeof(data));
+                s->waitingConnection = true;
+                s->connectionTimeout = 0;
+            } else if(s->esquerda && s->indexe == 2) {
                 Network.serverHost = true;
                 Network.server = Server_Open(SERVER_DEFAULT_PORT);
                 if(Network.server != NULL) {
@@ -217,15 +241,17 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
                     if(Network.serverAddress != NULL)
                         DestroyAddress(Network.serverAddress);
                     Network.serverAddress = NewAddress(127, 0, 0, 1, SERVER_DEFAULT_PORT);
-                    char data[] = "CON 1";
+                    char data[32];
+                    sprintf(data, "CON 1 1 %s", Game.nome);
                     Socket_Send(Network.sockFd, Network.serverAddress, data, sizeof(data));
+                    s->waitingConnection = true;
+                    s->connectionTimeout = 0;
                 }
             }
             else if(s->esquerda && s->indexe == 3)
                 SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
 
-        }
-        printf("%d %d %d\n", s->indexe, s->indexd, s->posTela);   
+        } 
 
     }
 

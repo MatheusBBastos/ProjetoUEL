@@ -38,12 +38,14 @@
 #define TILE_SIZE 32
 // Comprimento da imagem do Tileset
 #define TILESET_WIDTH 256
-// Tickrate do servidor (por segundo)
-#define SERVER_TICKRATE 120
+// Número de jogadores padrão
+#define MAX_PLAYERS 4
 // Quantidade de partes que o os tiles serão divididos para movimentação dos personagens
 #define MOVEMENT_PARTS 4
 // Porta padrão do servidor
 #define SERVER_DEFAULT_PORT 7567
+// Tickrate do servidor (por segundo)
+#define SERVER_TICKRATE 120
 
 typedef struct Address Address;
 typedef struct Map Map;
@@ -92,6 +94,7 @@ typedef struct Server Server;
 typedef struct NetworkS {
     int sockFd;
     bool connectedToServer;
+    int clientId;
     bool serverHost;
     Address* serverAddress;
     Server* server;

@@ -24,6 +24,8 @@ int Map_Get(Map* m, int x, int y, int z);
 
 void Map_Set(Map* m, int x, int y, int z, int value);
 
+void Map_DestroyCharacters(Map* m);
+
 void Map_RenderFull(Map* m, WTexture* tileMap);
 
 void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY);

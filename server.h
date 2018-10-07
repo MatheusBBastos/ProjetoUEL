@@ -12,6 +12,7 @@ typedef struct Client {
     Uint32 lastMessage;
     Character* character;
     uint64_t lastMovementId;
+    char username[32];
 } Client;
 
 Client* Client_New(Address* addr, int id);
@@ -26,9 +27,13 @@ typedef struct Server {
     Client** clients;
     int connectedClients, maxClients;
     Map* map;
+    int hostId;
+    bool inGame;
 } Server;
 
 Server* Server_Open(unsigned short port);
+
+void Server_Close(Server* s);
 
 int Server_FindClient(Server* s, Address* addr);
 

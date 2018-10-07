@@ -3,14 +3,16 @@
 Scene_Lobby* SceneLobby_new() {
     Scene_Lobby* newScene = malloc(sizeof(Scene_Lobby));
     for(int i = 0; i < 4; i++) {
-        sprintf(newScene->playerNames[i], "Slot #%d", i + 1);
+        sprintf(newScene->playerNames[i], "Slot");
     }
-    newScene->player1 = WD_CreateTexture();
-    newScene->player2 = WD_CreateTexture();
-    newScene->player3 = WD_CreateTexture();
-    newScene->player4 = WD_CreateTexture();
+    newScene->players = malloc(MAX_PLAYERS * sizeof(WTexture*));
+    for(int i = 0; i < MAX_PLAYERS; i++) {
+        newScene->players[i] = WD_CreateTexture();
+    }
     newScene->iniciar = WD_CreateTexture();
     newScene->sair = WD_CreateTexture();
+
+    newScene->pingCount = 0;
 
     Game.map = Map_Create();
     
@@ -18,10 +20,9 @@ Scene_Lobby* SceneLobby_new() {
 
     SDL_Color Cmsg = {255, 255, 255};
 
-    WD_TextureLoadFromText(newScene->player1, newScene->playerNames[0], Game.inputFont, Cmsg);
-    WD_TextureLoadFromText(newScene->player2, newScene->playerNames[1], Game.inputFont, Cmsg);
-    WD_TextureLoadFromText(newScene->player3, newScene->playerNames[2], Game.inputFont, Cmsg);
-    WD_TextureLoadFromText(newScene->player4, newScene->playerNames[3], Game.inputFont, Cmsg);
+    for(int i = 0; i < MAX_PLAYERS; i++) {
+        WD_TextureLoadFromText(newScene->players[i], newScene->playerNames[i], Game.inputFont, Cmsg);
+    }
     WD_TextureLoadFromText(newScene->iniciar, "Iniciar", Game.inputFont, Cmsg);
     WD_TextureLoadFromText(newScene->sair, "Sair", Game.inputFont, Cmsg);
 
@@ -34,33 +35,56 @@ void SceneLobby_Receive(Scene_Lobby* s) {
     while(Socket_Receive(Network.sockFd, &sender, data, 256) > 0) {
         if(sender.address == Network.serverAddress->address && sender.port == Network.serverAddress->port) {
             printf("[Client] Received from server: %s\n", data);
-            if(strncmp("KCK", data, 3) == 0) {
+            if(strncmp("KCK", data, 3) == 0 || strncmp("SSD", data, 3) == 0) {
                 Network.connectedToServer = false;
-                Socket_Close(Network.sockFd);
+                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
             } else if(strncmp("PNM", data, 3) == 0) {
                 int id;
                 char name[32];
                 sscanf(data + 4, "%d %s", &id, name);
                 strcpy(s->playerNames[id], name);
+                SDL_Color color = {255, 255, 255};
+                WD_TextureLoadFromText(s->players[id], s->playerNames[id], Game.inputFont, color);
+            } else if(strncmp("CNM", data, 3) == 0) {
+                int nmb;
+                sscanf(data + 4, "%d", &nmb);
+                if(nmb != Game.map->charNumber) {
+                    Game.map->charNumber = nmb;
+                    Game.map->characters = realloc(Game.map->characters, nmb * sizeof(Character*));
+                }
+            } else if(strncmp("PDC", data, 3) == 0) {
+                int id;
+                sscanf(data + 4, "%d", &id);
+                strcpy(s->playerNames[id], "Slot");
+                SDL_Color color = {255, 255, 255};
+                WD_TextureLoadFromText(s->players[id], s->playerNames[id], Game.inputFont, color);
             }
         }
     }
 }
 
 void SceneLobby_update(Scene_Lobby* s) {
-    WD_TextureRender(s->player1, 300 * Game.screenMulti, 300 * Game.screenMulti);
-    WD_TextureRender(s->player2, 1000 * Game.screenMulti, 300 * Game.screenMulti);
-    WD_TextureRender(s->player3, 300 * Game.screenMulti, 750 * Game.screenMulti);
-    WD_TextureRender(s->player4, 1000 * Game.screenMulti, 750 * Game.screenMulti);
+    s->pingCount++;
+    if(s->pingCount == Game.screenFreq) {
+        s->pingCount = 0;
+        char data[] = "PNG";
+        Socket_Send(Network.sockFd, Network.serverAddress, data, 4);
+    }
+    SceneLobby_Receive(s);
+    SDL_SetRenderDrawColor(Game.renderer, 0, 0, 0, 255);
+    SDL_RenderClear(Game.renderer);
+    WD_TextureRender(s->players[0], 300 * Game.screenMulti, 300 * Game.screenMulti);
+    WD_TextureRender(s->players[1], 1000 * Game.screenMulti, 300 * Game.screenMulti);
+    WD_TextureRender(s->players[2], 300 * Game.screenMulti, 750 * Game.screenMulti);
+    WD_TextureRender(s->players[3], 1000 * Game.screenMulti, 750 * Game.screenMulti);
 }
 
 void SceneLobby_destroy(Scene_Lobby* s) {
     Map_Destroy(Game.map);
     Game.map = NULL;
-    WD_TextureDestroy(s->player1);
-    WD_TextureDestroy(s->player2);
-    WD_TextureDestroy(s->player3);
-    WD_TextureDestroy(s->player4);
+    for(int i = 0; i < MAX_PLAYERS; i++) {
+        WD_TextureDestroy(s->players[i]);
+    }
     WD_TextureDestroy(s->iniciar);
     WD_TextureDestroy(s->sair);
     free(s);
@@ -70,7 +94,14 @@ void SceneLobby_handleEvent(Scene_Lobby* s, SDL_Event* e) {
     if(SceneManager.inTransition)
         return;
     if(e->type == SDL_KEYDOWN) {
-        if(e->key.keysym.sym == SDLK_TAB) {
+        if(e->key.keysym.sym == SDLK_ESCAPE) {
+            if(Network.connectedToServer) {
+                char data[] = "DCS";
+                Socket_Send(Network.sockFd, Network.serverAddress, data, 4);
+                Network.connectedToServer = false;
+            }
+            if(Network.serverHost)
+                Server_Close(Network.server);
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
         }
     }

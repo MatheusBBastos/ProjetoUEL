@@ -8,8 +8,11 @@ Map* Map_Create() {
     for(int i = 0; i < MAP_LAYERS; i++) {
         newMap->layers[i] = NULL;
     }
-    newMap->characters = NULL;
-    newMap->charNumber = 0;
+    newMap->characters = malloc(MAX_PLAYERS * sizeof(Character*));
+    for(int i = 0; i < MAX_PLAYERS; i++) {
+        newMap->characters[i] = NULL;
+    }
+    newMap->charNumber = MAX_PLAYERS;
     return newMap;
 }
 
@@ -56,6 +59,18 @@ int Map_Get(Map* m, int x, int y, int z) {
 void Map_Set(Map* m, int x, int y, int z, int value) {
     if(m->loaded) {
         m->data[MAP_LAYERS * m->height * z + y * m->height + x] = value;
+    }
+}
+
+void Map_DestroyCharacters(Map* m) {
+    if(m->characters != NULL) {
+        for(int i = 0; i < m->charNumber; i++) {
+            if(m->characters[i] != NULL) {
+                Character_Destroy(m->characters[i]);
+            }
+        }
+        free(m->characters);
+        m->characters = NULL;
     }
 }
 
@@ -133,7 +148,8 @@ void Map_Destroy(Map* m) {
     if(m->loaded)
         free(m->data);
     for(int i = 0; i < MAP_LAYERS; i++) {
-        SDL_DestroyTexture(m->layers[i]);
+        if(m->layers[i] != NULL)
+            SDL_DestroyTexture(m->layers[i]);
     }
     if(m->characters != NULL) {
         for(int i = 0; i < m->charNumber; i++) {
