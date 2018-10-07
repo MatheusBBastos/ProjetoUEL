@@ -235,7 +235,7 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
             int version;
             char username[32];
             int host;
-            sscanf(buffer + 4, "%3d %1d %s", &version, &host, username);
+            sscanf(buffer + 4, "%3d %1d %31s", &version, &host, username);
             printf("[Server] Client trying to connect with version %d\n", version);
             if(s->connectedClients < s->maxClients) {
                 if(s->inGame) {
@@ -246,6 +246,7 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
                     cId = Server_FindEmptySlot(s);
                     if(host == 1 && s->connectedClients == 0 && sender->address == 2130706433) {
                         s->hostId = cId;
+                        printf("carai eh o xoris\n");
                     }
                     s->clients[cId] = Client_New(sender, cId);
                     strcpy(s->clients[cId]->username, username);

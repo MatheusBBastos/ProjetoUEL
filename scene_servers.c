@@ -222,8 +222,8 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
             s->esquerda = true; 
         } else if(e->key.keysym.sym == SDLK_RETURN) {
             if(s->esquerda && s->indexe == 1) {
-                unsigned char ip1, ip2, ip3, ip4;
-                sscanf(s->boxIp->text, "%3u.%3u.%3u.%3u", &ip1, &ip2, &ip3, &ip4);
+                unsigned int ip1, ip2, ip3, ip4;
+                sscanf(s->boxIp->text, "%u.%u.%u.%u", &ip1, &ip2, &ip3, &ip4);
                 if(Network.serverAddress != NULL)
                     DestroyAddress(Network.serverAddress);
                 Network.serverAddress = NewAddress(ip1, ip2, ip3, ip4, SERVER_DEFAULT_PORT);
