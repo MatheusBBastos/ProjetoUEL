@@ -14,8 +14,6 @@ Scene_Map* SceneMap_new() {
     newScene->player = Game.map->characters[Network.clientId];
     newScene->renderCharacters = malloc(Game.map->charNumber * sizeof(int));
     newScene->waitingConnection = false;
-    printf("tamo ai ainda\n");
-    //newScene->testServer = NULL;
     return newScene;
 }
 
@@ -309,14 +307,17 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
 
 void SceneMap_destroy(Scene_Map* s) {
     if(Network.connectedToServer) {
-        char sendData[] = "DCS";
-        Socket_Send(Network.sockFd, Network.serverAddress, sendData, 4);
-        Network.connectedToServer = false;   
+        char data[] = "DCS";
+        Socket_Send(Network.sockFd, Network.serverAddress, data, 4);
+        Network.connectedToServer = false;
     }
+    if(Network.serverHost)
+            Server_Close(Network.server);
+    Map_Destroy(Game.map);
+    Game.map = NULL;
     WD_TextureDestroy(s->tileMap);
     if(s->renderCharacters != NULL) {
         free(s->renderCharacters);
     }
-    Map_Destroy(Game.map);
     free(s);
 }

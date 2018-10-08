@@ -117,6 +117,8 @@ void Character_Place(Character* c, int x, int y) {
     c->y = y * TILE_SIZE + (TILE_SIZE - box.h) / 2;
     c->renderX = c->x;
     c->renderY = c->y;
+    c->x4 = c->x * 4;
+    c->y4 = c->y * 4;
 }
 
 void Character_Update(Character* c, Map* m) {

@@ -151,6 +151,7 @@ bool Server_CheckMovement(Server* s, int id, int x, int y) {
     }
     Character* c = s->clients[id]->character;
     int maximumDistance = (1 << (c->moveSpeed)) * 2 ;
+    printf("%d %d\n", c->renderX, c->renderY);
     if(abs(x - c->renderX) > maximumDistance || abs(y - c->renderY) > maximumDistance) {
         return false;
     }
