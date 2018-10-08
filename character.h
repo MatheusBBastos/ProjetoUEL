@@ -33,6 +33,8 @@ bool Character_Passable(Character* c, Map* m, int x, int y);
 
 void Character_TryToMove(Character* c, int dir, Map* m);
 
+void Character_Place(Character* c, int x, int y);
+
 void Character_Update(Character* c, Map* m);
 
 void Character_Render(Character* c, int screenX, int screenY);

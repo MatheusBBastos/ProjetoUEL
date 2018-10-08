@@ -41,7 +41,7 @@ void SceneLobby_Receive(Scene_Lobby* s) {
             } else if(strncmp("PNM", data, 3) == 0) {
                 int id;
                 char name[32];
-                sscanf(data + 4, "%d %s", &id, name);
+                sscanf(data + 4, "%d %31[^\n]", &id, name);
                 strcpy(s->playerNames[id], name);
                 SDL_Color color = {255, 255, 255};
                 WD_TextureLoadFromText(s->players[id], s->playerNames[id], Game.inputFont, color);
@@ -58,6 +58,29 @@ void SceneLobby_Receive(Scene_Lobby* s) {
                 strcpy(s->playerNames[id], "Slot");
                 SDL_Color color = {255, 255, 255};
                 WD_TextureLoadFromText(s->players[id], s->playerNames[id], Game.inputFont, color);
+            } else if(strncmp("CHR", data, 3) == 0) {
+                int id;
+                int x, y, dir;
+                char file[64];
+                sscanf(data + 4, "%d %d %d %d %s", &x, &y, &dir, &id, file);
+                if(Game.map->characters[id] != NULL) {
+                    Character_Destroy(Game.map->characters[id]);
+                }
+                Game.map->characters[id] = Character_Create(file, id, false);
+                Game.map->characters[id]->x = x;
+                Game.map->characters[id]->renderX = x;
+                Game.map->characters[id]->x4 = x * 4;
+                Game.map->characters[id]->y = y;
+                Game.map->characters[id]->renderY = y;
+                Game.map->characters[id]->y4 = y * 4;
+                Game.map->characters[id]->direction = dir;
+            } else if(strncmp("MAP", data, 3) == 0) {
+                char mapPath[64];
+                sscanf(data + 4, "%s", mapPath);
+                Map_Load(Game.map, mapPath, true);
+                if(Game.map->loaded) {
+                    SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAP);
+                }
             }
         }
     }
@@ -80,11 +103,10 @@ void SceneLobby_update(Scene_Lobby* s) {
 }
 
 void SceneLobby_destroy(Scene_Lobby* s) {
-    Map_Destroy(Game.map);
-    Game.map = NULL;
     for(int i = 0; i < MAX_PLAYERS; i++) {
         WD_TextureDestroy(s->players[i]);
     }
+    free(s->players);
     WD_TextureDestroy(s->iniciar);
     WD_TextureDestroy(s->sair);
     free(s);
@@ -103,6 +125,13 @@ void SceneLobby_handleEvent(Scene_Lobby* s, SDL_Event* e) {
             if(Network.serverHost)
                 Server_Close(Network.server);
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
+            Map_Destroy(Game.map);
+            Game.map = NULL;
+        } else if(e->key.keysym.sym == SDLK_SPACE) {
+            //if(Network.serverHost) {
+                char data[] = "STA";
+                Socket_Send(Network.sockFd, Network.serverAddress, data, 4);
+            //}
         }
     }
 }

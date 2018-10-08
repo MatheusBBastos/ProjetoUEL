@@ -255,7 +255,7 @@ void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAP);
         } 
         if(e->key.keysym.sym == SDLK_RETURN && s->modoOff && s->index == 2 ) {
-            strcpy(Game.nome, "User");
+            strcpy(Game.nome, "User Teste");
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
         }
         else if (e->key.keysym.sym == SDLK_RETURN && !s->modoOff && s->index == 2)

@@ -110,6 +110,15 @@ void Character_TryToMove(Character* c, int dir, Map* m) {
     }
 }
 
+void Character_Place(Character* c, int x, int y) {
+    SDL_Rect box;
+    Character_GetCollisionBox(c, &box, 0, 0);
+    c->x = x * TILE_SIZE + (TILE_SIZE - box.w) / 2;
+    c->y = y * TILE_SIZE + (TILE_SIZE - box.h) / 2;
+    c->renderX = c->x;
+    c->renderY = c->y;
+}
+
 void Character_Update(Character* c, Map* m) {
     if(c->x != c->renderX || c->y != c->renderY) {
         c->moving = true;

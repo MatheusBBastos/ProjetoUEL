@@ -12,7 +12,8 @@ Client* Client_New(Address* addr, int id) {
 }
 
 void Client_Destroy(Client* c) {
-    Character_Destroy(c->character);
+    if(c->character != NULL)
+        Character_Destroy(c->character);
     free(c->addr);
     free(c);
 }
@@ -34,7 +35,6 @@ Server* Server_Open(unsigned short port) {
         newServer->hostId = -1;
         newServer->inGame = false;
         newServer->map = Map_Create();
-        Map_Load(newServer->map, "map.txt", false);
         return newServer;
     } else {
         return NULL;
@@ -100,7 +100,8 @@ void Server_CheckInactiveClients(Server* s) {
                 printf("[Server] 5s passed since last received message from client id %d, kicking\n", i);
                 Server_KickPlayer(s, i);
             } else {
-                Character_Update(s->clients[i]->character, s->map);
+                if(s->inGame && s->clients[i]->character != NULL)
+                    Character_Update(s->clients[i]->character, s->map);
             }
         }
     }
@@ -200,6 +201,30 @@ void Server_CheckName(Server* s, int cId, int number) {
     }
 }
 
+void Server_CreateCharacters(Server* s) {
+    for(int i = 0; i < s->maxClients; i++) {
+        if(s->clients[i] != NULL) {
+            if(i == 0) {
+                s->clients[i]->character = Character_Create("content/testcharacter.png", i, false);
+                Character_Place(s->clients[i]->character, 1, 1);
+            } else if(i == 1) {
+                s->clients[i]->character = Character_Create("content/testcharacter.png", i, false);
+                Character_Place(s->clients[i]->character, 18, 1);
+            } else if(i == 2) {
+                s->clients[i]->character = Character_Create("content/testcharacter.png", i, false);
+                Character_Place(s->clients[i]->character, 1, 18);
+            } else if(i == 3) {
+                s->clients[i]->character = Character_Create("content/testcharacter.png", i, false);
+                Character_Place(s->clients[i]->character, 18, 18);
+            }
+            char sendData[80];
+            Character* c = s->clients[i]->character;
+            sprintf(sendData, "CHR %d %d %d %d %s", c->x, c->y, c->direction, i, c->spriteFile);
+            Server_SendToAll(s, sendData, -1);
+        }
+    }
+}
+
 void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
     int cId = Server_FindClient(s, sender);
     if(cId != -1) {
@@ -225,6 +250,15 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
             }
         } else if(strncmp("DCS", buffer, 3) == 0) {
             Server_PlayerDisconnect(s, cId);
+        } else if(strncmp("STA", buffer, 3) == 0) {
+            if(s->hostId == cId && !s->inGame) {
+                s->inGame = true;
+                Server_CreateCharacters(s);
+                Map_Load(s->map, "map.txt", false);
+                char sendData[64];
+                sprintf(sendData, "MAP %s", "map.txt");
+                Server_SendToAll(s, sendData, strlen(sendData) + 1);
+            }
         }
     } else {
         if(strncmp("INF", buffer, 3) == 0) {
@@ -235,7 +269,7 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
             int version;
             char username[32];
             int host;
-            sscanf(buffer + 4, "%3d %1d %31s", &version, &host, username);
+            sscanf(buffer + 4, "%3d %1d %31[^\n]", &version, &host, username);
             printf("[Server] Client trying to connect with version %d\n", version);
             if(s->connectedClients < s->maxClients) {
                 if(s->inGame) {
@@ -261,9 +295,6 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
                     sprintf(sendData2, "CNM %d", s->maxClients);
                     Socket_Send(s->sockfd, sender, sendData2, sizeof(sendData2));
                     Server_SendInfos(s, sender);
-                    // Enviar as informações dos players conectados atualmente
-                    //Server_SendCharacters(s, sender, cId);
-                    s->clients[cId]->character = Character_Create("content/testcharacter.png", cId, false);
                     char sendData3[40];
                     sprintf(sendData3, "PNM %d %s", cId, s->clients[cId]->username);
                     Server_SendToAll(s, sendData3, cId);
@@ -284,7 +315,9 @@ int Server_InitLoop(Server* s) {
     int count = 0;
     while(s->running) {
         uint64_t last = SDL_GetPerformanceCounter();
-        while(Socket_Receive(s->sockfd, &sender, buffer, sizeof(buffer)) > 0) {
+        int bytes;
+        while((bytes = Socket_Receive(s->sockfd, &sender, buffer, sizeof(buffer))) > 0) {
+            buffer[bytes] = '\0';
             if(strncmp("PNG", buffer, 3) != 0)
                 printf("[Server] Received from %s (Port: %hu): %s\n", sender.addrString, sender.port, buffer);
             Server_HandleMessage(s, &sender, buffer);

@@ -53,6 +53,8 @@ void Server_SendCharacters(Server* s, Address* addr, int id);
 
 bool Server_CheckMovement(Server* s, int id, int x, int y);
 
+void Server_CreateCharacters(Server* s);
+
 void Server_HandleMessage(Server* s, Address* sender, char* buffer);
 
 int Server_InitLoop(Server* s);

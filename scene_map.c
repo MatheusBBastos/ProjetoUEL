@@ -8,22 +8,19 @@ Scene_Map* SceneMap_new() {
     newScene->keyUp = false;
     newScene->tileMap = WD_CreateTexture();
     WD_TextureLoadFromFile(newScene->tileMap, "content/001-Grassland01.png");
-    newScene->map = Map_Create();
-    Map_Load(newScene->map, "map.txt", true);
-    Map_RenderFull(newScene->map, newScene->tileMap);
+    Map_RenderFull(Game.map, newScene->tileMap);
     newScene->screenX = 0;
     newScene->screenY = 0;
-    newScene->player = NULL;
-    newScene->charNumber = 0;
-    newScene->characters = NULL;
-    newScene->renderCharacters = NULL;
+    newScene->player = Game.map->characters[Network.clientId];
+    newScene->renderCharacters = malloc(Game.map->charNumber * sizeof(int));
     newScene->waitingConnection = false;
+    printf("tamo ai ainda\n");
     //newScene->testServer = NULL;
     return newScene;
 }
 
 int compareCharacters(const void * a, const void * b) {
-    Character** chars = SceneManager.sMap->map->characters;
+    Character** chars = Game.map->characters;
     int i = *(int*)a;
     int j = *(int*)b;
     if(i == -1 || chars[i] == NULL) {
@@ -67,73 +64,24 @@ void SceneMap_update(Scene_Map* s) {
                         s->player->x = x;
                         s->player->y = y;
                     }
-                } else if(strncmp("CNM", data, 3) == 0) {
-                    if(s->map->characters != NULL) {
-                        for(int i = 0; i < s->map->charNumber; i++) {
-                            if(s->map->characters[i] != NULL)
-                                Character_Destroy(s->map->characters[i]);
-                        }
-                        free(s->map->characters);
-                        free(s->renderCharacters);
-                    }
-                    sscanf(data + 4, "%d", &s->map->charNumber);
-                    s->map->characters = malloc(s->map->charNumber * sizeof(Character*));
-                    s->renderCharacters = malloc(s->map->charNumber * sizeof(int));
-                    for(int i = 0; i < s->map->charNumber; i++) {
-                        s->map->characters[i] = NULL;
-                    }
-                } else if(strncmp("CHR", data, 3) == 0) {
-                    int id;
-                    int x, y, dir;
-                    char file[64];
-                    sscanf(data + 4, "%d %d %d %d %s", &x, &y, &dir, &id, file);
-                    if(s->map->characters[id] != NULL) {
-                        Character_Destroy(s->map->characters[id]);
-                    }
-                    s->map->characters[id] = Character_Create(file, id, false);
-                    s->map->characters[id]->x = x;
-                    s->map->characters[id]->renderX = x;
-                    s->map->characters[id]->x4 = x * 4;
-                    s->map->characters[id]->y = y;
-                    s->map->characters[id]->renderY = y;
-                    s->map->characters[id]->y4 = y * 4;
-                    s->map->characters[id]->direction = dir;
                 } else if(strncmp("POS", data, 3) == 0) {
                     int id, x, y, dir;
                     sscanf(data + 4, "%d %d %d %d", &id, &x, &y, &dir);
-                    if(s->map->characters != NULL && s->map->characters[id] != NULL) {
-                        s->map->characters[id]->x = x;
-                        s->map->characters[id]->y = y;
-                        s->map->characters[id]->direction = dir;
-                    }
-                } else if(strncmp("PLY", data, 3) == 0) {
-                    int id;
-                    sscanf(data + 4, "%d", &id);
-                    if(s->map->characters[id] != NULL) {
-                        s->player = s->map->characters[id];
+                    if(Game.map->characters != NULL && Game.map->characters[id] != NULL) {
+                        Game.map->characters[id]->x = x;
+                        Game.map->characters[id]->y = y;
+                        Game.map->characters[id]->direction = dir;
                     }
                 } else if(strncmp("PDC", data, 3) == 0) {
                     int id;
                     sscanf(data + 4, "%d", &id);
-                    if(s->map->characters[id] != NULL) {
-                        Character_Destroy(s->map->characters[id]);
-                        s->map->characters[id] = NULL;
+                    if(Game.map->characters[id] != NULL) {
+                        Character_Destroy(Game.map->characters[id]);
+                        Game.map->characters[id] = NULL;
                     }
                 } else if(strncmp("SSD", data, 3) == 0) {
-                    for(int i = 0; i < s->map->charNumber; i++) {
-                        if(s->map->characters[i] != NULL)
-                            Character_Destroy(s->map->characters[i]);
-                    }
-                    if(s->map->characters != NULL) {
-                        free(s->map->characters);
-                        free(s->renderCharacters);
-                        s->map->characters = NULL;
-                        s->renderCharacters = NULL;
-                    }
-                    s->map->charNumber = 0;
-                    s->player = NULL;
                     Network.connectedToServer = false;
-                    Socket_Close(Network.sockFd);
+                    SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
                 }
             }
         }
@@ -143,11 +91,11 @@ void SceneMap_update(Scene_Map* s) {
         s->screenX = ((int) s->player->renderX + s->player->sprite->w / 6) - (Game.screenWidth) / 2;
         s->screenY = ((int) s->player->renderY + s->player->sprite->h / 8) - (Game.screenHeight) / 2;
     }
-    if(s->screenX > s->map->width * TILE_SIZE - Game.screenWidth) {
-        s->screenX = s->map->width * TILE_SIZE - Game.screenWidth;
+    if(s->screenX > Game.map->width * TILE_SIZE - Game.screenWidth) {
+        s->screenX = Game.map->width * TILE_SIZE - Game.screenWidth;
     }
-    if(s->screenY > s->map->height * TILE_SIZE - Game.screenHeight) {
-        s->screenY = s->map->height * TILE_SIZE - Game.screenHeight;
+    if(s->screenY > Game.map->height * TILE_SIZE - Game.screenHeight) {
+        s->screenY = Game.map->height * TILE_SIZE - Game.screenHeight;
     }
     if(s->screenX < 0)
         s->screenX = 0;
@@ -157,31 +105,31 @@ void SceneMap_update(Scene_Map* s) {
     SDL_RenderClear(Game.renderer);
     SDL_Rect renderQuad = {s->screenX, s->screenY, Game.screenWidth, Game.screenHeight};
     int dstWidth, dstHeight;
-    if(s->map->width * TILE_SIZE < Game.screenWidth)
-        dstWidth = s->map->width * TILE_SIZE;
+    if(Game.map->width * TILE_SIZE < Game.screenWidth)
+        dstWidth = Game.map->width * TILE_SIZE;
     else
         dstWidth = Game.screenWidth;
-    if(s->map->height * TILE_SIZE < Game.screenHeight)
-        dstHeight = s->map->width * TILE_SIZE;
+    if(Game.map->height * TILE_SIZE < Game.screenHeight)
+        dstHeight = Game.map->width * TILE_SIZE;
     else
         dstHeight = Game.screenHeight;
     SDL_Rect dstRect = {0, 0, dstWidth, dstHeight};
     // Renderizar as camadas do mapa
-    SDL_RenderCopy(Game.renderer, s->map->layers[0], &renderQuad, &dstRect);
-    SDL_RenderCopy(Game.renderer, s->map->layers[1], &renderQuad, &dstRect);
+    SDL_RenderCopy(Game.renderer, Game.map->layers[0], &renderQuad, &dstRect);
+    SDL_RenderCopy(Game.renderer, Game.map->layers[1], &renderQuad, &dstRect);
 
     // MUDAR, TÁ MUITO RUIM (realmente) 
     /*
     if(s->player != NULL && s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
         const Uint8 *state = SDL_GetKeyboardState(NULL);
         if (state[SDL_SCANCODE_UP]) {
-            Character_TryToMove(s->player, 3, s->map);
+            Character_TryToMove(s->player, 3, Game.map);
         } else if(state[SDL_SCANCODE_DOWN]) {
-            Character_TryToMove(s->player, 0, s->map);
+            Character_TryToMove(s->player, 0, Game.map);
         } else if(state[SDL_SCANCODE_LEFT]) {
-            Character_TryToMove(s->player, 1, s->map);
+            Character_TryToMove(s->player, 1, Game.map);
         } else if(state[SDL_SCANCODE_RIGHT]) {
-            Character_TryToMove(s->player, 2, s->map);
+            Character_TryToMove(s->player, 2, Game.map);
         }
     }*/
 
@@ -190,16 +138,16 @@ void SceneMap_update(Scene_Map* s) {
         if(s->player->moving) {
             switch (s->lastMov) {
             case 'U':
-                Character_TryToMove(s->player, 3, s->map);
+                Character_TryToMove(s->player, 3, Game.map);
                 break;
             case 'D':
-                Character_TryToMove(s->player, 0, s->map);
+                Character_TryToMove(s->player, 0, Game.map);
                 break;
             case 'L':
-                Character_TryToMove(s->player, 1, s->map);
+                Character_TryToMove(s->player, 1, Game.map);
                 break;
             case 'R':
-                Character_TryToMove(s->player, 2, s->map);
+                Character_TryToMove(s->player, 2, Game.map);
                 break;
             }
 
@@ -208,9 +156,9 @@ void SceneMap_update(Scene_Map* s) {
     // ------------------------------------ //
 
     // Atualização dos personagens
-    for(int i = 0; i < s->map->charNumber; i++) {
-        if(s->map->characters[i] != NULL) {
-            Character_Update(s->map->characters[i], s->map);
+    for(int i = 0; i < Game.map->charNumber; i++) {
+        if(Game.map->characters[i] != NULL) {
+            Character_Update(Game.map->characters[i], Game.map);
             s->renderCharacters[i] = i;
         } else {
             s->renderCharacters[i] = -1;
@@ -218,12 +166,12 @@ void SceneMap_update(Scene_Map* s) {
     }
     
     // Ordenar a lista de renderização dos personagens com base em suas alturas
-    qsort(s->renderCharacters, s->map->charNumber, sizeof(int), compareCharacters);
+    qsort(s->renderCharacters, Game.map->charNumber, sizeof(int), compareCharacters);
     
     // Renderizar os personagens
-    for(int i = 0; i < s->map->charNumber; i++) {
-        if(s->renderCharacters[i] != -1 && s->map->characters[s->renderCharacters[i]] != NULL) {
-            Character_Render(s->map->characters[s->renderCharacters[i]], s->screenX, s->screenY);
+    for(int i = 0; i < Game.map->charNumber; i++) {
+        if(s->renderCharacters[i] != -1 && Game.map->characters[s->renderCharacters[i]] != NULL) {
+            Character_Render(Game.map->characters[s->renderCharacters[i]], s->screenX, s->screenY);
         }
     }
 }
@@ -363,13 +311,12 @@ void SceneMap_destroy(Scene_Map* s) {
     if(Network.connectedToServer) {
         char sendData[] = "DCS";
         Socket_Send(Network.sockFd, Network.serverAddress, sendData, 4);
-        Network.connectedToServer = false;
-        Socket_Close(Network.sockFd);   
+        Network.connectedToServer = false;   
     }
     WD_TextureDestroy(s->tileMap);
     if(s->renderCharacters != NULL) {
         free(s->renderCharacters);
     }
-    Map_Destroy(s->map);
+    Map_Destroy(Game.map);
     free(s);
 }
