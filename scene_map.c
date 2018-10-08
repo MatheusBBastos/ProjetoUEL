@@ -176,6 +176,9 @@ void SceneMap_update(Scene_Map* s) {
 
 void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
     if(e->type == SDL_KEYDOWN) {
+        if(e->key.keysym.sym == SDLK_ESCAPE) {
+            SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
+        }
         //Atualiza estado da tecla se o evento dela for mais recente
         if(s->player != NULL) {
                 switch (e->key.keysym.scancode) {
@@ -212,41 +215,8 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
             
         }
 
-
-
-        if(e->key.keysym.sym == SDLK_o) {
-            s->player->moveSpeed = 4;
-        }
-
-        if(e->key.keysym.sym == SDLK_TAB) {
-            SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOGIN);
-        } else if(e->key.keysym.sym == SDLK_F3) {
+        if(e->key.keysym.sym == SDLK_F3) {
             Game.debug = !Game.debug;
-        } else if(e->key.keysym.sym == SDLK_F4) {
-            Network.server = Server_Open(3000);
-            if(Network.server != NULL) {
-                printf("Server open\n");
-                Network.serverThread = SDL_CreateThread(Server_InitLoop, "ServerLoop", Network.server);
-            }
-        } else if(e->key.keysym.sym == SDLK_F5) {
-            if(Network.connectedToServer == false)
-                Network.sockFd = Socket_Open(0);
-            if(Network.serverAddress == NULL) {
-                DestroyAddress(Network.serverAddress);
-                Network.serverAddress = NewAddress(127, 0, 0, 1, 3000);
-            }
-            char data[] = "CON 1 1 basto";
-            Socket_Send(Network.sockFd, Network.serverAddress, data, sizeof(data));
-            s->waitingConnection = true;
-        } else if(e->key.keysym.sym == SDLK_F6) {
-            if(Network.server != NULL && Network.server->running) {
-                Network.server->running = false;
-                int returnValue;
-                SDL_WaitThread(Network.serverThread, &returnValue);
-                printf("Thread closed with return value %d\n", returnValue);
-                Server_Destroy(Network.server);
-                Network.server = NULL;
-            }
         }
     }
     else if (e->type == SDL_KEYUP) {

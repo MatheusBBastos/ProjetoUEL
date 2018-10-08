@@ -2,10 +2,15 @@
 
 
 Scene_Servers* SceneServers_new() {
-    if(Network.sockFd == 0)
+    if(Network.sockFd == 0) {
         Network.sockFd = Socket_Open(0);
+    }
 
     Scene_Servers* newScene = malloc(sizeof(Scene_Servers));
+
+    newScene->receiveSock = Socket_Open(0);
+    int broadcast = 1;
+    setsockopt(newScene->receiveSock, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast));
 
     newScene->nome = WD_CreateTexture();
     newScene->backgroundTexture = WD_CreateTexture();
@@ -27,6 +32,16 @@ Scene_Servers* SceneServers_new() {
     newScene->page = newScene->indexd/3;
     newScene->esquerda = true;
     newScene->numServers = 10;
+    newScene->servers = malloc(newScene->numServers * sizeof(ServerInfo));
+    for(int i = 0; i < newScene->numServers; i++) {
+        newScene->servers[i].text[0] = '\0';
+    }
+    char sendData[] = "INF";
+    Address* broad = NewAddress(255, 255, 255, 255, SERVER_DEFAULT_PORT);
+    Socket_Send(newScene->receiveSock, broad, sendData, sizeof(sendData));
+    DestroyAddress(broad);
+    newScene->receivingInfo = true;
+    newScene->receivingTimeout = 5 * Game.screenFreq;
     newScene->waitingConnection = false;
 
     SDL_Color Cname = {204, 204, 204};
@@ -83,6 +98,28 @@ void SceneServers_update(Scene_Servers* s) {
             s->waitingConnection = false;
             printf("timeout\n");
         }
+    }
+    if(s->receivingInfo) {
+        Address sender;
+        char data[64];
+        int bytes = Socket_Receive(s->receiveSock, &sender, data, sizeof(data));
+        if(bytes > 0) {
+            if(strncmp("INF", data, 3) == 0) {
+                int min, max;
+                char serverName[32];
+                sscanf(data + 4, "%d %d %31[^\n]", &min, &max, serverName);
+                for(int i = 0; i < s->numServers; i++) {
+                    if(s->servers[i].text[0] == '\0') {
+                        s->servers[i].addr.address = sender.address;
+                        s->servers[i].addr.port = sender.port;
+                        sprintf(s->servers[i].text, "%s - %d/%d", serverName, min, max);
+                        SDL_Color color = {255, 255, 255};
+                        WD_TextureLoadFromText(s->nomeServer1, s->servers[i].text, Game.serversFontd, color);
+                    } 
+                }
+            }
+        }
+        s->receivingTimeout--;
     }
     SDL_RenderClear(Game.renderer);
     WD_TextureRenderDest(s->backgroundTexture, &s->renderQuad);
@@ -152,6 +189,7 @@ void SceneServers_update(Scene_Servers* s) {
 }
 
 void SceneServers_destroy(Scene_Servers* s) {
+    Socket_Close(s->receiveSock);
     WD_TextureDestroy(s->nome);
     WD_TextureDestroy(s->mutiplayer);
     WD_TextureDestroy(s->backgroundTexture);
@@ -221,6 +259,18 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
         } else if(e->key.keysym.sym == SDLK_LEFT) {
             s->esquerda = true; 
         } else if(e->key.keysym.sym == SDLK_RETURN) {
+            if(s->esquerda == false) {
+                if(Network.serverAddress != NULL)
+                    DestroyAddress(Network.serverAddress);
+                Network.serverAddress = malloc(sizeof(Address));
+                Network.serverAddress->address = s->servers[0].addr.address;
+                Network.serverAddress->port = s->servers[0].addr.port;
+                char data[32];
+                sprintf(data, "CON 1 0 %s", Game.nome);
+                Socket_Send(Network.sockFd, Network.serverAddress, data, sizeof(data));
+                s->waitingConnection = true;
+                s->connectionTimeout = 0;
+            }
             if(s->esquerda && s->indexe == 1) {
                 unsigned int ip1, ip2, ip3, ip4;
                 sscanf(s->boxIp->text, "%u.%u.%u.%u", &ip1, &ip2, &ip3, &ip4);

@@ -6,14 +6,24 @@ typedef struct SceneManagerS SceneManagerS;
 #include "headers.h"
 #include "scene_base.h"
 #include "widgets.h"
+#include "network.h"
+
+typedef struct ServerInfo {
+    char text[32];
+    Address addr;
+} ServerInfo;
 
 typedef struct Scene_Servers {
     int numServers; //tirar dps
     bool waitingConnection;
+    int receiveSock;
+    bool receivingInfo;
+    int receivingTimeout;
     int connectionTimeout;
     int frame;
     short int indexd, indexe, page, posTela;
     bool esquerda;
+    ServerInfo* servers;
     char string1[20], string2[20], string3[20];
     WTexture* loading;
     WTexture* nome;

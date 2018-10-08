@@ -251,9 +251,6 @@ void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
     if (SceneManager.inTransition)
         return;
     if(e->type == SDL_KEYDOWN) {
-        if(e->key.keysym.sym == SDLK_TAB) {
-            SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAP);
-        } 
         if(e->key.keysym.sym == SDLK_RETURN && s->modoOff && s->index == 2 ) {
             strcpy(Game.nome, "User Teste");
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);

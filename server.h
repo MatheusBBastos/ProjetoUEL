@@ -29,6 +29,7 @@ typedef struct Server {
     Map* map;
     int hostId;
     bool inGame;
+    char name[32];
 } Server;
 
 Server* Server_Open(unsigned short port);

@@ -35,6 +35,7 @@ Server* Server_Open(unsigned short port) {
         newServer->hostId = -1;
         newServer->inGame = false;
         newServer->map = Map_Create();
+        strcpy(newServer->name, "SERVER FORTE");
         return newServer;
     } else {
         return NULL;
@@ -263,9 +264,9 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
         }
     } else {
         if(strncmp("INF", buffer, 3) == 0) {
-            char sendData[16];
-            sprintf(sendData, "INF %d %d", s->connectedClients, s->maxClients);
-            Socket_Send(s->sockfd, sender, sendData, strlen(sendData));
+            char sendData[64];
+            sprintf(sendData, "INF %d %d %s", s->connectedClients, s->maxClients, s->name);
+            Socket_Send(s->sockfd, sender, sendData, strlen(sendData) + 1);
         } else if(strncmp("CON", buffer, 3) == 0) {
             int version;
             char username[32];
