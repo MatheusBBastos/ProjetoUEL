@@ -13,11 +13,25 @@ typedef struct Client {
     Character* character;
     uint64_t lastMovementId;
     char username[32];
+    int bombsPlaced;
+    int maxBombs;
+    int bombRadius;
 } Client;
 
 Client* Client_New(Address* addr, int id);
 
 void Client_Destroy(Client* c);
+
+typedef struct ServerBomb {
+    bool active;
+    int count;
+    int clientId;
+    int x, y;
+} ServerBomb;
+
+typedef struct Position {
+    int x, y;
+} Position;
 
 typedef struct Server {
     unsigned short port;
@@ -30,6 +44,10 @@ typedef struct Server {
     int hostId;
     bool inGame;
     char name[32];
+    ServerBomb *bombs;
+    TemporaryObject **objects;
+    Position *spawnCoords;
+    int bombNumber;
 } Server;
 
 Server* Server_Open(unsigned short port);

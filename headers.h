@@ -46,6 +46,8 @@
 #define SERVER_DEFAULT_PORT 7567
 // Tickrate do servidor (por segundo)
 #define SERVER_TICKRATE 120
+// Número máximo de bombas por jogador
+#define MAX_BOMBS_PER_PLAYER 5
 
 typedef struct Address Address;
 typedef struct Map Map;

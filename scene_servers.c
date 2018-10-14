@@ -104,6 +104,7 @@ void SceneServers_update(Scene_Servers* s) {
         char data[64];
         int bytes = Socket_Receive(s->receiveSock, &sender, data, sizeof(data));
         if(bytes > 0) {
+            printf("Received info: %s\n", data);
             if(strncmp("INF", data, 3) == 0) {
                 int min, max;
                 char serverName[32];
@@ -120,6 +121,9 @@ void SceneServers_update(Scene_Servers* s) {
             }
         }
         s->receivingTimeout--;
+        if(s->receivingTimeout <= 0) {
+            s->receivingInfo = false;
+        }
     }
     SDL_RenderClear(Game.renderer);
     WD_TextureRenderDest(s->backgroundTexture, &s->renderQuad);

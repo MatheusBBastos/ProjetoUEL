@@ -9,11 +9,25 @@ Scene_Map* SceneMap_new() {
     newScene->tileMap = WD_CreateTexture();
     WD_TextureLoadFromFile(newScene->tileMap, "content/001-Grassland01.png");
     Map_RenderFull(Game.map, newScene->tileMap);
+    newScene->bombSprite = WD_CreateTexture();
+    WD_TextureLoadFromFile(newScene->bombSprite, "content/bomb.png");
+    newScene->bombSprite->w *= Game.screenMulti;
+    newScene->bombSprite->h *= Game.screenMulti;
+    newScene->explosionSprite = WD_CreateTexture();
+    WD_TextureLoadFromFile(newScene->explosionSprite, "content/explosion.png");
+    newScene->wallTexture = WD_CreateTexture();
+    WD_TextureLoadFromFile(newScene->wallTexture, "content/wall.png");
+    //newScene->explosionSprite->w *= Game.screenMulti;
+    //newScene->explosionSprite->h *= Game.screenMulti;
     newScene->screenX = 0;
     newScene->screenY = 0;
     newScene->player = Game.map->characters[Network.clientId];
     newScene->renderCharacters = malloc(Game.map->charNumber * sizeof(int));
     newScene->waitingConnection = false;
+    for(int i = 0; i < 20; i++) {
+        newScene->bombs[i].active = false;
+        newScene->explosions[i].active = false;
+    }
     return newScene;
 }
 
@@ -28,6 +42,52 @@ int compareCharacters(const void * a, const void * b) {
         return 1;
     }
     return ( chars[i]->renderY - chars[j]->renderY );
+}
+
+Bomb_Render(Bomb* b, int screenX, int screenY, WTexture* bombSprite) {
+    if(b->active) {
+        WD_TextureRender(bombSprite, b->x * TILE_SIZE - screenX, b->y * TILE_SIZE - screenY);
+    }
+}
+
+Explosion_Render(Explosion* e, int screenX, int screenY, WTexture* explosionSprite) {
+    if(e->active && e->explosionCount > 0) {
+        e->explosionCount--;
+        for(int x = e->xMin; x <= e->xMax; x++) {
+            SDL_RendererFlip flip;
+            SDL_Rect clip = {0, 0, explosionSprite->w / 3, explosionSprite->h};
+            if(x == e->x) {
+                flip = SDL_FLIP_NONE;
+                clip.x = explosionSprite->w / 3 * 2;
+            } else if(x == e->xMin) {
+                flip = SDL_FLIP_NONE;
+            } else if(x == e->xMax) {
+                flip = SDL_FLIP_HORIZONTAL;
+            } else {
+                flip = SDL_FLIP_NONE;
+                clip.x = explosionSprite->w / 3;
+            }
+            WD_TextureRenderExCustom(explosionSprite, x * TILE_SIZE - screenX, e->y * TILE_SIZE - screenY, &clip, 0.0, NULL, flip, TILE_SIZE, TILE_SIZE);
+        }
+        for(int y = e->yMin; y <= e->yMax; y++) {
+            SDL_RendererFlip flip;
+            SDL_Rect clip = {0, 0, explosionSprite->w / 3, explosionSprite->h};
+            double angle = 90.0;
+            if(y == e->y) {
+                flip = SDL_FLIP_NONE;
+                clip.x = explosionSprite->w / 3 * 2;
+            } else if(y == e->yMin) {
+                flip = SDL_FLIP_NONE;
+            } else if(y == e->yMax) {
+                angle = 270.0;
+                flip = SDL_FLIP_NONE;
+            } else {
+                flip = SDL_FLIP_NONE;
+                clip.x = explosionSprite->w / 3;
+            }
+            WD_TextureRenderExCustom(explosionSprite, e->x * TILE_SIZE - screenX, y * TILE_SIZE - screenY, &clip, angle, NULL, flip, TILE_SIZE, TILE_SIZE);
+        }
+    }
 }
 
 void SceneMap_update(Scene_Map* s) {
@@ -80,6 +140,30 @@ void SceneMap_update(Scene_Map* s) {
                 } else if(strncmp("SSD", data, 3) == 0) {
                     Network.connectedToServer = false;
                     SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
+                } else if(strncmp("BMB", data, 3) == 0) {
+                    int id, x, y;
+                    sscanf(data + 4, "%d %d %d", &id, &x, &y);
+                    s->bombs[id].active = true;
+                    s->bombs[id].x = x;
+                    s->bombs[id].y = y;
+                } else if(strncmp("EXP", data, 3) == 0) {
+                    int id, xMin, xMax, yMin, yMax;
+                    sscanf(data + 4, "%d %d %d %d %d", &id, &xMin, &xMax, &yMin, &yMax);
+                    s->bombs[id].active = false;
+                    s->explosions[id].active = true;
+                    s->explosions[id].x = s->bombs[id].x;
+                    s->explosions[id].y = s->bombs[id].y;
+                    s->explosions[id].xMin = xMin;
+                    s->explosions[id].xMax = xMax;
+                    s->explosions[id].yMin = yMin;
+                    s->explosions[id].yMax = yMax;
+                    s->explosions[id].explosionCount = Game.screenFreq * 0.5;
+                } else if(strncmp("WDS", data, 3) == 0) {
+                    int id;
+                    sscanf(data + 4, "%d", &id);
+                    Game.map->walls[id].exists = false;
+                    int x = Game.map->walls[id].x, y = Game.map->walls[id].y;
+                    Game.map->objects[y][x].exists = false;
                 }
             }
         }
@@ -162,7 +246,17 @@ void SceneMap_update(Scene_Map* s) {
             s->renderCharacters[i] = -1;
         }
     }
+
+    Map_RenderWalls(Game.map, s->wallTexture, s->screenX, s->screenY);
     
+    for(int i = 0; i < 20; i++) {
+        Bomb_Render(&s->bombs[i], s->screenX, s->screenY, s->bombSprite);
+    }
+
+    for(int i = 0; i < 20; i++) {
+        Explosion_Render(&s->explosions[i], s->screenX, s->screenY, s->explosionSprite);
+    }
+
     // Ordenar a lista de renderização dos personagens com base em suas alturas
     qsort(s->renderCharacters, Game.map->charNumber, sizeof(int), compareCharacters);
     
@@ -178,6 +272,8 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
     if(e->type == SDL_KEYDOWN) {
         if(e->key.keysym.sym == SDLK_ESCAPE) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
+        } else if(e->key.keysym.sym == SDLK_SPACE) {
+            Socket_Send(Network.sockFd, Network.serverAddress, "BMB", 4);
         }
         //Atualiza estado da tecla se o evento dela for mais recente
         if(s->player != NULL) {
@@ -289,5 +385,8 @@ void SceneMap_destroy(Scene_Map* s) {
     if(s->renderCharacters != NULL) {
         free(s->renderCharacters);
     }
+    WD_TextureDestroy(s->bombSprite);
+    WD_TextureDestroy(s->explosionSprite);
+    WD_TextureDestroy(s->wallTexture);
     free(s);
 }

@@ -10,8 +10,25 @@ typedef struct SceneManagerS SceneManagerS;
 #include "character.h"
 #include "server.h"
 
+typedef struct Bomb {
+    int x, y;
+    bool active;
+} Bomb;
+
+typedef struct Explosion {
+    int x, y, xMin, xMax, yMin, yMax;
+    bool active;
+    int explosionCount;
+} Explosion;
+
+Bomb_Render(Bomb* b, int screenX, int screenY, WTexture* bombSprite);
+
+Explosion_Render(Explosion* e, int screenX, int screenY, WTexture* explosionSprite);
+
 typedef struct Scene_Map {
     WTexture* tileMap;
+    WTexture *bombSprite, *explosionSprite;
+    WTexture* wallTexture;
     Map* map;
     int tileWidth, tileHeight, mapWidth, mapHeight;
     int screenX, screenY;
@@ -25,6 +42,8 @@ typedef struct Scene_Map {
     int sockFd;
     char lastMov;
     bool keyUp, keyDown, keyRight, keyLeft;
+    Bomb bombs[20];
+    Explosion explosions[20];
 } Scene_Map;
 
 Scene_Map* SceneMap_new();
