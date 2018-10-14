@@ -1,4 +1,5 @@
 #include "server.h"
+#include "noise.h"
 
 Client* Client_New(Address* addr, int id) {
     Client* newClient = malloc(sizeof(Client));
@@ -8,6 +9,9 @@ Client* Client_New(Address* addr, int id) {
     newClient->id = id;
     newClient->lastMessage = SDL_GetTicks();
     newClient->character = NULL;
+    newClient->bombsPlaced = 0;
+    newClient->maxBombs = 5;
+    newClient->bombRadius = 10;
     return newClient;
 }
 
@@ -32,10 +36,29 @@ Server* Server_Open(unsigned short port) {
         for(int i = 0; i < newServer->maxClients; i++) {
             newServer->clients[i] = NULL;
         }
+        newServer->spawnCoords = malloc(newServer->maxClients * sizeof(Position));
+        newServer->spawnCoords[0].x = 1;
+        newServer->spawnCoords[0].y = 1;
+
+        newServer->spawnCoords[1].x = 17;
+        newServer->spawnCoords[1].y = 1;
+
+        newServer->spawnCoords[2].x = 1;
+        newServer->spawnCoords[2].y = 17;
+
+        newServer->spawnCoords[3].x = 17;
+        newServer->spawnCoords[3].x = 17;
+
         newServer->hostId = -1;
         newServer->inGame = false;
         newServer->map = Map_Create();
         strcpy(newServer->name, "SERVER FORTE");
+        newServer->bombNumber = MAX_BOMBS_PER_PLAYER * newServer->maxClients;
+        newServer->bombs = malloc(newServer->bombNumber * sizeof(ServerBomb));
+        for(int i = 0; i < newServer->bombNumber; i++) {
+            newServer->bombs[i].active = false;
+        }
+        newServer->objects = NULL;
         return newServer;
     } else {
         return NULL;
@@ -146,6 +169,44 @@ void Server_SendInfos(Server* s, Address* addr) {
     }
 }
 
+void Server_GenerateMap(Server* s) {
+    srand(time(NULL));
+    int seed = rand() % 100;
+    s->objects = malloc(s->map->height * sizeof(TemporaryObject*));
+    int wallNumber = 0;
+    for(int y = 0; y < s->map->height; y++) {
+        s->objects[y] = malloc(s->map->width * sizeof(TemporaryObject));
+        for(int x = 0; x < s->map->width; x++) {
+            bool possibleWall = true;
+            for(int i = 0; i < s->maxClients; i++) {
+                if(s->clients[i] == NULL || s->clients[i]->character == NULL) {
+                    continue;
+                }
+                if(abs(s->clients[i]->character->x / TILE_SIZE - x) + abs(s->clients[i]->character->y / TILE_SIZE - y) < 2) {
+                    possibleWall = false;
+                    break;
+                }
+            }
+            if(possibleWall && Map_Get(s->map, x, y, 1) != 4) {
+                float n = perlin2d(x, y, 0.5, 1, seed);
+                if(n <= 0.7) {
+                    s->objects[y][x].exists = true;
+                    s->objects[y][x].isWall = true;
+                    s->objects[y][x].objId = wallNumber;
+                    wallNumber++;
+                } else {
+                    s->objects[y][x].exists = false;
+                }
+            } else {
+                s->objects[y][x].exists = false;
+            }
+        }
+    }
+    char sendData[16];
+    sprintf(sendData, "GEN %d %d", seed, wallNumber);
+    Server_SendToAll(s, sendData, -1);
+}
+
 bool Server_CheckMovement(Server* s, int id, int x, int y) {
     if(s->clients[id] == NULL) {
         return false;
@@ -211,18 +272,147 @@ void Server_CreateCharacters(Server* s) {
                 Character_Place(s->clients[i]->character, 1, 1);
             } else if(i == 1) {
                 s->clients[i]->character = Character_Create("content/testcharacter.png", i, false);
-                Character_Place(s->clients[i]->character, 18, 1);
+                Character_Place(s->clients[i]->character, 17, 1);
             } else if(i == 2) {
                 s->clients[i]->character = Character_Create("content/testcharacter.png", i, false);
-                Character_Place(s->clients[i]->character, 1, 18);
+                Character_Place(s->clients[i]->character, 1, 17);
             } else if(i == 3) {
                 s->clients[i]->character = Character_Create("content/testcharacter.png", i, false);
-                Character_Place(s->clients[i]->character, 18, 18);
+                Character_Place(s->clients[i]->character, 17, 17);
             }
             char sendData[80];
             Character* c = s->clients[i]->character;
             sprintf(sendData, "CHR %d %d %d %d %s", c->x, c->y, c->direction, i, c->spriteFile);
             Server_SendToAll(s, sendData, -1);
+        }
+    }
+}
+
+void Server_PlaceBomb(Server* s, int clientId) {
+    if(s->clients[clientId]->bombsPlaced >= s->clients[clientId]->maxBombs)
+        return;
+    SDL_Rect box;
+    Character_GetCollisionBox(s->clients[clientId]->character, &box, 0, 0);
+    int bombX = (box.x + box.w / 2) / TILE_SIZE;
+    int bombY = (box.y + box.h / 2) / TILE_SIZE;
+    if(s->objects[bombY][bombX].exists)
+        return;
+    for(int i = 0; i < s->bombNumber; i++) {
+        if(!s->bombs[i].active) {
+            s->bombs[i].active = true;
+            s->objects[bombY][bombX].exists = true;
+            s->objects[bombY][bombX].isWall = false;
+            s->objects[bombY][bombX].objId = i;
+            s->bombs[i].x = bombX;
+            s->bombs[i].y = bombY;
+            s->bombs[i].clientId = clientId;
+            s->bombs[i].count = 0;
+            char sendData[32];
+            sprintf(sendData, "BMB %d %d %d", i, bombX, bombY);
+            Server_SendToAll(s, sendData, -1);
+            s->clients[clientId]->bombsPlaced++;
+            break;
+        }
+    }
+}
+
+void Server_DestroyWall(Server* s, int x, int y) {
+    char sendData[16];
+    sprintf(sendData, "WDS %d", s->objects[y][x].objId);
+    s->objects[y][x].exists = false;
+    Server_SendToAll(s, sendData, -1);
+}
+
+void Server_ExplodeBomb(Server* s, int bId) {
+    if(s->bombs[bId].active) {
+        ServerBomb* b = &s->bombs[bId];
+        Client* c = s->clients[b->clientId];
+        c->bombsPlaced--;
+        b->active = false;
+        int xMax = b->x;
+        int xMin = b->x;
+        int yMax = b->y;
+        int yMin = b->y;
+        for(int x = 1; x <= c->bombRadius; x++) {
+            TemporaryObject* o = &s->objects[b->y][b->x + x];
+            if(o->exists) {
+                if(o->isWall)
+                    Server_DestroyWall(s, b->x + x, b->y);
+                else
+                    Server_ExplodeBomb(s, o->objId);
+                xMax++;
+                break;
+            } else if(Map_Get(s->map, b->x + x, b->y, 1) == 4) {
+                break;
+            } else {
+                xMax++;
+            }
+        }
+        for(int x = 1; x <= c->bombRadius; x++) {
+            TemporaryObject* o = &s->objects[b->y][b->x - x];
+            if(o->exists) {
+                if(o->isWall)
+                    Server_DestroyWall(s, b->x - x, b->y);
+                else
+                    Server_ExplodeBomb(s, o->objId);
+                xMin--;
+                break;
+            } else if(Map_Get(s->map, b->x - x, b->y, 1) == 4) {
+                break;
+            } else {
+                xMin--;
+            }
+        }
+        for(int y = 1; y <= c->bombRadius; y++) {
+            TemporaryObject* o = &s->objects[b->y + y][b->x];
+            if(o->exists) {
+                if(o->isWall)
+                    Server_DestroyWall(s, b->x, b->y + y);
+                else
+                    Server_ExplodeBomb(s, o->objId);
+                yMax++;
+                break;
+            } else if(Map_Get(s->map, b->x, b->y + y, 1) == 4) {
+                break;
+            } else {
+                yMax++;
+            }
+        }
+        for(int y = 1; y <= c->bombRadius; y++) {
+            TemporaryObject* o = &s->objects[b->y - y][b->x];
+            if(o->exists) {
+                if(o->isWall)
+                    Server_DestroyWall(s, b->x, b->y - y);
+                else
+                    Server_ExplodeBomb(s, o->objId);
+                yMin--;
+                break;
+            } else if(Map_Get(s->map, b->x, b->y - y, 1) == 4) {
+                break;
+            } else {
+                yMin--;
+            }
+        }
+        for(int cId = 0; cId < s->maxClients; cId++) {
+            if(s->clients[cId] != NULL) {
+                // checar colisão da explosão com o personagem
+            }
+        }
+        s->objects[b->y][b->x].exists = false;
+        char sendData[64];
+        sprintf(sendData, "EXP %d %d %d %d %d", bId, xMin, xMax, yMin, yMax);
+        Server_SendToAll(s, sendData, -1);
+    }
+}
+
+void Server_UpdateBombs(Server* s) {
+    for(int i = 0; i < s->bombNumber; i++) {
+        if(s->bombs[i].active) {
+            ServerBomb* b = &s->bombs[i];
+            b->count++;
+            if(b->count == SERVER_TICKRATE * 3) {
+                Server_ExplodeBomb(s, i);
+            }
         }
     }
 }
@@ -260,7 +450,11 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
                 char sendData[64];
                 sprintf(sendData, "MAP %s", "map.txt");
                 Server_SendToAll(s, sendData, strlen(sendData) + 1);
+                Server_GenerateMap(s);
             }
+        } else if(strncmp("BMB", buffer, 3) == 0) {
+            if(s->inGame)
+                Server_PlaceBomb(s, cId);
         }
     } else {
         if(strncmp("INF", buffer, 3) == 0) {
@@ -325,6 +519,7 @@ int Server_InitLoop(Server* s) {
             Server_HandleMessage(s, &sender, buffer);
         }
         Server_CheckInactiveClients(s);
+        Server_UpdateBombs(s);
         count++;
         if(count == SERVER_TICKRATE) {
             printf("[Server] Connected clients: %d\n", s->connectedClients);
@@ -348,7 +543,14 @@ void Server_Destroy(Server* s) {
         if(s->clients[i] != NULL)
             Client_Destroy(s->clients[i]);
     }
+    if(s->objects != NULL) {
+        for(int i = 0; i < s->map->height; i++) {
+            free(s->objects[i]);
+        }
+        free(s->objects);
+    }
     Map_Destroy(s->map);
     free(s->clients);
+    free(s->spawnCoords);
     free(s);
 }

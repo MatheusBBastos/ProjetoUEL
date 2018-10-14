@@ -78,6 +78,12 @@ void SceneLobby_Receive(Scene_Lobby* s) {
                 char mapPath[64];
                 sscanf(data + 4, "%s", mapPath);
                 Map_Load(Game.map, mapPath, true);
+            } else if(strncmp("GEN", data, 3) == 0) {
+                int seed, wallNumber;
+                sscanf(data + 4, "%d %d", &seed, &wallNumber);
+                Game.map->wallNumber = wallNumber;
+                Game.map->walls = malloc(wallNumber * sizeof(Wall));
+                Map_GenerateWalls(Game.map, seed);
                 if(Game.map->loaded) {
                     SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAP);
                 }

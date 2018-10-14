@@ -1,5 +1,6 @@
 #include "map.h"
 #include "scene_base.h"
+#include "noise.h"
 
 Map* Map_Create() {
     Map* newMap = malloc(sizeof(Map));
@@ -13,6 +14,8 @@ Map* Map_Create() {
         newMap->characters[i] = NULL;
     }
     newMap->charNumber = MAX_PLAYERS;
+    newMap->objects = NULL;
+    newMap->walls = NULL;
     return newMap;
 }
 
@@ -62,6 +65,42 @@ void Map_Set(Map* m, int x, int y, int z, int value) {
     }
 }
 
+void Map_GenerateWalls(Map* m, int seed) {
+    m->objects = malloc(m->height * sizeof(TemporaryObject*));
+    int wallNumber = 0;
+    for(int y = 0; y < m->height; y++) {
+        m->objects[y] = malloc(m->width * sizeof(TemporaryObject));
+        for(int x = 0; x < m->width; x++) {
+            bool possibleWall = true;
+            for(int i = 0; i < m->charNumber; i++) {
+                if(m->characters[i] == NULL) {
+                    continue;
+                }
+                if(abs(m->characters[i]->x / TILE_SIZE - x) + abs(m->characters[i]->y / TILE_SIZE - y) < 2) {
+                    possibleWall = false;
+                    break;
+                }
+            }
+            if(possibleWall && Map_Get(m, x, y, 1) != 4) {
+                float n = perlin2d(x, y, 0.5, 1, seed);
+                if(n <= 0.7) {
+                    m->objects[y][x].exists = true;
+                    m->objects[y][x].isWall = true;
+                    m->objects[y][x].objId = wallNumber;
+                    m->walls[wallNumber].exists = true;
+                    m->walls[wallNumber].x = x;
+                    m->walls[wallNumber].y = y;
+                    wallNumber++;
+                } else {
+                    m->objects[y][x].exists = false;
+                }
+            } else {
+                m->objects[y][x].exists = false;
+            }
+        }
+    }
+}
+
 void Map_DestroyCharacters(Map* m) {
     if(m->characters != NULL) {
         for(int i = 0; i < m->charNumber; i++) {
@@ -71,6 +110,16 @@ void Map_DestroyCharacters(Map* m) {
         }
         free(m->characters);
         m->characters = NULL;
+    }
+}
+
+void Map_RenderWalls(Map* m, WTexture* wallTexture, int screenX, int screenY) {
+    for(int i = 0; i < m->wallNumber; i++) {
+        if(m->walls[i].exists) {
+            SDL_Rect src = {0, 0, wallTexture->w, wallTexture->h};
+            SDL_Rect dst = {TILE_SIZE * m->walls[i].x - screenX, TILE_SIZE * m->walls[i].y - screenY, wallTexture->w * Game.screenMulti, wallTexture->h * Game.screenMulti};
+            SDL_RenderCopy(Game.renderer, wallTexture->mTexture, &src, &dst);
+        }
     }
 }
 
@@ -127,12 +176,8 @@ bool Map_Passable(Map* m, SDL_Rect* box) {
     for(int z = 0; z < MAP_LAYERS; z++) {
         for(int y = firstTileY; y <= lastTileY; y++) {
             for(int x = firstTileX; x <= lastTileX; x++) {
-                if(Game.debug) {
-                    int offX = SceneManager.sMap->screenX;
-                    int offY = SceneManager.sMap->screenY;
-                    SDL_Rect r = {x * TILE_SIZE - offX, y * TILE_SIZE - offY, TILE_SIZE, TILE_SIZE};
-                    SDL_SetRenderDrawColor(Game.renderer, 0, 255, 0, 60);
-                    SDL_RenderFillRect(Game.renderer, &r);
+                if(m->objects != NULL && m->objects[y][x].exists) {
+                    return false;
                 }
                 int tile = Map_Get(m, x, y, z);
                 if(tile == 4 || tile == -1) {
@@ -157,6 +202,15 @@ void Map_Destroy(Map* m) {
                 Character_Destroy(m->characters[i]);
         }
         free(m->characters);
+    }
+    if(m->objects != NULL) {
+        for(int i = 0; i < m->height; i++) {
+            free(m->objects[i]);
+        }
+        free(m->objects);
+    }
+    if(m->walls != NULL) {
+        free(m->walls);
     }
     free(m->layers);
     free(m);

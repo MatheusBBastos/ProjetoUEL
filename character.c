@@ -18,7 +18,7 @@ Character* Character_Create(char* spritePath, int id, bool noTexture) {
     newCharacter->renderY = 0;
     newCharacter->x4 = 0;
     newCharacter->y4 = 0;
-    newCharacter->moveSpeed = 2;
+    newCharacter->moveSpeed = 3;
     newCharacter->animationIndex = 0;
     newCharacter->animationCount = 0;
     newCharacter->animPart = false;
