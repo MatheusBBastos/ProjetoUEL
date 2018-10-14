@@ -24,6 +24,7 @@ typedef struct Scene_MainMenu {
     WTexture* rank[6];
     WTexture* multiplayer;
     WTexture* singleplayer;
+    char ranking[100];
 } Scene_MainMenu;
 
 Scene_MainMenu * SceneMainMenu_new();

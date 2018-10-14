@@ -35,8 +35,8 @@ Scene_MainMenu* SceneMainMenu_new() {
         WD_TextureLoadFromText(newScene->rank[i], anw[i], Game.rank, colorWhite);
     }
 
-
-    WD_TextureLoadFromText(newScene->bemvindo,"Bem Vindo", Game.mainMenu, colorBemvindo);
+    sprintf(newScene->ranking, "Bem vindo");
+    WD_TextureLoadFromText(newScene->bemvindo,newScene->ranking, Game.mainMenu, colorBemvindo);
     WD_TextureLoadFromText(newScene->nome, Game.nome, Game.mainMenu, colorWhite);
 
     WD_TextureLoadFromText(newScene->jogar, "Jogar", Game.mainMenu_botoes, colorWhite);
@@ -76,8 +76,9 @@ int getRank(char res[6][20], char* data) {
 
     char nomes[5][50];
     char scores[5][50];
-    sprintf(res[5], "Seu rank #%.*s",t[31 + 1].end - t[31 + 1].start,
+    sprintf(res[5], "%.*s",t[31 + 1].end - t[31 + 1].start,
         data + t[31 + 1].start);
+    Game.rankPos = atoi(res[5]);
 
     for (int i1 = 3, i2 = 5, i3 = 0; i3 < 5; i1 += 6, i2 += 6, i3++) {
         sprintf(nomes[i3], "%.*s", t[i2 + 1].end - t[i2 + 1].start,
@@ -100,7 +101,8 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
             int c = TCPSocket_CheckConnectionStatus(s->socketFd);
             if(c == 1) {
                 s->connected = true;
-                char message[] = "{\"cmd\":\"getRank\",\"var\":{\"login\":\"201800560244\"}}\n";
+                char message[120];
+                sprintf(message, "{\"cmd\":\"getRank\",\"var\":{\"login\":\"%s\"}}\n", Game.loginID);
                 TCPSocket_Send(s->socketFd, message, strlen(message));
             } else if(c == -1) {
                 Socket_Close(s->socketFd);
@@ -112,13 +114,18 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
             if(c > 0) {
                 char anw[6][20];
                 data[c] = '\0';
-                puts(data);
                 if(getRank(anw, data) == 0) {
                     SDL_Color colorNotSelected = {255, 255, 255};
                     for (int i = 0; i < 5; i++) {
                         WD_TextureLoadFromText(s->rank[i], anw[i], Game.rank, colorNotSelected);
                     }
-                    printf("%s",(anw[5]));
+                    if (Game.rankPos != -1) {
+                        sprintf(s->ranking, "Bem vindo, #%d", Game.rankPos);
+                    }
+                    else {
+                        sprintf(s->ranking, "Bem vindo");
+                    }
+                    WD_TextureLoadFromText(s->bemvindo, s->ranking, Game.mainMenu, colorNotSelected);
                 }
                 s->dataReceived = true;
                 Socket_Close(s->socketFd);

@@ -137,6 +137,7 @@ void SceneLogin_update(Scene_Login* s) {
                     if (logado) {
                         puts(resposta);
                         strcpy(Game.nome, resposta);
+                        strcpy(Game.loginID, s->login->text);
                         SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
                     }
                     else {
@@ -253,6 +254,7 @@ void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
     if(e->type == SDL_KEYDOWN) {
         if(e->key.keysym.sym == SDLK_RETURN && s->modoOff && s->index == 2 ) {
             strcpy(Game.nome, "User Teste");
+            strcpy(Game.loginID, "NULLRANK");
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
         }
         else if (e->key.keysym.sym == SDLK_RETURN && !s->modoOff && s->index == 2)
