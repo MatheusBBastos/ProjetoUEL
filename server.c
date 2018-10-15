@@ -36,18 +36,6 @@ Server* Server_Open(unsigned short port) {
         for(int i = 0; i < newServer->maxClients; i++) {
             newServer->clients[i] = NULL;
         }
-        newServer->spawnCoords = malloc(newServer->maxClients * sizeof(Position));
-        newServer->spawnCoords[0].x = 1;
-        newServer->spawnCoords[0].y = 1;
-
-        newServer->spawnCoords[1].x = 17;
-        newServer->spawnCoords[1].y = 1;
-
-        newServer->spawnCoords[2].x = 1;
-        newServer->spawnCoords[2].y = 17;
-
-        newServer->spawnCoords[3].x = 17;
-        newServer->spawnCoords[3].x = 17;
 
         newServer->hostId = -1;
         newServer->inGame = false;
@@ -58,7 +46,6 @@ Server* Server_Open(unsigned short port) {
         for(int i = 0; i < newServer->bombNumber; i++) {
             newServer->bombs[i].active = false;
         }
-        newServer->objects = NULL;
         return newServer;
     } else {
         return NULL;
@@ -172,10 +159,10 @@ void Server_SendInfos(Server* s, Address* addr) {
 void Server_GenerateMap(Server* s) {
     srand(time(NULL));
     int seed = rand() % 100;
-    s->objects = malloc(s->map->height * sizeof(TemporaryObject*));
+    s->map->objects = malloc(s->map->height * sizeof(TemporaryObject*));
     int wallNumber = 0;
     for(int y = 0; y < s->map->height; y++) {
-        s->objects[y] = malloc(s->map->width * sizeof(TemporaryObject));
+        s->map->objects[y] = malloc(s->map->width * sizeof(TemporaryObject));
         for(int x = 0; x < s->map->width; x++) {
             bool possibleWall = true;
             for(int i = 0; i < s->maxClients; i++) {
@@ -187,18 +174,18 @@ void Server_GenerateMap(Server* s) {
                     break;
                 }
             }
-            if(possibleWall && Map_Get(s->map, x, y, 1) != 4) {
+            if(possibleWall && Map_Get(s->map, x, y, 1) != WALL_TILE) {
                 float n = perlin2d(x, y, 0.5, 1, seed);
                 if(n <= 0.7) {
-                    s->objects[y][x].exists = true;
-                    s->objects[y][x].isWall = true;
-                    s->objects[y][x].objId = wallNumber;
+                    s->map->objects[y][x].exists = true;
+                    s->map->objects[y][x].isWall = true;
+                    s->map->objects[y][x].objId = wallNumber;
                     wallNumber++;
                 } else {
-                    s->objects[y][x].exists = false;
+                    s->map->objects[y][x].exists = false;
                 }
             } else {
-                s->objects[y][x].exists = false;
+                s->map->objects[y][x].exists = false;
             }
         }
     }
@@ -220,10 +207,10 @@ bool Server_CheckMovement(Server* s, int id, int x, int y) {
 
     SDL_Rect collisionBox;
     Character_GetCollisionBox(c, &collisionBox, x - c->x, y - c->y);
-    if(Map_Passable(s->map, &collisionBox)) {
+    if(Map_Passable(s->map, &collisionBox, c)) {
         bool noCollision = true;
         for(int i = 0; i < s->maxClients; i++) {
-            if(s->clients[i] == NULL || i == id)
+            if(s->clients[i] == NULL || s->clients[i]->character->dead || i == id)
                 continue;
             SDL_Rect otherCollisionBox;
             Character_GetCollisionBox(s->clients[i]->character, &otherCollisionBox, 0, 0); 
@@ -268,16 +255,16 @@ void Server_CreateCharacters(Server* s) {
     for(int i = 0; i < s->maxClients; i++) {
         if(s->clients[i] != NULL) {
             if(i == 0) {
-                s->clients[i]->character = Character_Create("content/testcharacter.png", i, false);
+                s->clients[i]->character = Character_Create("content/azul.png", i, false);
                 Character_Place(s->clients[i]->character, 1, 1);
             } else if(i == 1) {
-                s->clients[i]->character = Character_Create("content/testcharacter.png", i, false);
+                s->clients[i]->character = Character_Create("content/vermelho.png", i, false);
                 Character_Place(s->clients[i]->character, 17, 1);
             } else if(i == 2) {
-                s->clients[i]->character = Character_Create("content/testcharacter.png", i, false);
+                s->clients[i]->character = Character_Create("content/amarelo.png", i, false);
                 Character_Place(s->clients[i]->character, 1, 17);
             } else if(i == 3) {
-                s->clients[i]->character = Character_Create("content/testcharacter.png", i, false);
+                s->clients[i]->character = Character_Create("content/roxo.png", i, false);
                 Character_Place(s->clients[i]->character, 17, 17);
             }
             char sendData[80];
@@ -295,18 +282,28 @@ void Server_PlaceBomb(Server* s, int clientId) {
     Character_GetCollisionBox(s->clients[clientId]->character, &box, 0, 0);
     int bombX = (box.x + box.w / 2) / TILE_SIZE;
     int bombY = (box.y + box.h / 2) / TILE_SIZE;
-    if(s->objects[bombY][bombX].exists)
+    if(s->map->objects[bombY][bombX].exists)
         return;
     for(int i = 0; i < s->bombNumber; i++) {
         if(!s->bombs[i].active) {
             s->bombs[i].active = true;
-            s->objects[bombY][bombX].exists = true;
-            s->objects[bombY][bombX].isWall = false;
-            s->objects[bombY][bombX].objId = i;
+            s->map->objects[bombY][bombX].exists = true;
+            s->map->objects[bombY][bombX].isWall = false;
+            s->map->objects[bombY][bombX].objId = i;
             s->bombs[i].x = bombX;
             s->bombs[i].y = bombY;
             s->bombs[i].clientId = clientId;
             s->bombs[i].count = 0;
+            SDL_Rect bombCollision = {bombX * TILE_SIZE, bombY * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+            for(int j = 0; j < s->maxClients; j++) {
+                if(s->clients[j] != NULL && !s->clients[j]->character->dead) {
+                    SDL_Rect playerCollision;
+                    Character_GetCollisionBox(s->clients[j]->character, &playerCollision, 0, 0);
+                    if(CheckIntersection(&bombCollision, &playerCollision)) {
+                        s->clients[j]->character->bombPassId = i;
+                    }
+                }
+            }
             char sendData[32];
             sprintf(sendData, "BMB %d %d %d", i, bombX, bombY);
             Server_SendToAll(s, sendData, -1);
@@ -318,8 +315,8 @@ void Server_PlaceBomb(Server* s, int clientId) {
 
 void Server_DestroyWall(Server* s, int x, int y) {
     char sendData[16];
-    sprintf(sendData, "WDS %d", s->objects[y][x].objId);
-    s->objects[y][x].exists = false;
+    sprintf(sendData, "WDS %d", s->map->objects[y][x].objId);
+    s->map->objects[y][x].exists = false;
     Server_SendToAll(s, sendData, -1);
 }
 
@@ -334,7 +331,7 @@ void Server_ExplodeBomb(Server* s, int bId) {
         int yMax = b->y;
         int yMin = b->y;
         for(int x = 1; x <= c->bombRadius; x++) {
-            TemporaryObject* o = &s->objects[b->y][b->x + x];
+            TemporaryObject* o = &s->map->objects[b->y][b->x + x];
             if(o->exists) {
                 if(o->isWall)
                     Server_DestroyWall(s, b->x + x, b->y);
@@ -342,14 +339,14 @@ void Server_ExplodeBomb(Server* s, int bId) {
                     Server_ExplodeBomb(s, o->objId);
                 xMax++;
                 break;
-            } else if(Map_Get(s->map, b->x + x, b->y, 1) == 4) {
+            } else if(Map_Get(s->map, b->x + x, b->y, 1) == WALL_TILE) {
                 break;
             } else {
                 xMax++;
             }
         }
         for(int x = 1; x <= c->bombRadius; x++) {
-            TemporaryObject* o = &s->objects[b->y][b->x - x];
+            TemporaryObject* o = &s->map->objects[b->y][b->x - x];
             if(o->exists) {
                 if(o->isWall)
                     Server_DestroyWall(s, b->x - x, b->y);
@@ -357,14 +354,14 @@ void Server_ExplodeBomb(Server* s, int bId) {
                     Server_ExplodeBomb(s, o->objId);
                 xMin--;
                 break;
-            } else if(Map_Get(s->map, b->x - x, b->y, 1) == 4) {
+            } else if(Map_Get(s->map, b->x - x, b->y, 1) == WALL_TILE) {
                 break;
             } else {
                 xMin--;
             }
         }
         for(int y = 1; y <= c->bombRadius; y++) {
-            TemporaryObject* o = &s->objects[b->y + y][b->x];
+            TemporaryObject* o = &s->map->objects[b->y + y][b->x];
             if(o->exists) {
                 if(o->isWall)
                     Server_DestroyWall(s, b->x, b->y + y);
@@ -372,14 +369,14 @@ void Server_ExplodeBomb(Server* s, int bId) {
                     Server_ExplodeBomb(s, o->objId);
                 yMax++;
                 break;
-            } else if(Map_Get(s->map, b->x, b->y + y, 1) == 4) {
+            } else if(Map_Get(s->map, b->x, b->y + y, 1) == WALL_TILE) {
                 break;
             } else {
                 yMax++;
             }
         }
         for(int y = 1; y <= c->bombRadius; y++) {
-            TemporaryObject* o = &s->objects[b->y - y][b->x];
+            TemporaryObject* o = &s->map->objects[b->y - y][b->x];
             if(o->exists) {
                 if(o->isWall)
                     Server_DestroyWall(s, b->x, b->y - y);
@@ -387,18 +384,29 @@ void Server_ExplodeBomb(Server* s, int bId) {
                     Server_ExplodeBomb(s, o->objId);
                 yMin--;
                 break;
-            } else if(Map_Get(s->map, b->x, b->y - y, 1) == 4) {
+            } else if(Map_Get(s->map, b->x, b->y - y, 1) == WALL_TILE) {
                 break;
             } else {
                 yMin--;
             }
         }
         for(int cId = 0; cId < s->maxClients; cId++) {
-            if(s->clients[cId] != NULL) {
+            if(s->clients[cId] != NULL && !s->clients[cId]->character->dead) {
+                SDL_Rect charRect;
+                Character_GetCollisionBox(s->clients[cId]->character, &charRect, 0, 0);
+                SDL_Rect expRect1 = {xMin * TILE_SIZE, b->y * TILE_SIZE, (xMax - xMin + 1) * TILE_SIZE, TILE_SIZE};
+                SDL_Rect expRect2 = {b->x * TILE_SIZE, yMin * TILE_SIZE, TILE_SIZE, (yMax - yMin + 1) * TILE_SIZE};
+                if(CheckIntersection(&charRect, &expRect1) || CheckIntersection(&charRect, &expRect2)) {
+                    printf("MORREU ESSE BOSTA: %d\n", cId);
+                    s->clients[cId]->character->dead = true;
+                    char sendData[16];
+                    sprintf(sendData, "DEA %d", cId);
+                    Server_SendToAll(s, sendData, -1);
+                }
                 // checar colisão da explosão com o personagem
             }
         }
-        s->objects[b->y][b->x].exists = false;
+        s->map->objects[b->y][b->x].exists = false;
         char sendData[64];
         sprintf(sendData, "EXP %d %d %d %d %d", bId, xMin, xMax, yMin, yMax);
         Server_SendToAll(s, sendData, -1);
@@ -543,14 +551,7 @@ void Server_Destroy(Server* s) {
         if(s->clients[i] != NULL)
             Client_Destroy(s->clients[i]);
     }
-    if(s->objects != NULL) {
-        for(int i = 0; i < s->map->height; i++) {
-            free(s->objects[i]);
-        }
-        free(s->objects);
-    }
     Map_Destroy(s->map);
     free(s->clients);
-    free(s->spawnCoords);
     free(s);
 }

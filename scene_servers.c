@@ -48,7 +48,7 @@ Scene_Servers* SceneServers_new() {
     SDL_Color Cmult = {0, 132, 255};
     SDL_Color Cwhite = {255, 255, 255};
 
-    newScene->boxIp = WD_CreateTextBox(75 * Game.screenMulti, 750 * Game.screenMulti, 380 * Game.screenMulti, 52 * Game.screenMulti, 16, Game.serversFonte, Cwhite, false);
+    newScene->boxIp = WD_CreateTextBox(75, 750, 380, 52, 16, Game.serversFonte, Cwhite, false);
 
     WD_TextureLoadFromText(newScene->nome, "Basto Forte", Game.serversName, Cname);
     WD_TextureLoadFromText(newScene->mutiplayer, "MULTIPLAYER", Game.serversFonte, Cmult);
@@ -68,8 +68,8 @@ Scene_Servers* SceneServers_new() {
     int w = newScene->backgroundTexture->w, h = newScene->backgroundTexture->h;
     newScene->renderQuad.x = 0;
     newScene->renderQuad.y = 0;
-    newScene->renderQuad.w = w*Game.screenMulti;
-    newScene->renderQuad.h = h*Game.screenMulti;
+    newScene->renderQuad.w = w;
+    newScene->renderQuad.h = h;
     newScene->frame = 0;
     SDL_StartTextInput();
 
@@ -127,21 +127,21 @@ void SceneServers_update(Scene_Servers* s) {
     }
     SDL_RenderClear(Game.renderer);
     WD_TextureRenderDest(s->backgroundTexture, &s->renderQuad);
-    WD_TextureRender(s->nome, 75 * Game.screenMulti, 515 * Game.screenMulti);
-    WD_TextureRender(s->mutiplayer, 75 * Game.screenMulti, 585 * Game.screenMulti);
-    WD_TextureRender(s->server, 120 * Game.screenMulti, 655 * Game.screenMulti);
+    WD_TextureRender(s->nome, 75, 515);
+    WD_TextureRender(s->mutiplayer, 75, 585);
+    WD_TextureRender(s->server, 120, 655);
     
     if (s->waitingConnection) {
         double angle = Game.screenFreq / 60.0 * 6 * s->frame;
-        int loadingX = 470 * Game.screenMulti, loadingY = 750 * Game.screenMulti;
-        SDL_Rect c = {loadingX, loadingY, 60 * Game.screenMulti, 60 * Game.screenMulti};
+        int loadingX = 470, loadingY = 750;
+        SDL_Rect c = {loadingX, loadingY, 60, 60};
         SDL_RenderCopyEx(Game.renderer, s->loading->mTexture, NULL, &c, angle, NULL, SDL_FLIP_NONE);
     }
 
     //box
     SDL_SetRenderDrawBlendMode(Game.renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(Game.renderer, 0xFF, 0xFF, 0xFF, 100);
-    SDL_Rect rect = { 75 * Game.screenMulti, 750 * Game.screenMulti, 380 * Game.screenMulti, 52 * Game.screenMulti };
+    SDL_Rect rect = { 75, 750, 380, 52 };
     SDL_RenderFillRect(Game.renderer, &rect);
     WD_TextBoxRender(s->boxIp, s->frame);
     s->frame++;
@@ -181,15 +181,15 @@ void SceneServers_update(Scene_Servers* s) {
             SDL_SetTextureColorMod(s->nomeServer3->mTexture, 255, 66, 0);
     }
 
-    WD_TextureRender(s->entrar, 160 * Game.screenMulti, 825 * Game.screenMulti);
-    WD_TextureRender(s->servir, 160 * Game.screenMulti, 895 * Game.screenMulti);
-    WD_TextureRender(s->voltar, 160 * Game.screenMulti, 965 * Game.screenMulti);
-    WD_TextureRender(s->server1, 700 * Game.screenMulti, 515 * Game.screenMulti);
-    WD_TextureRender(s->nomeServer1, 800 * Game.screenMulti, 585 * Game.screenMulti);
-    WD_TextureRender(s->server2, 700 * Game.screenMulti, 655 * Game.screenMulti);
-    WD_TextureRender(s->nomeServer2, 800 * Game.screenMulti, 725 * Game.screenMulti);
-    WD_TextureRender(s->server3, 700 * Game.screenMulti, 795 * Game.screenMulti);
-    WD_TextureRender(s->nomeServer3, 800 * Game.screenMulti, 865 * Game.screenMulti);
+    WD_TextureRender(s->entrar, 160, 825);
+    WD_TextureRender(s->servir, 160, 895);
+    WD_TextureRender(s->voltar, 160, 965);
+    WD_TextureRender(s->server1, 700, 515);
+    WD_TextureRender(s->nomeServer1, 800, 585);
+    WD_TextureRender(s->server2, 700, 655);
+    WD_TextureRender(s->nomeServer2, 800, 725);
+    WD_TextureRender(s->server3, 700, 795);
+    WD_TextureRender(s->nomeServer3, 800, 865);
 }
 
 void SceneServers_destroy(Scene_Servers* s) {

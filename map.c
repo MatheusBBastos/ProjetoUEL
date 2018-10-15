@@ -81,7 +81,7 @@ void Map_GenerateWalls(Map* m, int seed) {
                     break;
                 }
             }
-            if(possibleWall && Map_Get(m, x, y, 1) != 4) {
+            if(possibleWall && Map_Get(m, x, y, 1) != WALL_TILE) {
                 float n = perlin2d(x, y, 0.5, 1, seed);
                 if(n <= 0.7) {
                     m->objects[y][x].exists = true;
@@ -117,7 +117,7 @@ void Map_RenderWalls(Map* m, WTexture* wallTexture, int screenX, int screenY) {
     for(int i = 0; i < m->wallNumber; i++) {
         if(m->walls[i].exists) {
             SDL_Rect src = {0, 0, wallTexture->w, wallTexture->h};
-            SDL_Rect dst = {TILE_SIZE * m->walls[i].x - screenX, TILE_SIZE * m->walls[i].y - screenY, wallTexture->w * Game.screenMulti, wallTexture->h * Game.screenMulti};
+            SDL_Rect dst = {TILE_SIZE * m->walls[i].x - screenX, TILE_SIZE * m->walls[i].y - screenY, wallTexture->w, wallTexture->h};
             SDL_RenderCopy(Game.renderer, wallTexture->mTexture, &src, &dst);
         }
     }
@@ -127,18 +127,21 @@ void Map_RenderFull(Map* m, WTexture* tileMap) {
     int x, y, z;
     for(z = 0; z < MAP_LAYERS; z++) {
         SDL_SetRenderTarget(Game.renderer, m->layers[z]);
+        SDL_SetRenderDrawColor(Game.renderer, 255, 255, 255, 0);
+        SDL_RenderClear(Game.renderer);
         SDL_SetTextureBlendMode(m->layers[z], SDL_BLENDMODE_BLEND);
         for(y = 0; y < m->height; y ++) {
             for(x = 0; x < m->width; x ++) {
                 int tile = Map_Get(m, x, y, z);
                 if(tile != -1) {
-                    SDL_Rect c = {(tile * TILE_SIZE) % TILESET_WIDTH, (int) tile / TILESET_WIDTH, TILE_SIZE, TILE_SIZE};
-                    WD_TextureRenderEx(tileMap, x * TILE_SIZE, y * TILE_SIZE, &c, 0.0, NULL, SDL_FLIP_NONE);
+                    SDL_Rect c = {(tile * TILE_SIZE) % TILESET_WIDTH, 0, TILE_SIZE, TILE_SIZE};
+                    SDL_Rect d = {x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+                    SDL_RenderCopy(Game.renderer, tileMap->mTexture, &c, &d);
                 }
             }
         }
     }
-    SDL_SetRenderTarget(Game.renderer, NULL);
+    SDL_SetRenderTarget(Game.renderer, Game.screenTexture);
 }
 
 void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY) {
@@ -146,8 +149,8 @@ void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY) {
     int offsetY = screenY % TILE_SIZE;
     int startX = (int) (screenX / TILE_SIZE);
     int startY = (int) (screenY / TILE_SIZE);
-    int endX = ((screenX + Game.screenWidth) / TILE_SIZE + 1);
-    int endY = ((screenY + Game.screenHeight) / TILE_SIZE + 1);
+    int endX = ((screenX + REFERENCE_WIDTH) / TILE_SIZE + 1);
+    int endY = ((screenY + REFERENCE_HEIGHT) / TILE_SIZE + 1);
     int x, y, z;
     for(z = 0; z < MAP_LAYERS; z++) {
         for(y = startY; y < endY; y ++) {
@@ -164,7 +167,7 @@ void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY) {
     }
 }
 
-bool Map_Passable(Map* m, SDL_Rect* box) {
+bool Map_Passable(Map* m, SDL_Rect* box, Character* c) {
     if(box->x < 0 || box->y < 0)
         return false;
     int firstTileX = box->x;
@@ -173,18 +176,26 @@ bool Map_Passable(Map* m, SDL_Rect* box) {
     int lastTileY = (firstTileY + box->h - 1) / TILE_SIZE;
     firstTileX /= TILE_SIZE;
     firstTileY /= TILE_SIZE;
+    bool usedPass = false;
     for(int z = 0; z < MAP_LAYERS; z++) {
         for(int y = firstTileY; y <= lastTileY; y++) {
             for(int x = firstTileX; x <= lastTileX; x++) {
                 if(m->objects != NULL && m->objects[y][x].exists) {
-                    return false;
+                    if(m->objects[y][x].isWall || c == NULL || c->bombPassId != m->objects[y][x].objId) {
+                        return false;
+                    } else {
+                        usedPass = true;
+                    }
                 }
                 int tile = Map_Get(m, x, y, z);
-                if(tile == 4 || tile == -1) {
+                if(tile == WALL_TILE || tile == -1) {
                     return false;
                 }
             }
         }
+    }
+    if(!usedPass && c != NULL && c->bombPassId != -1) {
+        c->bombPassId = -1;
     }
     return true;
 }

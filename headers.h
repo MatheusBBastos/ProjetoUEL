@@ -30,14 +30,21 @@
 #include <stdbool.h>
 #include <math.h>
 
+// Comprimento de referência da tela
+#define REFERENCE_WIDTH 1440
+// Altura de referência da tela
+#define REFERENCE_HEIGHT 1080
+
 // Duração padrao da transiçao (em frames)
 #define DEFAULT_TRANSITION_DURATION 10
 // Número de camadas do mapa
-#define MAP_LAYERS 2
+#define MAP_LAYERS 3
 // Tamanho (em pixels) de cada tile (quadrado)
-#define TILE_SIZE 32
+#define TILE_SIZE 64
 // Comprimento da imagem do Tileset
 #define TILESET_WIDTH 256
+// Tile que representa a parede
+#define WALL_TILE 1
 // Número de jogadores padrão
 #define MAX_PLAYERS 4
 // Quantidade de partes que o os tiles serão divididos para movimentação dos personagens
@@ -60,6 +67,8 @@ typedef struct GameInfo {
     SDL_Surface* screenSurface;
     // Renderizador global
     SDL_Renderer* renderer;
+    // Textura da tela
+    SDL_Texture* screenTexture;
     // Comprimento da tela
     int screenWidth;
     // Altura da tela
