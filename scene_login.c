@@ -150,11 +150,10 @@ void SceneLogin_update(Scene_Login* s) {
 
     if (s->modoOff && s->index == 2) {
         SDL_SetTextureColorMod(s->textModoOff->mTexture, 247, 159, 55);
-        WD_RenderArrow(s->seta, 800, 800, s->textModoOff->w);
-    }
-    else if (!s->modoOff && s->index == 2) {
+        WD_RenderArrow(s->seta, 800, 800, s->textModoOff->w, s->textModoOff->h);
+    } else if (!s->modoOff && s->index == 2) {
         SDL_SetTextureColorMod(s->textLogar->mTexture, 247, 159, 55);
-        WD_RenderArrow(s->seta, 325, 800, s->textLogar->w);
+        WD_RenderArrow(s->seta, 325, 800, s->textLogar->w, s->textLogar->h);
     }
     SDL_SetRenderDrawBlendMode(Game.renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(Game.renderer, 0xFF, 0xFF, 0xFF, 100);
@@ -164,14 +163,12 @@ void SceneLogin_update(Scene_Login* s) {
     SDL_RenderFillRect(Game.renderer, &rect);
     if (s->index == 0) {
         s->login->active = true;
-    }
-    else {
+    } else {
         s->login->active = false;
     }
     if (s->index == 1) {
         s->senha->active = true;
-    }
-    else {
+    } else {
         s->senha->active = false;
     }
     WD_TextBoxRender(s->login, s->frame);

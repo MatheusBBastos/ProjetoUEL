@@ -28,7 +28,7 @@ void WD_TextureRenderEx(WTexture* wtexture, int x, int y, SDL_Rect* clip, double
 
 void WD_TextureRenderExCustom(WTexture* wtexture, int x, int y, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip, int w, int h);
 
-void WD_RenderArrow(WTexture* s, int posX, int posY, int width); 
+void WD_RenderArrow(WTexture* s, int posX, int posY, int width, int height); 
 
 // Button - estrutura que carrega informações necessárias para renderizar um botão
 typedef struct Button {

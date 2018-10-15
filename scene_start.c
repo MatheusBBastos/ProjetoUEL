@@ -41,13 +41,13 @@ void SceneStart_update(Scene_Start* s) {
     SDL_SetTextureColorMod(s->quit->mTexture, 255, 255, 255);
     if(s->index == 0) {
         SDL_SetTextureColorMod(s->start->mTexture, 247, 159, 55);
-        WD_RenderArrow(s->seta, startX, 701, s->start->w);
+        WD_RenderArrow(s->seta, startX, 701, s->start->w, s->start->h);
     } else if(s->index == 1) {
         SDL_SetTextureColorMod(s->options->mTexture, 247, 159, 55);
-        WD_RenderArrow(s->seta, optionsX, 793, s->options->w);
+        WD_RenderArrow(s->seta, optionsX, 793, s->options->w, s->options->h);
     } else if(s->index == 2) {
         SDL_SetTextureColorMod(s->quit->mTexture, 247, 159, 55);
-        WD_RenderArrow(s->seta, quitX, 885, s->quit->w);
+        WD_RenderArrow(s->seta, quitX, 885, s->quit->w, s->quit->h);
     }
 
 }
