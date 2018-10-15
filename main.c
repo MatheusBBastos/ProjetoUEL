@@ -24,8 +24,8 @@ bool initialize() {
         else {
             Game.screenMulti = 0.5;
         }
-        Game.screenWidth = 1440 * Game.screenMulti;
-        Game.screenHeight = 1080 * Game.screenMulti;
+        Game.screenWidth = REFERENCE_WIDTH * Game.screenMulti;
+        Game.screenHeight = REFERENCE_HEIGHT * Game.screenMulti;
         Game.window = SDL_CreateWindow("Projeto UEL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, Game.screenWidth, Game.screenHeight, SDL_WINDOW_SHOWN);
         if(Game.window == NULL) {
             printf("Falha ao criar a janela! Erro: %s\n", SDL_GetError());
@@ -39,6 +39,7 @@ bool initialize() {
                 success = false;
             } else {
                 SDL_SetRenderDrawColor(Game.renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+                Game.screenTexture = SDL_CreateTexture(Game.renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, REFERENCE_WIDTH, REFERENCE_HEIGHT);
                 int imgFlags = IMG_INIT_PNG;
                 if(!(IMG_Init(imgFlags) & imgFlags)) {
                     printf("Falha ao inicializar o SDL_image! Erro: %s\n", IMG_GetError());
@@ -69,6 +70,7 @@ void destroy() {
         Server_Close(Network.server);
     if(Network.sockFd != 0)
         Socket_Close(Network.sockFd);
+    SDL_DestroyTexture(Game.screenTexture);
     SDL_DestroyRenderer(Game.renderer);
     Game.renderer = NULL;
     SDL_DestroyWindow(Game.window);
@@ -85,15 +87,15 @@ int main(int argc, char* argv[]) {
     } else {
         SceneManager.quit = false;
         // Fontes
-        Game.mainFont = TTF_OpenFont("content/Fipps-Regular.ttf", 36 * Game.screenMulti);
-        Game.telaLogin = TTF_OpenFont("content/Minecraft.ttf", 72 * Game.screenMulti);
-        Game.inputFont = TTF_OpenFont("content/Minecraft.ttf", 46 * Game.screenMulti);
-        Game.mainMenu = TTF_OpenFont("content/RC.ttf", 65 * Game.screenMulti);
-        Game.mainMenu_botoes = TTF_OpenFont("content/RC.ttf", 54 * Game.screenMulti);
-        Game.rank = TTF_OpenFont("content/Gamer.ttf", 96 * Game.screenMulti);
-        Game.serversFontd = TTF_OpenFont("content/Minecraft.ttf", 56 * Game.screenMulti);
-        Game.serversFonte = TTF_OpenFont("content/Minecraft.ttf", 48 * Game.screenMulti);
-        Game.serversName = TTF_OpenFont("content/Minecraft.ttf", 61 * Game.screenMulti);
+        Game.mainFont = TTF_OpenFont("content/Fipps-Regular.ttf", 36);
+        Game.telaLogin = TTF_OpenFont("content/Minecraft.ttf", 72);
+        Game.inputFont = TTF_OpenFont("content/Minecraft.ttf", 46);
+        Game.mainMenu = TTF_OpenFont("content/RC.ttf", 65);
+        Game.mainMenu_botoes = TTF_OpenFont("content/RC.ttf", 54);
+        Game.rank = TTF_OpenFont("content/Gamer.ttf", 96);
+        Game.serversFontd = TTF_OpenFont("content/Minecraft.ttf", 56);
+        Game.serversFonte = TTF_OpenFont("content/Minecraft.ttf", 48);
+        Game.serversName = TTF_OpenFont("content/Minecraft.ttf", 61);
 
 
         SDL_RenderPresent(Game.renderer);
@@ -108,7 +110,11 @@ int main(int argc, char* argv[]) {
                     SceneManager_handleEvent(&e);
                 }
             }
+            SDL_SetRenderTarget(Game.renderer, Game.screenTexture);
             SceneManager_updateScene();
+            SDL_SetRenderTarget(Game.renderer, NULL);
+            SDL_Rect dest = {0, 0, Game.screenWidth, Game.screenHeight};
+            SDL_RenderCopy(Game.renderer, Game.screenTexture, NULL, &dest);
             SDL_RenderPresent(Game.renderer);
         }
         TTF_CloseFont(Game.mainFont);

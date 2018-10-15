@@ -6,6 +6,7 @@ WTexture* WD_CreateTexture() {
     newWTexture->mTexture = NULL;
     newWTexture->w = 0;
     newWTexture->h = 0;
+    newWTexture->text = false;
     return newWTexture;
 }
 
@@ -28,6 +29,7 @@ void WD_TextureLoadFromText(WTexture* wtexture, char* newTextStr, TTF_Font* font
     wtexture->w = textSurface->w;
     wtexture->h = textSurface->h;
     SDL_FreeSurface(textSurface);
+    wtexture->text = true;
 }
 
 // Carrega uma textura a partir de um arquivo de imagem PNG
@@ -45,7 +47,8 @@ void WD_TextureLoadFromFile(WTexture* wtexture, char* path) {
 
 // Renderiza uma textura (necessário que ela já tenha sido alocada e carregada)
 void WD_TextureRender(WTexture* wtexture, int x, int y) {
-    SDL_Rect textureRect = {x, y, wtexture->w, wtexture->h};
+    int w = wtexture->w, h = wtexture->h;
+    SDL_Rect textureRect = {x, y, w, h};
     SDL_RenderCopy(Game.renderer, wtexture->mTexture, NULL, &textureRect);
 }
 
@@ -60,7 +63,8 @@ void WD_TextureRenderDest(WTexture* wtexture, SDL_Rect* renderQuad) {
 // center: ponto indicando o centro em torno do qual a imagem será rotacionada
 // flip: valor indicando o espelhamento da imagem; Valores possíves: SDL_FLIP_HORIZONTAL, SDL_FLIP_VERITICAL, SDL_FLIP_NONE
 void WD_TextureRenderEx(WTexture* wtexture, int x, int y, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip) {
-    SDL_Rect textureRect = {x, y, wtexture->w, wtexture->h};
+    int w = wtexture->w, h = wtexture->h;
+    SDL_Rect textureRect = {x, y, w, h};
     if(clip != NULL) {
         textureRect.w = clip->w;
         textureRect.h = clip->h;
@@ -69,7 +73,7 @@ void WD_TextureRenderEx(WTexture* wtexture, int x, int y, SDL_Rect* clip, double
 }
 
 void WD_TextureRenderExCustom(WTexture* wtexture, int x, int y, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip, int w, int h) {
-    SDL_Rect textureRect = { x, y, wtexture->w, wtexture->h };
+    SDL_Rect textureRect = { x, y, w, h};
     if (clip != NULL) {
         textureRect.w = w;
         textureRect.h = h;
@@ -150,7 +154,7 @@ void WD_TextBoxRender(TextBox* t, unsigned frameCount) {
                 WD_TextureLoadFromText(t->textTexture, t->text, t->font, t->textColor);
         }
         // Coordenadas iniciais do cursor
-        t->cursorX = t->x + 4;
+        t->cursorX = (t->x + 4);
         int xClip, wClip;
         // Se o texto está maior que a caixa de texto
         if(t->textTexture->w > t->width - 12) {
@@ -171,7 +175,7 @@ void WD_TextBoxRender(TextBox* t, unsigned frameCount) {
         t->textClip.x = xClip;
         t->textClip.y = 0;
         t->textClip.w = wClip;
-        t->textClip.h = t->height - 3;
+        t->textClip.h = t->textTexture->h;
         t->needRefresh = false;
     }
     // Renderizar o texto

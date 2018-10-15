@@ -18,12 +18,22 @@ Character* Character_Create(char* spritePath, int id, bool noTexture) {
     newCharacter->renderY = 0;
     newCharacter->x4 = 0;
     newCharacter->y4 = 0;
-    newCharacter->moveSpeed = 3;
+    newCharacter->moveSpeed = 4;
     newCharacter->animationIndex = 0;
     newCharacter->animationCount = 0;
     newCharacter->animPart = false;
     newCharacter->lastMovementId = 0;
+    newCharacter->dead = false;
+    newCharacter->opacity = 255;
+    newCharacter->bombPassId = -1;
     return newCharacter;
+}
+
+bool CheckIntersection(SDL_Rect* r1, SDL_Rect* r2) {
+    return (r1->x < r2->x + r2->w &&
+            r1->x + r1->w > r2->x &&
+            r1->y < r2->y + r2->h &&
+            r1->y + r1->h > r2->y);
 }
 
 void Character_GetCollisionBox(Character* c, SDL_Rect* box, int offsetX, int offsetY) {
@@ -36,17 +46,14 @@ void Character_GetCollisionBox(Character* c, SDL_Rect* box, int offsetX, int off
 bool Character_Passable(Character* c, Map* m, int x, int y) {
     SDL_Rect collisionBox;
     Character_GetCollisionBox(c, &collisionBox, x - c->x, y - c->y);
-    if(Map_Passable(m, &collisionBox)) {
+    if(Map_Passable(m, &collisionBox, c)) {
         bool noCollision = true;
         for(int i = 0; i < m->charNumber; i++) {
-            if(m->characters[i] == NULL || m->characters[i]->id == c->id)
+            if(m->characters[i] == NULL || m->characters[i]->dead || m->characters[i]->id == c->id)
                 continue;
             SDL_Rect otherCollisionBox;
             Character_GetCollisionBox(m->characters[i], &otherCollisionBox, 0, 0); 
-            if(collisionBox.x < otherCollisionBox.x + otherCollisionBox.w &&
-                    collisionBox.x + collisionBox.w > otherCollisionBox.x &&
-                    collisionBox.y < otherCollisionBox.y + otherCollisionBox.h &&
-                    collisionBox.y + collisionBox.h > otherCollisionBox.y) {
+            if(CheckIntersection(&collisionBox, &otherCollisionBox)) {
                 noCollision = false;
                 break;
             }
@@ -58,6 +65,8 @@ bool Character_Passable(Character* c, Map* m, int x, int y) {
 }
 
 void Character_TryToMove(Character* c, int dir, Map* m) {
+    if(c->dead)
+        return;
     c->direction = dir;
     SDL_Rect collisionBox;
     int newX = c->x, newY = c->y;
@@ -75,15 +84,7 @@ void Character_TryToMove(Character* c, int dir, Map* m) {
         Character_GetCollisionBox(c, &collisionBox, 0, -distance);
         newY -= distance;
     }
-    /* pra testar colisão no servidor
-    c->x = newX;
-    c->y = newY;
-    c->lastMovementId++;
-    char sendData[32];
-    sprintf(sendData, "POS %llu %d %d %d", c->lastMovementId, newX, newY, c->direction);
-    Socket_Send(Network.sockFd, Network.serverAddress, sendData, strlen(sendData) + 1);
-    return;*/
-    if(Map_Passable(m, &collisionBox)) {
+    if(Map_Passable(m, &collisionBox, c)) {
         bool noCollision = true;
         for(int i = 0; i < m->charNumber; i++) {
             if(m->characters[i] == NULL || m->characters[i]->id == c->id)
@@ -91,10 +92,7 @@ void Character_TryToMove(Character* c, int dir, Map* m) {
             SDL_Rect otherCollisionBox;
             Character_GetCollisionBox(m->characters[i], &otherCollisionBox, 0, 0);
             //printf("TESTANDO TESTANDO TESTANDO\n"); 
-            if(collisionBox.x < otherCollisionBox.x + otherCollisionBox.w &&
-                    collisionBox.x + collisionBox.w > otherCollisionBox.x &&
-                    collisionBox.y < otherCollisionBox.y + otherCollisionBox.h &&
-                    collisionBox.y + collisionBox.h > otherCollisionBox.y) {
+            if(CheckIntersection(&collisionBox, &otherCollisionBox)) {
                 noCollision = false;
                 break;
             }
@@ -111,10 +109,8 @@ void Character_TryToMove(Character* c, int dir, Map* m) {
 }
 
 void Character_Place(Character* c, int x, int y) {
-    SDL_Rect box;
-    Character_GetCollisionBox(c, &box, 0, 0);
-    c->x = x * TILE_SIZE + (TILE_SIZE - box.w) / 2;
-    c->y = y * TILE_SIZE + (TILE_SIZE - box.h) / 2;
+    c->x = x * TILE_SIZE + (TILE_SIZE - c->sprite->w / 3) / 2;
+    c->y = y * TILE_SIZE + (TILE_SIZE - c->sprite->h / 4) / 2;
     c->renderX = c->x;
     c->renderY = c->y;
     c->x4 = c->x * 4;
@@ -183,11 +179,21 @@ void Character_Update(Character* c, Map* m) {
 }
 
 void Character_Render(Character* c, int screenX, int screenY) {
-    int realX = round(c->renderX) - screenX;
-    int realY = round(c->renderY) - screenY;
-    if(realX + c->sprite->w >= 0 && realY + c->sprite->h >= 0 && realX < Game.screenWidth && realY < Game.screenHeight) {
+    if(c->dead && c->opacity > 0) {
+        uint8_t minus = 255 / Game.screenFreq * 3;
+        if(minus > c->opacity) {
+            c->opacity = 0;
+        } else {
+            c->opacity -= minus;
+        }
+    }
+    SDL_SetTextureAlphaMod(c->sprite->mTexture, c->opacity);
+    int realX = c->renderX - screenX;
+    int realY = c->renderY - screenY;
+    if(realX + c->sprite->w >= 0 && realY + c->sprite->h >= 0 && realX < REFERENCE_WIDTH && realY < REFERENCE_HEIGHT) {
         SDL_Rect clip = {c->sprite->w / 3 * c->animationIndex, c->sprite->h / 4 * c->direction, c->sprite->w / 3, c->sprite->h / 4};
-        WD_TextureRenderEx(c->sprite, realX, realY, &clip, 0.0, NULL, SDL_FLIP_NONE);
+        SDL_Rect dest = {realX, realY, c->sprite->w / 3, c->sprite->h / 4};
+        SDL_RenderCopy(Game.renderer, c->sprite->mTexture, &clip, &dest);
     }
     if(Game.debug) {
         SDL_Rect box;

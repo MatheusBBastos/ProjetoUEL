@@ -102,10 +102,10 @@ void SceneLobby_update(Scene_Lobby* s) {
     SceneLobby_Receive(s);
     SDL_SetRenderDrawColor(Game.renderer, 0, 0, 0, 255);
     SDL_RenderClear(Game.renderer);
-    WD_TextureRender(s->players[0], 300 * Game.screenMulti, 300 * Game.screenMulti);
-    WD_TextureRender(s->players[1], 1000 * Game.screenMulti, 300 * Game.screenMulti);
-    WD_TextureRender(s->players[2], 300 * Game.screenMulti, 750 * Game.screenMulti);
-    WD_TextureRender(s->players[3], 1000 * Game.screenMulti, 750 * Game.screenMulti);
+    WD_TextureRender(s->players[0], 300, 300);
+    WD_TextureRender(s->players[1], 1000, 300);
+    WD_TextureRender(s->players[2], 300, 750);
+    WD_TextureRender(s->players[3], 1000, 750);
 }
 
 void SceneLobby_destroy(Scene_Lobby* s) {

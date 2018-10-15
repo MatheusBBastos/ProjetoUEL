@@ -7,18 +7,14 @@ Scene_Map* SceneMap_new() {
     newScene->keyDown = false;
     newScene->keyUp = false;
     newScene->tileMap = WD_CreateTexture();
-    WD_TextureLoadFromFile(newScene->tileMap, "content/001-Grassland01.png");
+    WD_TextureLoadFromFile(newScene->tileMap, "content/tilemaster.png");
     Map_RenderFull(Game.map, newScene->tileMap);
     newScene->bombSprite = WD_CreateTexture();
     WD_TextureLoadFromFile(newScene->bombSprite, "content/bomb.png");
-    newScene->bombSprite->w *= Game.screenMulti;
-    newScene->bombSprite->h *= Game.screenMulti;
     newScene->explosionSprite = WD_CreateTexture();
     WD_TextureLoadFromFile(newScene->explosionSprite, "content/explosion.png");
     newScene->wallTexture = WD_CreateTexture();
     WD_TextureLoadFromFile(newScene->wallTexture, "content/wall.png");
-    //newScene->explosionSprite->w *= Game.screenMulti;
-    //newScene->explosionSprite->h *= Game.screenMulti;
     newScene->screenX = 0;
     newScene->screenY = 0;
     newScene->player = Game.map->characters[Network.clientId];
@@ -46,7 +42,7 @@ int compareCharacters(const void * a, const void * b) {
 
 Bomb_Render(Bomb* b, int screenX, int screenY, WTexture* bombSprite) {
     if(b->active) {
-        WD_TextureRender(bombSprite, b->x * TILE_SIZE - screenX, b->y * TILE_SIZE - screenY);
+        WD_TextureRender(bombSprite, (b->x * TILE_SIZE - screenX), (b->y * TILE_SIZE - screenY));
     }
 }
 
@@ -67,7 +63,7 @@ Explosion_Render(Explosion* e, int screenX, int screenY, WTexture* explosionSpri
                 flip = SDL_FLIP_NONE;
                 clip.x = explosionSprite->w / 3;
             }
-            WD_TextureRenderExCustom(explosionSprite, x * TILE_SIZE - screenX, e->y * TILE_SIZE - screenY, &clip, 0.0, NULL, flip, TILE_SIZE, TILE_SIZE);
+            WD_TextureRenderExCustom(explosionSprite, (x * TILE_SIZE - screenX), (e->y * TILE_SIZE - screenY), &clip, 0.0, NULL, flip, TILE_SIZE, TILE_SIZE);
         }
         for(int y = e->yMin; y <= e->yMax; y++) {
             SDL_RendererFlip flip;
@@ -85,7 +81,7 @@ Explosion_Render(Explosion* e, int screenX, int screenY, WTexture* explosionSpri
                 flip = SDL_FLIP_NONE;
                 clip.x = explosionSprite->w / 3;
             }
-            WD_TextureRenderExCustom(explosionSprite, e->x * TILE_SIZE - screenX, y * TILE_SIZE - screenY, &clip, angle, NULL, flip, TILE_SIZE, TILE_SIZE);
+            WD_TextureRenderExCustom(explosionSprite, (e->x * TILE_SIZE - screenX), (y * TILE_SIZE - screenY), &clip, angle, NULL, flip, TILE_SIZE, TILE_SIZE);
         }
     }
 }
@@ -146,10 +142,22 @@ void SceneMap_update(Scene_Map* s) {
                     s->bombs[id].active = true;
                     s->bombs[id].x = x;
                     s->bombs[id].y = y;
+                    Game.map->objects[y][x].exists = true;
+                    Game.map->objects[y][x].isWall = false;
+                    Game.map->objects[y][x].objId = id;
+                    if(s->player != NULL && !s->player->dead) {
+                        SDL_Rect bombCollision = {x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+                        SDL_Rect playerCollision;
+                        Character_GetCollisionBox(s->player, &playerCollision, 0, 0);
+                        if(CheckIntersection(&bombCollision, &playerCollision)) {
+                            s->player->bombPassId = id;
+                        }
+                    }
                 } else if(strncmp("EXP", data, 3) == 0) {
                     int id, xMin, xMax, yMin, yMax;
                     sscanf(data + 4, "%d %d %d %d %d", &id, &xMin, &xMax, &yMin, &yMax);
                     s->bombs[id].active = false;
+                    Game.map->objects[s->bombs[id].y][s->bombs[id].x].exists = false;
                     s->explosions[id].active = true;
                     s->explosions[id].x = s->bombs[id].x;
                     s->explosions[id].y = s->bombs[id].y;
@@ -164,20 +172,25 @@ void SceneMap_update(Scene_Map* s) {
                     Game.map->walls[id].exists = false;
                     int x = Game.map->walls[id].x, y = Game.map->walls[id].y;
                     Game.map->objects[y][x].exists = false;
+                } else if(strncmp("DEA", data, 3) == 0) {
+                    int id;
+                    sscanf(data + 4, "%d", &id);
+                    if(Game.map->characters[id] != NULL)
+                        Game.map->characters[id]->dead = true;
                 }
             }
         }
     }
     // Centralizar a câmera no jogador
     if(s->player != NULL) {
-        s->screenX = ((int) s->player->renderX + s->player->sprite->w / 6) - (Game.screenWidth) / 2;
-        s->screenY = ((int) s->player->renderY + s->player->sprite->h / 8) - (Game.screenHeight) / 2;
+        s->screenX = ((int) s->player->renderX + s->player->sprite->w / 6) - (REFERENCE_WIDTH) / 2;
+        s->screenY = ((int) s->player->renderY + s->player->sprite->h / 8) - (REFERENCE_HEIGHT) / 2;
     }
-    if(s->screenX > Game.map->width * TILE_SIZE - Game.screenWidth) {
-        s->screenX = Game.map->width * TILE_SIZE - Game.screenWidth;
+    if(s->screenX > Game.map->width * TILE_SIZE - REFERENCE_WIDTH) {
+        s->screenX = Game.map->width * TILE_SIZE - REFERENCE_WIDTH;
     }
-    if(s->screenY > Game.map->height * TILE_SIZE - Game.screenHeight) {
-        s->screenY = Game.map->height * TILE_SIZE - Game.screenHeight;
+    if(s->screenY > Game.map->height * TILE_SIZE - REFERENCE_HEIGHT) {
+        s->screenY = Game.map->height * TILE_SIZE - REFERENCE_HEIGHT;
     }
     if(s->screenX < 0)
         s->screenX = 0;
@@ -185,36 +198,20 @@ void SceneMap_update(Scene_Map* s) {
         s->screenY = 0;
     SDL_SetRenderDrawColor(Game.renderer, 0x00, 0x00, 0x00, 0xFF);
     SDL_RenderClear(Game.renderer);
-    SDL_Rect renderQuad = {s->screenX, s->screenY, Game.screenWidth, Game.screenHeight};
+    SDL_Rect renderQuad = {s->screenX, s->screenY, REFERENCE_WIDTH, REFERENCE_HEIGHT};
     int dstWidth, dstHeight;
-    if(Game.map->width * TILE_SIZE < Game.screenWidth)
+    if(Game.map->width * TILE_SIZE < REFERENCE_WIDTH)
         dstWidth = Game.map->width * TILE_SIZE;
     else
-        dstWidth = Game.screenWidth;
-    if(Game.map->height * TILE_SIZE < Game.screenHeight)
+        dstWidth = REFERENCE_WIDTH;
+    if(Game.map->height * TILE_SIZE < REFERENCE_HEIGHT)
         dstHeight = Game.map->width * TILE_SIZE;
     else
-        dstHeight = Game.screenHeight;
+        dstHeight = REFERENCE_HEIGHT;
     SDL_Rect dstRect = {0, 0, dstWidth, dstHeight};
     // Renderizar as camadas do mapa
     SDL_RenderCopy(Game.renderer, Game.map->layers[0], &renderQuad, &dstRect);
     SDL_RenderCopy(Game.renderer, Game.map->layers[1], &renderQuad, &dstRect);
-
-    // MUDAR, TÁ MUITO RUIM (realmente) 
-    /*
-    if(s->player != NULL && s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
-        const Uint8 *state = SDL_GetKeyboardState(NULL);
-        if (state[SDL_SCANCODE_UP]) {
-            Character_TryToMove(s->player, 3, Game.map);
-        } else if(state[SDL_SCANCODE_DOWN]) {
-            Character_TryToMove(s->player, 0, Game.map);
-        } else if(state[SDL_SCANCODE_LEFT]) {
-            Character_TryToMove(s->player, 1, Game.map);
-        } else if(state[SDL_SCANCODE_RIGHT]) {
-            Character_TryToMove(s->player, 2, Game.map);
-        }
-    }*/
-
 
     if (s->player != NULL && s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
         if(s->player->moving) {

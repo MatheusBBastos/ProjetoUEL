@@ -48,7 +48,7 @@ void Map_RenderWalls(Map* m, WTexture* wallTexture, int screenX, int screenY);
 
 void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY);
 
-bool Map_Passable(Map* m, SDL_Rect* box);
+bool Map_Passable(Map* m, SDL_Rect* box, Character* c);
 
 void Map_Destroy(Map* m);
 

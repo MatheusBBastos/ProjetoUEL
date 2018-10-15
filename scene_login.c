@@ -64,21 +64,21 @@ Scene_Login* SceneLogin_new() {
     WD_TextureLoadFromText(newScene->textError, "ACESSO NEGADO", Game.telaLogin, fullRed);
 
 
-    newScene->logo[0]->h *= 0.5; newScene->logo[0]->w *= 0.5;
-    newScene->logo[1]->h *= Game.screenMulti; newScene->logo[1]->w *= Game.screenMulti;
+    //newScene->logo[0]->h *= 0.5; newScene->logo[0]->w *= 0.5;
+    //newScene->logo[1]->h *= Game.screenMulti; newScene->logo[1]->w *= Game.screenMulti;
 
-    newScene->seta->h *= Game.screenMulti;
-    newScene->seta->w *= Game.screenMulti;
+    //newScene->seta->h *= Game.screenMulti;
+    //newScene->seta->w *= Game.screenMulti;
 
     WD_TextureLoadFromFile(newScene->backgroundTexture, "content/BG_Login.png");
     int w = newScene->backgroundTexture->w, h = newScene->backgroundTexture->h;
     newScene->renderQuad.x = 0;
     newScene->renderQuad.y = 0;
-    newScene->renderQuad.w = w * Game.screenMulti;
-    newScene->renderQuad.h = h * Game.screenMulti;
+    newScene->renderQuad.w = w;
+    newScene->renderQuad.h = h;
     SDL_Color textColor = { 50, 50, 50, 255 };
-    newScene->login = WD_CreateTextBox(posLoginX * Game.screenMulti, posLoginY * Game.screenMulti, sizeLogin[0] * Game.screenMulti, sizeLogin[1] * Game.screenMulti, 30, Game.inputFont, textColor, false);
-    newScene->senha = WD_CreateTextBox(posSenhaX* Game.screenMulti, posSenhaY* Game.screenMulti, sizeSenha[0] * Game.screenMulti, sizeSenha[1] * Game.screenMulti, 30, Game.inputFont, textColor, true);
+    newScene->login = WD_CreateTextBox(posLoginX, posLoginY, sizeLogin[0], sizeLogin[1], 30, Game.inputFont, textColor, false);
+    newScene->senha = WD_CreateTextBox(posSenhaX, posSenhaY, sizeSenha[0], sizeSenha[1], 30, Game.inputFont, textColor, true);
 
     newScene->acessonegado = false;
     SDL_StartTextInput();
@@ -163,33 +163,33 @@ void SceneLogin_update(Scene_Login* s) {
 
     if (s->loginPressed && s->socketFd != 0 && !s->dataReceived) {
         double angle = Game.screenFreq / 60.0 * 6 * s->frame;
-        int loadingX = (Game.screenWidth - 100 * Game.screenMulti) / 2, loadingY = Game.screenHeight - 100 * Game.screenMulti - 20;
-        SDL_Rect c = {loadingX, loadingY, 100 * Game.screenMulti, 100 * Game.screenMulti};
+        int loadingX = (REFERENCE_WIDTH - 100) / 2, loadingY = REFERENCE_HEIGHT - 100 - 20;
+        SDL_Rect c = {loadingX, loadingY, 100, 100};
         SDL_RenderCopyEx(Game.renderer, s->loading->mTexture, NULL, &c, angle, NULL, SDL_FLIP_NONE);
     }
-    WD_TextureRender(s->textLogarOff, posLogarX * Game.screenMulti, posLogarY * Game.screenMulti); //Começa com os dois botoes brancos
-    WD_TextureRender(s->textModoOffOff, posModoX * Game.screenMulti, posModoY * Game.screenMulti);
-    WD_TextureRender(s->logo[1], posLogoX * Game.screenMulti, posLogoY * Game.screenMulti);
+    WD_TextureRender(s->textLogarOff, posLogarX, posLogarY); //Começa com os dois botoes brancos
+    WD_TextureRender(s->textModoOffOff, posModoX, posModoY);
+    WD_TextureRender(s->logo[1], posLogoX, posLogoY);
 
     if (s->acessonegado) {
-        WD_TextureRender(s->textError, posErroX * Game.screenMulti, posErroY * Game.screenMulti);
+        WD_TextureRender(s->textError, posErroX, posErroY);
     }
 
     if (s->modoOff && s->index == 2) {
-        WD_TextureRender(s->textLogarOff, posLogarX * Game.screenMulti, posLogarY * Game.screenMulti);
-        WD_TextureRender(s->textModoOff, posModoX * Game.screenMulti, posModoY * Game.screenMulti);
-        WD_TextureRender(s->seta, posSetaX[0] * Game.screenMulti, posSetaY * Game.screenMulti);
+        WD_TextureRender(s->textLogarOff, posLogarX, posLogarY);
+        WD_TextureRender(s->textModoOff, posModoX, posModoY);
+        WD_TextureRender(s->seta, posSetaX[0], posSetaY);
     }
     else if (!s->modoOff && s->index == 2) {
-        WD_TextureRender(s->textLogar, posLogarX * Game.screenMulti, posLogarY * Game.screenMulti);
-        WD_TextureRender(s->textModoOffOff, posModoX * Game.screenMulti, posModoY * Game.screenMulti);
-        WD_TextureRender(s->seta, posSetaX[1] * Game.screenMulti, posSetaY * Game.screenMulti);
+        WD_TextureRender(s->textLogar, posLogarX, posLogarY);
+        WD_TextureRender(s->textModoOffOff, posModoX, posModoY);
+        WD_TextureRender(s->seta, posSetaX[1], posSetaY);
     }
     SDL_SetRenderDrawBlendMode(Game.renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(Game.renderer, 0xFF, 0xFF, 0xFF, 100);
-    SDL_Rect rect = { 480 * Game.screenMulti, 580 * Game.screenMulti, 520 * Game.screenMulti, 52 * Game.screenMulti };
+    SDL_Rect rect = { 480, 580, 520, 52 };
     SDL_RenderFillRect(Game.renderer, &rect);
-    rect.y += 90 * Game.screenMulti;
+    rect.y += 90;
     SDL_RenderFillRect(Game.renderer, &rect);
     if (s->index == 0) {
         s->login->active = true;
@@ -207,7 +207,7 @@ void SceneLogin_update(Scene_Login* s) {
     WD_TextBoxRender(s->senha, s->frame);
     if (s->enteringFrame < 100) {
         SDL_SetRenderDrawColor(Game.renderer, 0x00, 0x00, 0x00, 255 - 2.5 * s->enteringFrame);
-        SDL_Rect fillRect = { 0, 0, Game.screenWidth, Game.screenHeight };
+        SDL_Rect fillRect = { 0, 0, REFERENCE_WIDTH, REFERENCE_HEIGHT };
         SDL_RenderFillRect(Game.renderer, &fillRect);
         s->enteringFrame++;
     }

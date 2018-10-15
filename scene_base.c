@@ -91,7 +91,7 @@ void SceneManager_updateScene() {
             // Renderizar na cor preta
             SDL_SetRenderDrawColor(Game.renderer, 0x00, 0x00, 0x00, 0xFF);
             // Retângulo que varia de tamanho conforme o tempo
-            SDL_Rect fillRect = {0, 0, (SceneManager.transitionFrame + 2) * Game.screenWidth / SceneManager.transitionDuration, Game.screenHeight};
+            SDL_Rect fillRect = {0, 0, (SceneManager.transitionFrame + 2) * REFERENCE_WIDTH / SceneManager.transitionDuration, REFERENCE_HEIGHT};
             SDL_RenderFillRect(Game.renderer, &fillRect);
             SDL_SetRenderDrawColor(Game.renderer, 0xFF, 0xFF, 0xFF, 0xFF);
             SceneManager.transitionFrame++;
@@ -106,7 +106,7 @@ void SceneManager_updateScene() {
         } else {
             // Segunda fase de transição (retângulo preto diminui o tamanho conforme o tempo)
             SDL_SetRenderDrawColor(Game.renderer, 0x00, 0x00, 0x00, 0xFF);
-            SDL_Rect fillRect = {SceneManager.transitionFrame * Game.screenWidth / SceneManager.transitionDuration, 0, Game.screenWidth, Game.screenHeight};
+            SDL_Rect fillRect = {SceneManager.transitionFrame * REFERENCE_WIDTH / SceneManager.transitionDuration, 0, REFERENCE_WIDTH, REFERENCE_HEIGHT};
             SDL_RenderFillRect(Game.renderer, &fillRect);
             SDL_SetRenderDrawColor(Game.renderer, 0xFF, 0xFF, 0xFF, 0xFF);
             SceneManager.transitionFrame++;

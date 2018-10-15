@@ -10,7 +10,6 @@ typedef struct Map Map;
 
 typedef struct Character {
     int id;
-    bool player;
     WTexture* sprite;
     short int direction;
     bool moving;
@@ -23,9 +22,14 @@ typedef struct Character {
     bool animPart;
     char spriteFile[32];
     uint64_t lastMovementId;
+    bool dead;
+    uint8_t opacity;
+    int bombPassId;
 } Character;
 
 Character* Character_Create(char* spritePath, int id, bool noTexture);
+
+bool CheckIntersection(SDL_Rect* r1, SDL_Rect* r2);
 
 void Character_GetCollisionBox(Character* c, SDL_Rect* box, int offsetX, int offsetY);
 

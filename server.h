@@ -45,8 +45,6 @@ typedef struct Server {
     bool inGame;
     char name[32];
     ServerBomb *bombs;
-    TemporaryObject **objects;
-    Position *spawnCoords;
     int bombNumber;
 } Server;
 
