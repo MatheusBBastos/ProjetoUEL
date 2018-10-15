@@ -10,13 +10,12 @@ unsigned long long elevate(char pass, int times) {
     return anw;
 }
 
-char* encriptRSA(char password[]) {
-    char resp[1000];
+void encryptRSA(char password[], char resp[]) {
     strcpy(resp, "!");
-    unsigned long long int *criptword = malloc(128 * sizeof(unsigned long long int));
+    unsigned long long int criptword[128];
     int e = 5;
     unsigned long long int n = 32193636006586997;
-    char *ovw = malloc(25 * sizeof(char));
+    char ovw[25];
     for (int i = 0; i < strlen(password); i++) {
      //   printf("%c - %d : ", password[i], password[i]);
         criptword[i] = elevate(password[i], e) % n;
@@ -29,8 +28,6 @@ char* encriptRSA(char password[]) {
 
         strcat(resp, ovw);
     }
+    printf("%s\n", resp);
     strcat(resp, "!");
-    free(criptword);
-    free(ovw);
-    return resp;
 }

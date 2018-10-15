@@ -104,10 +104,10 @@ void SceneLogin_update(Scene_Login* s) {
                 int c = TCPSocket_CheckConnectionStatus(s->socketFd);
                 if (c == 1) {
                     s->connected = true;
-                    char message[1500];
-                    sprintf(message, "{\"cmd\":\"login\",\"var\":{\"login\":\"%s\",\"senha\":\"%s\"}}\n", s->login->text, encriptRSA(s->senha->text));
+                    char message[1500], resp[1000];
+                    encryptRSA(s->senha->text, resp);
+                    sprintf(message, "{\"cmd\":\"login\",\"var\":{\"login\":\"%s\",\"senha\":\"%s\"}}\n", s->login->text, resp);
                     TCPSocket_Send(s->socketFd, message, strlen(message));
-                    puts(message);
                 }
                 else if (c == -1) {
                     Socket_Close(s->socketFd);

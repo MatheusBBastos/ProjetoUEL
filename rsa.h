@@ -1,6 +1,6 @@
 #ifndef RSA_H
 #define RSA_H
 
-char* encriptRSA(char password[]);
+char* encryptRSA(char password[], char resp[]);
 
 #endif
