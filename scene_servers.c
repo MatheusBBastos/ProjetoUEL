@@ -89,7 +89,10 @@ void SceneServers_update(Scene_Servers* s) {
                 printf("[Client] Connection to server estabilished\n");
                 SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOBBY);
             } else if(strncmp("FLL", data, 3) == 0) {
-                printf("[Client] Server full");
+                printf("[Client] Server full\n");
+                s->waitingConnection = false;
+            } else if(strncmp("ING", data, 3) == 0) {
+                printf("[Client] Server in-game\n");
                 s->waitingConnection = false;
             }
         }

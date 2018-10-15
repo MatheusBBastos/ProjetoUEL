@@ -3,11 +3,12 @@
 Character* Character_Create(char* spritePath, int id, bool noTexture) {
     Character* newCharacter = malloc(sizeof(Character));
     strcpy(newCharacter->spriteFile, spritePath);
+    newCharacter->sprite = WD_CreateTexture();
     if(!noTexture) {
-        newCharacter->sprite = WD_CreateTexture();
         WD_TextureLoadFromFile(newCharacter->sprite, spritePath);
     } else {
-        newCharacter->sprite = NULL;
+        newCharacter->sprite->w = TILE_SIZE * 3;
+        newCharacter->sprite->h = TILE_SIZE * 4;
     }
     newCharacter->id = id;
     newCharacter->direction = 0;
@@ -87,7 +88,7 @@ void Character_TryToMove(Character* c, int dir, Map* m) {
     if(Map_Passable(m, &collisionBox, c)) {
         bool noCollision = true;
         for(int i = 0; i < m->charNumber; i++) {
-            if(m->characters[i] == NULL || m->characters[i]->id == c->id)
+            if(m->characters[i] == NULL || m->characters[i]->dead || m->characters[i]->id == c->id)
                 continue;
             SDL_Rect otherCollisionBox;
             Character_GetCollisionBox(m->characters[i], &otherCollisionBox, 0, 0);
