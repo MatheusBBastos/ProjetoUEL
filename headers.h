@@ -94,6 +94,8 @@ typedef struct GameInfo {
     // Modo debug
     bool debug;
     char nome[50];
+    char loginID[50];
+    int rankPos;
 
     TTF_Font* rank;
 
