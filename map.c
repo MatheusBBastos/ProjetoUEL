@@ -127,12 +127,14 @@ void Map_RenderFull(Map* m, WTexture* tileMap) {
     int x, y, z;
     for(z = 0; z < MAP_LAYERS; z++) {
         SDL_SetRenderTarget(Game.renderer, m->layers[z]);
+        SDL_SetRenderDrawColor(Game.renderer, 255, 255, 255, 0);
+        SDL_RenderClear(Game.renderer);
         SDL_SetTextureBlendMode(m->layers[z], SDL_BLENDMODE_BLEND);
         for(y = 0; y < m->height; y ++) {
             for(x = 0; x < m->width; x ++) {
                 int tile = Map_Get(m, x, y, z);
                 if(tile != -1) {
-                    SDL_Rect c = {(tile * TILE_SIZE) % TILESET_WIDTH, (int) tile / TILESET_WIDTH, TILE_SIZE, TILE_SIZE};
+                    SDL_Rect c = {(tile * TILE_SIZE) % TILESET_WIDTH, 0, TILE_SIZE, TILE_SIZE};
                     SDL_Rect d = {x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
                     SDL_RenderCopy(Game.renderer, tileMap->mTexture, &c, &d);
                 }

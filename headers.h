@@ -38,7 +38,7 @@
 // Duração padrao da transiçao (em frames)
 #define DEFAULT_TRANSITION_DURATION 10
 // Número de camadas do mapa
-#define MAP_LAYERS 2
+#define MAP_LAYERS 3
 // Tamanho (em pixels) de cada tile (quadrado)
 #define TILE_SIZE 64
 // Comprimento da imagem do Tileset

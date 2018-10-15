@@ -154,6 +154,7 @@ bool Socket_Send(int socketFd, Address* destination, void* data, int size) {
         printf("Falha ao enviar pacote\n");
         return false;
     }
+    return true;
 }
 
 int Socket_Receive(int socketFd, Address* sender, char* data, int size) {

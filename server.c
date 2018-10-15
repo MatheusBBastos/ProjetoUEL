@@ -255,16 +255,16 @@ void Server_CreateCharacters(Server* s) {
     for(int i = 0; i < s->maxClients; i++) {
         if(s->clients[i] != NULL) {
             if(i == 0) {
-                s->clients[i]->character = Character_Create("content/testcharacter.png", i, false);
+                s->clients[i]->character = Character_Create("content/azul.png", i, false);
                 Character_Place(s->clients[i]->character, 1, 1);
             } else if(i == 1) {
-                s->clients[i]->character = Character_Create("content/testcharacter.png", i, false);
+                s->clients[i]->character = Character_Create("content/vermelho.png", i, false);
                 Character_Place(s->clients[i]->character, 17, 1);
             } else if(i == 2) {
-                s->clients[i]->character = Character_Create("content/testcharacter.png", i, false);
+                s->clients[i]->character = Character_Create("content/amarelo.png", i, false);
                 Character_Place(s->clients[i]->character, 1, 17);
             } else if(i == 3) {
-                s->clients[i]->character = Character_Create("content/testcharacter.png", i, false);
+                s->clients[i]->character = Character_Create("content/roxo.png", i, false);
                 Character_Place(s->clients[i]->character, 17, 17);
             }
             char sendData[80];

@@ -263,6 +263,7 @@ void SceneMap_update(Scene_Map* s) {
             Character_Render(Game.map->characters[s->renderCharacters[i]], s->screenX, s->screenY);
         }
     }
+    SDL_RenderCopy(Game.renderer, Game.map->layers[2], &renderQuad, &dstRect);
 }
 
 void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
