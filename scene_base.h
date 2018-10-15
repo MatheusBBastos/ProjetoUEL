@@ -11,6 +11,7 @@
 #include "scene_servers.h"
 #include "scene_tutorial.h"
 #include "scene_lobby.h"
+#include "scene_start.h"
 
 typedef struct Scene_Login Scene_Login;
 typedef struct Scene_Singleplayer Scene_Singleplayer;
@@ -19,9 +20,11 @@ typedef struct Scene_Map Scene_Map;
 typedef struct Scene_Servers Scene_Servers;
 typedef struct Scene_Tutorial Scene_Tutorial;
 typedef struct Scene_Lobby Scene_Lobby;
+typedef struct Scene_Start Scene_Start;
 
 // Enumerador de tipos de cenas do jogo
 enum SceneTypes {
+    SCENE_START,
     SCENE_LOGIN,
     SCENE_MAINMENU,
     SCENE_SINGLEPLAYER,
@@ -49,6 +52,7 @@ typedef struct SceneManagerS {
     // Frame da transição
     unsigned transitionFrame;
     // Estrutura da cena do menu principal
+    Scene_Start* sStart;
     Scene_Login* sLogin;
     Scene_Singleplayer* sSingleplayer;
     Scene_MainMenu* sMainMenu;

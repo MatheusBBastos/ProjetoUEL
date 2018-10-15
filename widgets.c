@@ -234,3 +234,12 @@ void WD_TextBoxDestroy(TextBox* t) {
     free(t->displayText);
     free(t);
 }
+
+// Renderizar as setas
+void WD_RenderArrow(WTexture* s, int posX, int posY, int width) {
+    int xLeft = (posX - 15) - s->w;
+    int xRight = (posX + 15) + width;
+    posY = (posY-5);
+    WD_TextureRenderEx(s, xLeft, posY, NULL, 0.0, NULL, SDL_FLIP_NONE);
+    WD_TextureRenderEx(s, xRight, posY, NULL, 0.0, NULL, SDL_FLIP_HORIZONTAL);
+} 

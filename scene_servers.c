@@ -21,9 +21,9 @@ Scene_Servers* SceneServers_new() {
     newScene->server1 = WD_CreateTexture();
     newScene->server2 = WD_CreateTexture();
     newScene->server3 = WD_CreateTexture();
-    newScene->nomeServer1 = WD_CreateTexture();
-    newScene->nomeServer2 = WD_CreateTexture();
-    newScene->nomeServer3 = WD_CreateTexture();
+    newScene->nomeServer[0] = WD_CreateTexture();
+    newScene->nomeServer[1] = WD_CreateTexture();
+    newScene->nomeServer[2] = WD_CreateTexture();
     newScene->voltar = WD_CreateTexture();
     newScene->loading = WD_CreateTexture();
     newScene->indexe = 0;
@@ -58,9 +58,9 @@ Scene_Servers* SceneServers_new() {
     WD_TextureLoadFromText(newScene->server1, "Server #1", Game.serversFontd, Cwhite);
     WD_TextureLoadFromText(newScene->server2, "Server #2", Game.serversFontd, Cwhite);
     WD_TextureLoadFromText(newScene->server3, "Server #3", Game.serversFontd, Cwhite);
-    WD_TextureLoadFromText(newScene->nomeServer1, "Basto forte", Game.serversFontd, Cwhite);
-    WD_TextureLoadFromText(newScene->nomeServer2, "Melvi forte", Game.serversFontd, Cwhite);
-    WD_TextureLoadFromText(newScene->nomeServer3, "Tampy fraco ;(", Game.serversFontd, Cwhite);
+    for(int i = 0; i < 3; i++) {
+        WD_TextureLoadFromText(newScene->nomeServer[0], " ", Game.serversFontd, Cwhite);
+    }
     WD_TextureLoadFromText(newScene->voltar, "Voltar", Game.serversFonte, Cwhite);
     WD_TextureLoadFromFile(newScene->loading, "content/loading.png");
 
@@ -118,8 +118,7 @@ void SceneServers_update(Scene_Servers* s) {
                         s->servers[i].addr.port = sender.port;
                         sprintf(s->servers[i].text, "%s - %d/%d", serverName, min, max);
                         SDL_Color color = {255, 255, 255};
-                        WD_TextureLoadFromText(s->nomeServer1, s->servers[i].text, Game.serversFontd, color);
-                    } 
+                        WD_TextureLoadFromText(s->nomeServer[s->posTela], s->servers[i].text, Game.serversFontd, color);                     } 
                 }
             }
         }
@@ -158,9 +157,9 @@ void SceneServers_update(Scene_Servers* s) {
     SDL_SetTextureColorMod(s->server1->mTexture, 0, 132, 255);
     SDL_SetTextureColorMod(s->server2->mTexture, 255, 255, 255);
     SDL_SetTextureColorMod(s->server3->mTexture, 255, 255, 255);
-    SDL_SetTextureColorMod(s->nomeServer1->mTexture, 255, 255, 255);
-    SDL_SetTextureColorMod(s->nomeServer2->mTexture, 255, 255, 255);
-    SDL_SetTextureColorMod(s->nomeServer3->mTexture, 255, 255, 255);
+    SDL_SetTextureColorMod(s->nomeServer[0]->mTexture, 255, 255, 255);
+    SDL_SetTextureColorMod(s->nomeServer[1]->mTexture, 255, 255, 255);
+    SDL_SetTextureColorMod(s->nomeServer[2]->mTexture, 255, 255, 255);
     
 
     if(s->esquerda) {
@@ -177,22 +176,22 @@ void SceneServers_update(Scene_Servers* s) {
     } else {
         s->boxIp->active = false;
         if(s->posTela == 0)
-            SDL_SetTextureColorMod(s->nomeServer1->mTexture, 255, 66, 0);
+            SDL_SetTextureColorMod(s->nomeServer[0]->mTexture, 255, 66, 0); 
         else if(s->posTela == 1)
-            SDL_SetTextureColorMod(s->nomeServer2->mTexture, 255, 66, 0);
+            SDL_SetTextureColorMod(s->nomeServer[1]->mTexture, 255, 66, 0);
         else if (s->posTela == 2)
-            SDL_SetTextureColorMod(s->nomeServer3->mTexture, 255, 66, 0);
+            SDL_SetTextureColorMod(s->nomeServer[2]->mTexture, 255, 66, 0); 
     }
 
     WD_TextureRender(s->entrar, 160, 825);
     WD_TextureRender(s->servir, 160, 895);
     WD_TextureRender(s->voltar, 160, 965);
     WD_TextureRender(s->server1, 700, 515);
-    WD_TextureRender(s->nomeServer1, 800, 585);
+    WD_TextureRender(s->nomeServer[0], 800, 585);
     WD_TextureRender(s->server2, 700, 655);
-    WD_TextureRender(s->nomeServer2, 800, 725);
+    WD_TextureRender(s->nomeServer[1], 800, 725);
     WD_TextureRender(s->server3, 700, 795);
-    WD_TextureRender(s->nomeServer3, 800, 865);
+    WD_TextureRender(s->nomeServer[2], 800, 865);
 }
 
 void SceneServers_destroy(Scene_Servers* s) {
@@ -206,9 +205,9 @@ void SceneServers_destroy(Scene_Servers* s) {
     WD_TextureDestroy(s->server1);
     WD_TextureDestroy(s->server2);
     WD_TextureDestroy(s->server3);
-    WD_TextureDestroy(s->nomeServer1);
-    WD_TextureDestroy(s->nomeServer2);
-    WD_TextureDestroy(s->nomeServer3);
+    WD_TextureDestroy(s->nomeServer[0]);
+    WD_TextureDestroy(s->nomeServer[1]);
+    WD_TextureDestroy(s->nomeServer[2]);
     WD_TextureDestroy(s->voltar);
     WD_TextureDestroy(s->loading);
     free(s);

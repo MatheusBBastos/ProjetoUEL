@@ -96,11 +96,11 @@ int main(int argc, char* argv[]) {
         Game.serversFontd = TTF_OpenFont("content/Minecraft.ttf", 56);
         Game.serversFonte = TTF_OpenFont("content/Minecraft.ttf", 48);
         Game.serversName = TTF_OpenFont("content/Minecraft.ttf", 61);
-
+        Game.startFont = TTF_OpenFont("content/kozuki.ttf", 25); 
 
         SDL_RenderPresent(Game.renderer);
-        SceneManager.currentScene = SCENE_LOGIN;
-        SceneManager.sLogin = SceneLogin_new();
+        SceneManager.currentScene = SCENE_START;
+        SceneManager.sStart = SceneStart_new();
         SDL_Event e;
         while(!SceneManager.quit) {
             while(SDL_PollEvent(&e) != 0) {

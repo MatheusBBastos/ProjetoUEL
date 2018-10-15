@@ -12,6 +12,9 @@ void SceneManager_performTransition(int duration, int newScene) {
 // Troca a cena, destruindo a anterior e criando a nova
 void SceneManager_changeScene(int newScene) {
     switch(SceneManager.currentScene) {
+        case SCENE_START:
+            SceneStart_destroy(SceneManager.sStart);
+            break;
         case SCENE_LOGIN:
             SceneLogin_destroy(SceneManager.sLogin);
             break;
@@ -36,6 +39,9 @@ void SceneManager_changeScene(int newScene) {
     }
     SceneManager.currentScene = newScene;
     switch(newScene) {
+        case SCENE_START:
+            SceneManager.sStart = SceneStart_new();
+            break;
         case SCENE_LOGIN:
             SceneManager.sLogin = SceneLogin_new();
             break;
@@ -63,6 +69,9 @@ void SceneManager_changeScene(int newScene) {
 // Atualiza e renderiza a cena atual, além de mostrar os efeitos de uma transição se for o caso
 void SceneManager_updateScene() {
     switch(SceneManager.currentScene) {
+        case SCENE_START:
+            SceneStart_update(SceneManager.sStart);
+            break;
         case SCENE_LOGIN:
             SceneLogin_update(SceneManager.sLogin);
             break;
@@ -120,6 +129,9 @@ void SceneManager_updateScene() {
 
 void SceneManager_handleEvent(SDL_Event* e) {
     switch(SceneManager.currentScene) {
+        case SCENE_START:
+            SceneStart_handleEvent(SceneManager.sStart, e);
+            break;
         case SCENE_LOGIN:
             SceneLogin_handleEvent(SceneManager.sLogin, e);
             break;
