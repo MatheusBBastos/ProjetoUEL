@@ -179,7 +179,7 @@ void WD_TextBoxRender(TextBox* t, unsigned frameCount) {
         t->needRefresh = false;
     }
     // Renderizar o texto
-    WD_TextureRenderEx(t->textTexture, t->x + 4, t->y + 4, &t->textClip, 0.0, NULL, SDL_FLIP_NONE);
+    WD_TextureRenderEx(t->textTexture, t->x + 6, t->y + 6, &t->textClip, 0.0, NULL, SDL_FLIP_NONE);
     if(t->active && frameCount >= Game.screenFreq / 2) {
         SDL_Rect cursorRect = {t->cursorX, t->y + 2, 1, t->height - 4};
         SDL_SetRenderDrawColor(Game.renderer, 70, 70, 70, 255);

@@ -270,7 +270,7 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
     if(e->type == SDL_KEYDOWN) {
         if(e->key.keysym.sym == SDLK_ESCAPE) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
-        } else if(e->key.keysym.sym == SDLK_SPACE) {
+        } else if(e->key.keysym.sym == SDLK_SPACE && s->player != NULL && !s->player->dead) {
             Socket_Send(Network.sockFd, Network.serverAddress, "BMB", 4);
         }
         //Atualiza estado da tecla se o evento dela for mais recente

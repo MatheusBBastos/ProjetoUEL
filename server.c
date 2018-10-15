@@ -276,7 +276,7 @@ void Server_CreateCharacters(Server* s) {
 }
 
 void Server_PlaceBomb(Server* s, int clientId) {
-    if(s->clients[clientId]->bombsPlaced >= s->clients[clientId]->maxBombs)
+    if(s->clients[clientId]->bombsPlaced >= s->clients[clientId]->maxBombs || s->clients[clientId]->character->dead)
         return;
     SDL_Rect box;
     Character_GetCollisionBox(s->clients[clientId]->character, &box, 0, 0);
