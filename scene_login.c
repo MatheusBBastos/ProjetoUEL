@@ -3,27 +3,6 @@
 #include "rsa.h"
 
 int posSetaX[2] = { 720,245 };
-int posSetaY = 806;
-
-int posLogarX = 325;
-int posLogarY = 800;
-
-int posModoX = 800;
-int posModoY = 800;
-
-int posLoginX = 480;
-int posLoginY = 580;
-int sizeLogin[2] = { 520,52 };
-
-int posSenhaX = 480;
-int posSenhaY = 670;
-int sizeSenha[2] = { 520,52 };
-
-int posErroX = 438;
-int posErroY = 960;
-
-int posLogoX = 215;
-int posLogoY = 200;
 
 Scene_Login* SceneLogin_new() {
     Scene_Login* newScene = malloc(sizeof(Scene_Login));
@@ -34,8 +13,7 @@ Scene_Login* SceneLogin_new() {
     Mix_PlayMusic(newScene->music, -1);
     Mix_PauseMusic();
 
-    SDL_Color colorSelected = { 255, 156, 0 }; // Cores dos botões quando selecionados
-    SDL_Color colorNotSelected = { 255,255,255 }; // Cores dos botões quando não selecionados
+    SDL_Color colorWhite = { 255,255,255 };
     SDL_Color fullRed = { 255,0,0 };
 
     newScene->loginPressed = false;
@@ -48,8 +26,6 @@ Scene_Login* SceneLogin_new() {
     newScene->backgroundTexture = WD_CreateTexture();
     newScene->textLogar = WD_CreateTexture();
     newScene->textModoOff = WD_CreateTexture();
-    newScene->textLogarOff = WD_CreateTexture();
-    newScene->textModoOffOff = WD_CreateTexture();
     newScene->seta = WD_CreateTexture();
     newScene->modoOff = false;
     newScene->index = 0; // Começar no login
@@ -58,18 +34,9 @@ Scene_Login* SceneLogin_new() {
     WD_TextureLoadFromFile(newScene->logo[0], "content/dalhebomba.png");
     WD_TextureLoadFromFile(newScene->logo[1], "content/logo.png");
     WD_TextureLoadFromFile(newScene->seta, "content/seta.png");
-    WD_TextureLoadFromText(newScene->textLogar, "Logar", Game.telaLogin, colorSelected);
-    WD_TextureLoadFromText(newScene->textLogarOff, "Logar", Game.telaLogin, colorNotSelected);
-    WD_TextureLoadFromText(newScene->textModoOff, "Modo offline", Game.telaLogin, colorSelected);
-    WD_TextureLoadFromText(newScene->textModoOffOff, "Modo offline", Game.telaLogin, colorNotSelected);
+    WD_TextureLoadFromText(newScene->textLogar, "Logar", Game.telaLogin, colorWhite);
+    WD_TextureLoadFromText(newScene->textModoOff, "Modo offline", Game.telaLogin, colorWhite);
     WD_TextureLoadFromText(newScene->textError, "ACESSO NEGADO", Game.telaLogin, fullRed);
-
-
-    //newScene->logo[0]->h *= 0.5; newScene->logo[0]->w *= 0.5;
-    //newScene->logo[1]->h *= Game.screenMulti; newScene->logo[1]->w *= Game.screenMulti;
-
-    //newScene->seta->h *= Game.screenMulti;
-    //newScene->seta->w *= Game.screenMulti;
 
     WD_TextureLoadFromFile(newScene->backgroundTexture, "content/BG_Login.png");
     int w = newScene->backgroundTexture->w, h = newScene->backgroundTexture->h;
@@ -78,8 +45,8 @@ Scene_Login* SceneLogin_new() {
     newScene->renderQuad.w = w;
     newScene->renderQuad.h = h;
     SDL_Color textColor = { 50, 50, 50, 255 };
-    newScene->login = WD_CreateTextBox(posLoginX, posLoginY, sizeLogin[0], sizeLogin[1], 30, Game.inputFont, textColor, false);
-    newScene->senha = WD_CreateTextBox(posSenhaX, posSenhaY, sizeSenha[0], sizeSenha[1], 30, Game.inputFont, textColor, true);
+    newScene->login = WD_CreateTextBox(480, 580, 520, 52, 30, Game.inputFont, textColor, false);
+    newScene->senha = WD_CreateTextBox(480, 670, 520, 52, 30, Game.inputFont, textColor, true);
 
     newScene->acessonegado = false;
     SDL_StartTextInput();
@@ -170,23 +137,24 @@ void SceneLogin_update(Scene_Login* s) {
         SDL_Rect c = {loadingX, loadingY, 100, 100};
         SDL_RenderCopyEx(Game.renderer, s->loading->mTexture, NULL, &c, angle, NULL, SDL_FLIP_NONE);
     }
-    WD_TextureRender(s->textLogarOff, posLogarX, posLogarY); //Começa com os dois botoes brancos
-    WD_TextureRender(s->textModoOffOff, posModoX, posModoY);
-    WD_TextureRender(s->logo[1], posLogoX, posLogoY);
+    WD_TextureRender(s->textLogar, 325, 800); //Começa com os dois botoes brancos
+    WD_TextureRender(s->textModoOff, 800, 800);
+    WD_TextureRender(s->logo[1], 215, 200);
+
+    SDL_SetTextureColorMod(s->textLogar->mTexture, 255, 255, 255);
+    SDL_SetTextureColorMod(s->textModoOff->mTexture, 255, 255, 255);
 
     if (s->acessonegado) {
-        WD_TextureRender(s->textError, posErroX, posErroY);
+        WD_TextureRender(s->textError, 438, 960);
     }
 
     if (s->modoOff && s->index == 2) {
-        WD_TextureRender(s->textLogarOff, posLogarX, posLogarY);
-        WD_TextureRender(s->textModoOff, posModoX, posModoY);
-        WD_TextureRender(s->seta, posSetaX[0], posSetaY);
+        SDL_SetTextureColorMod(s->textModoOff->mTexture, 247, 159, 55);
+        WD_RenderArrow(s->seta, 800, 800, s->textModoOff->w);
     }
     else if (!s->modoOff && s->index == 2) {
-        WD_TextureRender(s->textLogar, posLogarX, posLogarY);
-        WD_TextureRender(s->textModoOffOff, posModoX, posModoY);
-        WD_TextureRender(s->seta, posSetaX[1], posSetaY);
+        SDL_SetTextureColorMod(s->textLogar->mTexture, 247, 159, 55);
+        WD_RenderArrow(s->seta, 325, 800, s->textLogar->w);
     }
     SDL_SetRenderDrawBlendMode(Game.renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(Game.renderer, 0xFF, 0xFF, 0xFF, 100);
@@ -240,11 +208,10 @@ void SceneLogin_destroy(Scene_Login* s) {
     WD_TextureDestroy(s->logo[1]);
     WD_TextureDestroy(s->backgroundTexture);
     WD_TextureDestroy(s->textLogar);
-    WD_TextureDestroy(s->textLogarOff);
     WD_TextureDestroy(s->textModoOff);
-    WD_TextureDestroy(s->textModoOffOff);
     WD_TextBoxDestroy(s->login);
     WD_TextBoxDestroy(s->senha);
+    WD_TextureDestroy(s->seta);
     Mix_FreeMusic(s->music);
     SDL_StopTextInput();
     free(s);

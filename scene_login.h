@@ -15,15 +15,13 @@ typedef struct Scene_Login {
     WTexture* backgroundTexture;
     WTexture* textLogar;
     WTexture* textModoOff;
-    SDL_Rect renderQuad;
-    WTexture* textLogarOff;
-    WTexture* textModoOffOff;
+    WTexture* logo[2];
     WTexture* seta;
+    WTexture* textError;
+    SDL_Rect renderQuad;
     TextBox* login;
     TextBox* senha;
-    WTexture* textError;
     Mix_Music* music;
-    WTexture* logo[2];
     bool modoOff;
     bool acessonegado;
     short int index;

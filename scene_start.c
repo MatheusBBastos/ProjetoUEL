@@ -18,19 +18,19 @@ Scene_Start* SceneStart_new() {
     WD_TextureLoadFromText(newScene->options, "OPCOES", Game.startFont, white);
     WD_TextureLoadFromText(newScene->quit, "SAIR", Game.startFont, white);
 
-    int w = newScene->background->w, h = newScene->background->h;
+    //int w = newScene->background->w, h = newScene->background->h;
     newScene->renderQuad.x = 0;
     newScene->renderQuad.y = 0;
-    newScene->renderQuad.w = w;
-    newScene->renderQuad.h = h;
+    newScene->renderQuad.w = REFERENCE_WIDTH;
+    newScene->renderQuad.h = REFERENCE_HEIGHT;
 
     return newScene;
 }
 
 void SceneStart_update(Scene_Start* s) {
-    int startX = (Game.screenWidth - s->start->w) / 2;
-    int optionsX = (Game.screenWidth - s->options->w) / 2;
-    int quitX = (Game.screenWidth - s->quit->w) / 2;
+    int startX = (REFERENCE_WIDTH - s->start->w) / 2;
+    int optionsX = (REFERENCE_WIDTH - s->options->w) / 2;
+    int quitX = (REFERENCE_WIDTH - s->quit->w) / 2;
     WD_TextureRenderDest(s->background, &s->renderQuad);
     WD_TextureRender(s->start, startX, 701);
     WD_TextureRender(s->options, optionsX, 793);
@@ -57,7 +57,7 @@ void SceneStart_destroy(Scene_Start* s) {
     WD_TextureDestroy(s->start);
     WD_TextureDestroy(s->options);
     WD_TextureDestroy(s->quit);
-    WD_TextBoxDestroy(s->seta);
+    WD_TextureDestroy(s->seta);
     free(s);
 }
 
@@ -70,8 +70,9 @@ void SceneStart_handleEvent(Scene_Start* s, SDL_Event* e) {
                 SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOGIN);
             else if(s->index == 1)
                 SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_TUTORIAL);
-            else if(s->index == 2)
+            else if(s->index == 2) {
                 SceneManager.quit = true;
+            }
         } else if(e->key.keysym.sym == SDLK_DOWN) {
             if(s->index < 2)
                 s->index++;
@@ -79,7 +80,6 @@ void SceneStart_handleEvent(Scene_Start* s, SDL_Event* e) {
             if(s->index > 0)
                 s->index--;
         }
-        printf("%d\n", s->index);
     }
 }
 
