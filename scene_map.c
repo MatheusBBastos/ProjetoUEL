@@ -7,6 +7,8 @@ Scene_Map* SceneMap_new() {
     newScene->keyDown = false;
     newScene->keyUp = false;
     newScene->tileMap = WD_CreateTexture();
+    newScene->animatedBomb = WD_CreateTexture();
+    WD_TextureLoadFromFile(newScene->animatedBomb, "content/FSD.png");
     WD_TextureLoadFromFile(newScene->tileMap, "content/tilemaster.png");
     Map_RenderFull(Game.map, newScene->tileMap);
     newScene->bombSprite = WD_CreateTexture();
@@ -20,6 +22,7 @@ Scene_Map* SceneMap_new() {
     newScene->player = Game.map->characters[Network.clientId];
     newScene->renderCharacters = malloc(Game.map->charNumber * sizeof(int));
     newScene->waitingConnection = false;
+    newScene->currentFrame = 0;
     for(int i = 0; i < 20; i++) {
         newScene->bombs[i].active = false;
         newScene->explosions[i].active = false;
@@ -40,9 +43,14 @@ int compareCharacters(const void * a, const void * b) {
     return ( chars[i]->renderY - chars[j]->renderY );
 }
 
-Bomb_Render(Bomb* b, int screenX, int screenY, WTexture* bombSprite) {
+Bomb_Render(Bomb* b, int screenX, int screenY, WTexture* bombSprite, int currentFrame) {
     if(b->active) {
-        WD_TextureRender(bombSprite, (b->x * TILE_SIZE - screenX), (b->y * TILE_SIZE - screenY));
+        if (currentFrame % 20 == 0) {
+            b->frame++;
+        }
+        SDL_Rect clip = { 0, 64 * b->frame, 64, 64 };
+        WD_TextureRenderExCustom(bombSprite, (b->x * TILE_SIZE - screenX), (b->y * TILE_SIZE - screenY), &clip, 0.0, NULL, SDL_FLIP_NONE, 64, 64);
+     //   WD_TextureRender(bombSprite, (b->x * TILE_SIZE - screenX), (b->y * TILE_SIZE - screenY));
     }
 }
 
@@ -140,6 +148,7 @@ void SceneMap_update(Scene_Map* s) {
                     int id, x, y;
                     sscanf(data + 4, "%d %d %d", &id, &x, &y);
                     s->bombs[id].active = true;
+                    s->bombs[id].frame = 0;
                     s->bombs[id].x = x;
                     s->bombs[id].y = y;
                     Game.map->objects[y][x].exists = true;
@@ -247,7 +256,7 @@ void SceneMap_update(Scene_Map* s) {
     Map_RenderWalls(Game.map, s->wallTexture, s->screenX, s->screenY);
     
     for(int i = 0; i < 20; i++) {
-        Bomb_Render(&s->bombs[i], s->screenX, s->screenY, s->bombSprite);
+        Bomb_Render(&s->bombs[i], s->screenX, s->screenY, s->animatedBomb, s->currentFrame);
     }
 
     for(int i = 0; i < 20; i++) {
@@ -264,6 +273,10 @@ void SceneMap_update(Scene_Map* s) {
         }
     }
     SDL_RenderCopy(Game.renderer, Game.map->layers[2], &renderQuad, &dstRect);
+    s->currentFrame++;
+    if (s->currentFrame >= 60) {
+        s->currentFrame = 0;
+    }
 }
 
 void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
@@ -386,5 +399,6 @@ void SceneMap_destroy(Scene_Map* s) {
     WD_TextureDestroy(s->bombSprite);
     WD_TextureDestroy(s->explosionSprite);
     WD_TextureDestroy(s->wallTexture);
+    WD_TextureDestroy(s->animatedBomb);
     free(s);
 }

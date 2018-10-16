@@ -13,6 +13,7 @@ typedef struct SceneManagerS SceneManagerS;
 typedef struct Bomb {
     int x, y;
     bool active;
+    int frame;
 } Bomb;
 
 typedef struct Explosion {
@@ -27,6 +28,7 @@ Explosion_Render(Explosion* e, int screenX, int screenY, WTexture* explosionSpri
 
 typedef struct Scene_Map {
     WTexture* tileMap;
+    WTexture* animatedBomb;
     WTexture *bombSprite, *explosionSprite;
     WTexture* wallTexture;
     Map* map;
@@ -44,6 +46,7 @@ typedef struct Scene_Map {
     bool keyUp, keyDown, keyRight, keyLeft;
     Bomb bombs[20];
     Explosion explosions[20];
+    int currentFrame;
 } Scene_Map;
 
 Scene_Map* SceneMap_new();
