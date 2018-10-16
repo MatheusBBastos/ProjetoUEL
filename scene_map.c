@@ -6,6 +6,7 @@ Scene_Map* SceneMap_new() {
     newScene->keyRight = false;
     newScene->bombexp = Mix_LoadWAV("content/bexp.mp3");
     newScene->bombload = Mix_LoadWAV("content/bload.mp3");
+    newScene->backgroundMusic = Mix_LoadMUS("content/train.mp3");
     newScene->keyDown = false;
     newScene->keyUp = false;
     newScene->tileMap = WD_CreateTexture();
@@ -29,6 +30,10 @@ Scene_Map* SceneMap_new() {
         newScene->bombs[i].active = false;
         newScene->explosions[i].active = false;
     }
+    Mix_PlayMusic(newScene->backgroundMusic, -1);
+    Mix_VolumeMusic(60);
+    if (Mix_PausedMusic())
+        Mix_ResumeMusic();
     return newScene;
 }
 
@@ -287,6 +292,7 @@ void SceneMap_update(Scene_Map* s) {
 void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
     if(e->type == SDL_KEYDOWN) {
         if(e->key.keysym.sym == SDLK_ESCAPE) {
+            Mix_PauseMusic();
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
         } else if(e->key.keysym.sym == SDLK_SPACE && s->player != NULL && !s->player->dead) {
             Socket_Send(Network.sockFd, Network.serverAddress, "BMB", 4);
