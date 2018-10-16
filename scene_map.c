@@ -4,6 +4,8 @@ Scene_Map* SceneMap_new() {
     Scene_Map* newScene = malloc(sizeof(Scene_Map));
     newScene->keyLeft = false;
     newScene->keyRight = false;
+    newScene->bombexp = Mix_LoadWAV("content/bexp.mp3");
+    newScene->bombload = Mix_LoadWAV("content/bload.mp3");
     newScene->keyDown = false;
     newScene->keyUp = false;
     newScene->tileMap = WD_CreateTexture();
@@ -162,6 +164,7 @@ void SceneMap_update(Scene_Map* s) {
                             s->player->bombPassId = id;
                         }
                     }
+                    Mix_PlayChannel(id, s->bombload, 0);
                 } else if(strncmp("EXP", data, 3) == 0) {
                     int id, xMin, xMax, yMin, yMax;
                     sscanf(data + 4, "%d %d %d %d %d", &id, &xMin, &xMax, &yMin, &yMax);
@@ -175,6 +178,8 @@ void SceneMap_update(Scene_Map* s) {
                     s->explosions[id].yMin = yMin;
                     s->explosions[id].yMax = yMax;
                     s->explosions[id].explosionCount = Game.screenFreq * 0.5;
+                    Mix_HaltChannel(id);
+                    Mix_PlayChannel(id, s->bombexp, 0);
                 } else if(strncmp("WDS", data, 3) == 0) {
                     int id;
                     sscanf(data + 4, "%d", &id);

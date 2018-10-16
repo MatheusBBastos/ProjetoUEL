@@ -22,7 +22,7 @@ typedef struct Explosion {
     int explosionCount;
 } Explosion;
 
-Bomb_Render(Bomb* b, int screenX, int screenY, WTexture* bombSprite);
+Bomb_Render(Bomb* b, int screenX, int screenY, WTexture* bombSprite, int frame);
 
 Explosion_Render(Explosion* e, int screenX, int screenY, WTexture* explosionSprite);
 
@@ -32,6 +32,8 @@ typedef struct Scene_Map {
     WTexture *bombSprite, *explosionSprite;
     WTexture* wallTexture;
     Map* map;
+    Mix_Chunk* bombexp;
+    Mix_Chunk* bombload;
     int tileWidth, tileHeight, mapWidth, mapHeight;
     int screenX, screenY;
     Character* player;

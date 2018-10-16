@@ -9,7 +9,7 @@ NetworkS Network;
 // Tentar inicializar a biblioteca SDL e suas funcionalidades
 bool initialize() {
     bool success = true;
-    if(SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         printf("Falha ao inicializar o SDL! Erro: %s\n", SDL_GetError());
         success = false;
     } else {
