@@ -1,7 +1,7 @@
 OBJS = *.c
 CC = gcc
 COMPILER_FLAGS = -w -std=c11
-LINKER_FLAGS = -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lm
+LINKER_FLAGS = -I/usr/include/SDL2 -D_REENTRANT -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lm -lcrypto
 OBJ_NAME = game
 
 all: $(OBJS)
@@ -16,3 +16,4 @@ get-deps:
 	sudo apt-get install libsdl2-image-dev;
 	sudo apt-get install libsdl2-ttf-dev;
 	sudo apt-get install libsdl2-mixer-dev;
+	sudo apt-get install libssl-dev;
