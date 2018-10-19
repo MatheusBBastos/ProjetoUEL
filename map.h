@@ -7,9 +7,15 @@
 
 typedef struct Character Character;
 
+typedef enum ObjectType {
+    OBJ_WALL,
+    OBJ_BOMB,
+    OBJ_POWERUP
+} ObjType;
+
 typedef struct TemporaryObject {
     bool exists;
-    bool isWall;
+    ObjType type;
     int objId;
 } TemporaryObject;
 

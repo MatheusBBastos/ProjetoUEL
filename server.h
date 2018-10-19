@@ -33,6 +33,19 @@ typedef struct Position {
     int x, y;
 } Position;
 
+enum PowerUps {
+    PU_PLUS_BOMB,
+    PU_BLAST_RADIUS,
+    PU_SHIELD,
+    PU_SPEED,
+    TOTAL_POWERUPS
+};
+
+typedef struct ServerPowerUp {
+    int x, y, type;
+    bool exists;
+} ServerPowerUp;
+
 typedef struct Server {
     unsigned short port;
     int sockfd;
@@ -46,6 +59,8 @@ typedef struct Server {
     char name[32];
     ServerBomb *bombs;
     int bombNumber;
+    ServerPowerUp *powerups;
+    int powerupNumber;
 } Server;
 
 Server* Server_Open(unsigned short port);

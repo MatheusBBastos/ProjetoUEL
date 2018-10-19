@@ -143,7 +143,7 @@ void SceneMap_update(Scene_Map* s) {
                     s->bombs[id].x = x;
                     s->bombs[id].y = y;
                     Game.map->objects[y][x].exists = true;
-                    Game.map->objects[y][x].isWall = false;
+                    Game.map->objects[y][x].type = OBJ_BOMB;
                     Game.map->objects[y][x].objId = id;
                     if(s->player != NULL && !s->player->dead) {
                         SDL_Rect bombCollision = {x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
@@ -217,16 +217,16 @@ void SceneMap_update(Scene_Map* s) {
         if(s->player->moving) {
             switch (s->lastMov) {
             case 'U':
-                Character_TryToMove(s->player, 3, Game.map);
+                Character_TryToMove(s->player, DIR_UP, Game.map);
                 break;
             case 'D':
-                Character_TryToMove(s->player, 0, Game.map);
+                Character_TryToMove(s->player, DIR_DOWN, Game.map);
                 break;
             case 'L':
-                Character_TryToMove(s->player, 1, Game.map);
+                Character_TryToMove(s->player, DIR_LEFT, Game.map);
                 break;
             case 'R':
-                Character_TryToMove(s->player, 2, Game.map);
+                Character_TryToMove(s->player, DIR_RIGHT, Game.map);
                 break;
             }
 

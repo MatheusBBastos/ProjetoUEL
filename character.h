@@ -6,6 +6,13 @@
 #include "map.h"
 #include "network.h"
 
+enum Directions {
+    DIR_DOWN,
+    DIR_LEFT,
+    DIR_RIGHT,
+    DIR_UP
+};
+
 typedef struct Map Map;
 
 typedef struct Character {
@@ -32,6 +39,8 @@ Character* Character_Create(char* spritePath, int id, bool noTexture);
 bool CheckIntersection(SDL_Rect* r1, SDL_Rect* r2);
 
 void Character_GetCollisionBox(Character* c, SDL_Rect* box, int offsetX, int offsetY);
+
+void Character_GetTilePosition(Character* c, int* x, int* y);
 
 bool Character_Passable(Character* c, Map* m, int x, int y);
 

@@ -85,7 +85,7 @@ void Map_GenerateWalls(Map* m, int seed) {
                 float n = perlin2d(x, y, 0.5, 1, seed);
                 if(n <= 0.7) {
                     m->objects[y][x].exists = true;
-                    m->objects[y][x].isWall = true;
+                    m->objects[y][x].type = OBJ_WALL;
                     m->objects[y][x].objId = wallNumber;
                     m->walls[wallNumber].exists = true;
                     m->walls[wallNumber].x = x;
@@ -181,7 +181,8 @@ bool Map_Passable(Map* m, SDL_Rect* box, Character* c) {
         for(int y = firstTileY; y <= lastTileY; y++) {
             for(int x = firstTileX; x <= lastTileX; x++) {
                 if(m->objects != NULL && m->objects[y][x].exists) {
-                    if(m->objects[y][x].isWall || c == NULL || c->bombPassId != m->objects[y][x].objId) {
+                    ObjType type = m->objects[y][x].type;
+                    if(type == OBJ_WALL || c == NULL || type == OBJ_BOMB && c->bombPassId != m->objects[y][x].objId) {
                         return false;
                     } else {
                         usedPass = true;

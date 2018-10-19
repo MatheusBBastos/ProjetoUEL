@@ -10,8 +10,8 @@ Client* Client_New(Address* addr, int id) {
     newClient->lastMessage = SDL_GetTicks();
     newClient->character = NULL;
     newClient->bombsPlaced = 0;
-    newClient->maxBombs = 5;
-    newClient->bombRadius = 10;
+    newClient->maxBombs = 2;
+    newClient->bombRadius = 1;
     return newClient;
 }
 
@@ -45,6 +45,11 @@ Server* Server_Open(unsigned short port) {
         newServer->bombs = malloc(newServer->bombNumber * sizeof(ServerBomb));
         for(int i = 0; i < newServer->bombNumber; i++) {
             newServer->bombs[i].active = false;
+        }
+        newServer->powerupNumber = newServer->bombNumber;
+        newServer->powerups = malloc(newServer->powerupNumber * sizeof(ServerPowerUp));
+        for(int i = 0; i < newServer->powerupNumber; i++) {
+            newServer->powerups[i].exists = false;
         }
         return newServer;
     } else {
@@ -178,7 +183,7 @@ void Server_GenerateMap(Server* s) {
                 float n = perlin2d(x, y, 0.5, 1, seed);
                 if(n <= 0.7) {
                     s->map->objects[y][x].exists = true;
-                    s->map->objects[y][x].isWall = true;
+                    s->map->objects[y][x].type = OBJ_WALL;
                     s->map->objects[y][x].objId = wallNumber;
                     wallNumber++;
                 } else {
@@ -288,7 +293,7 @@ void Server_PlaceBomb(Server* s, int clientId) {
         if(!s->bombs[i].active) {
             s->bombs[i].active = true;
             s->map->objects[bombY][bombX].exists = true;
-            s->map->objects[bombY][bombX].isWall = false;
+            s->map->objects[bombY][bombX].type = OBJ_BOMB;
             s->map->objects[bombY][bombX].objId = i;
             s->bombs[i].x = bombX;
             s->bombs[i].y = bombY;
@@ -308,6 +313,28 @@ void Server_PlaceBomb(Server* s, int clientId) {
             sprintf(sendData, "BMB %d %d %d", i, bombX, bombY);
             Server_SendToAll(s, sendData, -1);
             s->clients[clientId]->bombsPlaced++;
+            break;
+        }
+    }
+}
+
+void Server_PlacePowerUp(Server* s, int x, int y, int type) {
+    if(s->map->objects[y][x].exists)
+        return;
+    for(int i = 0; i < s->powerupNumber; i++) {
+        if(!s->powerups[i].exists) {
+            srand(time(NULL));
+            int type = rand() % TOTAL_POWERUPS;
+            s->powerups[i].exists = true;
+            s->powerups[i].x = x;
+            s->powerups[i].y = y;
+            s->powerups[i].type = type;
+            s->map->objects[y][x].exists = true;
+            s->map->objects[y][x].type = OBJ_POWERUP;
+            s->map->objects[y][x].objId = i;
+            char sendData[32];
+            sprintf(sendData, "PWU %d %d %d %d", i, x, y, type);
+            Server_SendToAll(s, sendData, -1);
             break;
         }
     }
@@ -333,7 +360,7 @@ void Server_ExplodeBomb(Server* s, int bId) {
         for(int x = 1; x <= c->bombRadius; x++) {
             TemporaryObject* o = &s->map->objects[b->y][b->x + x];
             if(o->exists) {
-                if(o->isWall)
+                if(o->type == OBJ_WALL)
                     Server_DestroyWall(s, b->x + x, b->y);
                 else
                     Server_ExplodeBomb(s, o->objId);
@@ -348,7 +375,7 @@ void Server_ExplodeBomb(Server* s, int bId) {
         for(int x = 1; x <= c->bombRadius; x++) {
             TemporaryObject* o = &s->map->objects[b->y][b->x - x];
             if(o->exists) {
-                if(o->isWall)
+                if(o->type == OBJ_WALL)
                     Server_DestroyWall(s, b->x - x, b->y);
                 else
                     Server_ExplodeBomb(s, o->objId);
@@ -363,7 +390,7 @@ void Server_ExplodeBomb(Server* s, int bId) {
         for(int y = 1; y <= c->bombRadius; y++) {
             TemporaryObject* o = &s->map->objects[b->y + y][b->x];
             if(o->exists) {
-                if(o->isWall)
+                if(o->type == OBJ_WALL)
                     Server_DestroyWall(s, b->x, b->y + y);
                 else
                     Server_ExplodeBomb(s, o->objId);
@@ -378,7 +405,7 @@ void Server_ExplodeBomb(Server* s, int bId) {
         for(int y = 1; y <= c->bombRadius; y++) {
             TemporaryObject* o = &s->map->objects[b->y - y][b->x];
             if(o->exists) {
-                if(o->isWall)
+                if(o->type == OBJ_WALL)
                     Server_DestroyWall(s, b->x, b->y - y);
                 else
                     Server_ExplodeBomb(s, o->objId);

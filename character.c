@@ -44,6 +44,13 @@ void Character_GetCollisionBox(Character* c, SDL_Rect* box, int offsetX, int off
     box->y = c->y + offsetY + (c->sprite->h / 4 - box->h);
 }
 
+void Character_GetTilePosition(Character* c, int* x, int* y) {
+    SDL_Rect box;
+    Character_GetCollisionBox(c, &box, 0, 0);
+    *x = (box.x + box.w / 2) / TILE_SIZE;
+    *y = (box.y + box.h) / TILE_SIZE;
+}
+
 bool Character_Passable(Character* c, Map* m, int x, int y) {
     SDL_Rect collisionBox;
     Character_GetCollisionBox(c, &collisionBox, x - c->x, y - c->y);
@@ -72,16 +79,16 @@ void Character_TryToMove(Character* c, int dir, Map* m) {
     SDL_Rect collisionBox;
     int newX = c->x, newY = c->y;
     int distance = TILE_SIZE / MOVEMENT_PARTS;
-    if(c->direction == 0) {
+    if(c->direction == DIR_DOWN) {
         Character_GetCollisionBox(c, &collisionBox, 0, distance);
         newY += distance;
-    } else if(c->direction == 1) {
+    } else if(c->direction == DIR_LEFT) {
         Character_GetCollisionBox(c, &collisionBox, -distance, 0);
         newX -= distance;
-    } else if(c->direction == 2) {
+    } else if(c->direction == DIR_RIGHT) {
         Character_GetCollisionBox(c, &collisionBox, distance, 0);
         newX += distance;
-    } else if(c->direction == 3) {
+    } else if(c->direction == DIR_UP) {
         Character_GetCollisionBox(c, &collisionBox, 0, -distance);
         newY -= distance;
     }
