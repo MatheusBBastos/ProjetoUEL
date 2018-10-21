@@ -53,7 +53,7 @@ void Character_GetTilePosition(Character* c, int* x, int* y) {
 
 bool Character_Passable(Character* c, Map* m, int x, int y) {
     SDL_Rect collisionBox;
-    Character_GetCollisionBox(c, &collisionBox, x - c->x, y - c->y);
+    Character_GetCollisionBox(c, &collisionBox, x * TILE_SIZE - c->x, y * TILE_SIZE - c->y);
     if(Map_Passable(m, &collisionBox, c)) {
         bool noCollision = true;
         for(int i = 0; i < m->charNumber; i++) {

@@ -1,5 +1,6 @@
 #include "server.h"
 #include "noise.h"
+#include "pathfind.h"
 
 Client* Client_New(Address* addr, int id) {
     Client* newClient = malloc(sizeof(Client));
@@ -486,6 +487,7 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
                 sprintf(sendData, "MAP %s", "map.txt");
                 Server_SendToAll(s, sendData, strlen(sendData) + 1);
                 Server_GenerateMap(s);
+                //PF_Find(s->map, s->clients[0]->character, 11, 11);
             }
         } else if(strncmp("BMB", buffer, 3) == 0) {
             if(s->inGame)
