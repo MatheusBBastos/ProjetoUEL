@@ -27,6 +27,8 @@ Character* Character_Create(char* spritePath, int id, bool noTexture) {
     newCharacter->dead = false;
     newCharacter->opacity = 255;
     newCharacter->bombPassId = -1;
+    newCharacter->forcingMovement = false;
+    newCharacter->moveRoute = NULL;
     return newCharacter;
 }
 
@@ -48,7 +50,7 @@ void Character_GetTilePosition(Character* c, int* x, int* y) {
     SDL_Rect box;
     Character_GetCollisionBox(c, &box, 0, 0);
     *x = (box.x + box.w / 2) / TILE_SIZE;
-    *y = (box.y + box.h) / TILE_SIZE;
+    *y = (box.y + box.h / 2) / TILE_SIZE;
 }
 
 bool Character_Passable(Character* c, Map* m, int x, int y) {
@@ -72,7 +74,7 @@ bool Character_Passable(Character* c, Map* m, int x, int y) {
     }
 }
 
-void Character_TryToMove(Character* c, int dir, Map* m) {
+bool Character_TryToMove(Character* c, int dir, Map* m) {
     if(c->dead)
         return;
     c->direction = dir;
@@ -106,12 +108,9 @@ void Character_TryToMove(Character* c, int dir, Map* m) {
             }
         }
         if(noCollision) {
-            c->lastMovementId++;
-            char sendData[32];
-            sprintf(sendData, "POS %llu %d %d %d", c->lastMovementId, newX, newY, c->direction);
-            Socket_Send(Network.sockFd, Network.serverAddress, sendData, strlen(sendData) + 1);
             c->x = newX;
             c->y = newY;
+            return true;
         }
     }
 }

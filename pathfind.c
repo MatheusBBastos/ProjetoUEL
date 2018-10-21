@@ -120,9 +120,31 @@ bool PF_Find(Map* map, Character* c, int tx, int ty) {
     }
 
     printf("omen achou\n");
-    while(currentNode != NULL) {
-        printf("X: %d, Y: %d\n", currentNode->x, currentNode->y);
+    Movement* lastMovement = NULL;
+    while(currentNode != NULL && currentNode->parent != NULL) {
+        //printf("X: %d, Y: %d\n", currentNode->x, currentNode->y);
+        uint8_t dir;
+        if(currentNode->y - currentNode->parent->y > 0) {
+            dir = DIR_DOWN;
+        } else if(currentNode->x - currentNode->parent->x < 0) {
+            dir = DIR_LEFT;
+        } else if(currentNode->x - currentNode->parent->x > 0) {
+            dir = DIR_RIGHT;
+        } else {
+            dir = DIR_UP;
+        }
+        for(int i = 0; i < MOVEMENT_PARTS; i++) {
+            Movement* newMovement = malloc(sizeof(Movement));
+            newMovement->dir = dir;
+            newMovement->next = lastMovement;
+            instance.character->moveRoute = newMovement;
+            lastMovement = newMovement;
+        }
         currentNode = currentNode->parent;
+    }
+
+    if(instance.character->moveRoute != NULL) {
+        instance.character->forcingMovement = true;
     }
 
     free(instance.heap.data);

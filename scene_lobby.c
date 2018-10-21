@@ -86,6 +86,7 @@ void SceneLobby_Receive(Scene_Lobby* s) {
                 Map_GenerateWalls(Game.map, seed);
                 if(Game.map->loaded) {
                     SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAP);
+                    return;
                 }
             }
         }
@@ -99,7 +100,8 @@ void SceneLobby_update(Scene_Lobby* s) {
         char data[] = "PNG";
         Socket_Send(Network.sockFd, Network.serverAddress, data, 4);
     }
-    SceneLobby_Receive(s);
+    if(!SceneManager.inTransition)
+        SceneLobby_Receive(s);
     SDL_SetRenderDrawColor(Game.renderer, 0, 0, 0, 255);
     SDL_RenderClear(Game.renderer);
     WD_TextureRender(s->players[0], 300, 300);

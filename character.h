@@ -15,6 +15,11 @@ enum Directions {
 
 typedef struct Map Map;
 
+typedef struct Movement {
+    uint8_t dir;
+    struct Movement* next;
+} Movement;
+
 typedef struct Character {
     int id;
     WTexture* sprite;
@@ -32,6 +37,8 @@ typedef struct Character {
     bool dead;
     uint8_t opacity;
     int bombPassId;
+    bool forcingMovement;
+    Movement* moveRoute;
 } Character;
 
 Character* Character_Create(char* spritePath, int id, bool noTexture);
@@ -44,7 +51,7 @@ void Character_GetTilePosition(Character* c, int* x, int* y);
 
 bool Character_Passable(Character* c, Map* m, int x, int y);
 
-void Character_TryToMove(Character* c, int dir, Map* m);
+bool Character_TryToMove(Character* c, int dir, Map* m);
 
 void Character_Place(Character* c, int x, int y);
 

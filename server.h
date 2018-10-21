@@ -9,6 +9,7 @@
 typedef struct Client {
     Address* addr;
     int id;
+    bool bot;
     Uint32 lastMessage;
     Character* character;
     uint64_t lastMovementId;
@@ -18,9 +19,9 @@ typedef struct Client {
     int bombRadius;
 } Client;
 
-Client* Client_New(Address* addr, int id);
+Client* Client_New(Address* addr, int id, bool bot);
 
-void Client_Destroy(Client* c);
+void Client_Destroy(Client* c, Server* s);
 
 typedef struct ServerBomb {
     bool active;
@@ -63,34 +64,60 @@ typedef struct Server {
     int powerupNumber;
 } Server;
 
+// Abrir servidor na porta informada
 Server* Server_Open(unsigned short port);
-
+// Loop principal do servidor
+int Server_InitLoop(Server* s);
+// Desalocar servidor
+void Server_Destroy(Server* s);
+// Fechar servidor
 void Server_Close(Server* s);
-
-int Server_FindClient(Server* s, Address* addr);
-
-int Server_FindEmptySlot(Server* s);
-
-void Server_PlayerDisconnect(Server* s, int clientId);
-
-void Server_KickPlayer(Server* s, int clientId);
-
-void Server_CheckInactiveClients(Server* s);
-
-void Server_SendToAll(Server* s, char* data, int id);
-
+// Enviar para os clientes que o servidor desligou
 void Server_Shutdown(Server* s);
 
+// Achar o cliente correspondente ao endereço informado
+int Server_FindClient(Server* s, Address* addr);
+// Procurar por um espaço vazio
+int Server_FindEmptySlot(Server* s);
+// Desconexão de um jogador
+void Server_PlayerDisconnect(Server* s, int clientId);
+// Expulsar jogador
+void Server_KickPlayer(Server* s, int clientId);
+// Checa o nome de um jogador
+void Server_CheckName(Server* s, int cId, int number);
+
+// Checagem de clientes inativos
+void Server_CheckInactiveClients(Server* s);
+// Enviar mensagem para todos os clientes, com exceção do informado em cId
+void Server_SendToAll(Server* s, char* data, int id);
+
+// Enviar informações dos personagens para um cliente
 void Server_SendCharacters(Server* s, Address* addr, int id);
-
+// Checa a movimentação feita por um jogador, retornando se foi ilegal ou não
 bool Server_CheckMovement(Server* s, int id, int x, int y);
-
-void Server_CreateCharacters(Server* s);
-
+// Lida com uma mensagem enviada para o servidor
 void Server_HandleMessage(Server* s, Address* sender, char* buffer);
 
-int Server_InitLoop(Server* s);
+// Cria os personagens
+void Server_CreateCharacters(Server* s);
+// Gera as paredes destrutíveis do mapa
+void Server_GenerateMap(Server* s);
 
-void Server_Destroy(Server* s);
+// Atualiza as bombas
+void Server_UpdateBombs(Server* s);
+// Explode uma bomba
+void Server_ExplodeBomb(Server* s, int bId);
+// Destrói uma parede
+void Server_DestroyWall(Server* s, int x, int y);
+// Posiciona uma bomba
+void Server_PlaceBomb(Server* s, int clientId);
+// Posiciona um PowerUp
+void Server_PlacePowerUp(Server* s, int x, int y, int type);
+
+/* ---- FUNÇÕES DOS BOTS ---- */
+// Atualização da rota de movimento do personagem
+void Server_UpdateCharMovement(Server* s, Character* c);
+// Atualiza um bot
+void Server_UpdateBot(Server* s, Character* c);
 
 #endif

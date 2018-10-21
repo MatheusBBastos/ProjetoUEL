@@ -215,21 +215,27 @@ void SceneMap_update(Scene_Map* s) {
 
     if (s->player != NULL && s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
         if(s->player->moving) {
+            bool moved = false;
             switch (s->lastMov) {
             case 'U':
-                Character_TryToMove(s->player, DIR_UP, Game.map);
+                moved = Character_TryToMove(s->player, DIR_UP, Game.map);
                 break;
             case 'D':
-                Character_TryToMove(s->player, DIR_DOWN, Game.map);
+                moved = Character_TryToMove(s->player, DIR_DOWN, Game.map);
                 break;
             case 'L':
-                Character_TryToMove(s->player, DIR_LEFT, Game.map);
+                moved = Character_TryToMove(s->player, DIR_LEFT, Game.map);
                 break;
             case 'R':
-                Character_TryToMove(s->player, DIR_RIGHT, Game.map);
+                moved = Character_TryToMove(s->player, DIR_RIGHT, Game.map);
                 break;
             }
-
+            if(moved) {
+                s->player->lastMovementId++;
+                char sendData[32];
+                sprintf(sendData, "POS %llu %d %d %d", s->player->lastMovementId, s->player->x, s->player->y, s->player->direction);
+                Socket_Send(Network.sockFd, Network.serverAddress, sendData, strlen(sendData) + 1);
+            }
         }
     }
     // ------------------------------------ //

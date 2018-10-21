@@ -2,11 +2,16 @@
 #include "noise.h"
 #include "pathfind.h"
 
-Client* Client_New(Address* addr, int id) {
+Client* Client_New(Address* addr, int id, bool bot) {
     Client* newClient = malloc(sizeof(Client));
-    newClient->addr = malloc(sizeof(Address));
-    newClient->addr->address = addr->address;
-    newClient->addr->port = addr->port;
+    if(bot) {
+        newClient->addr = NULL;
+    } else {
+        newClient->addr = malloc(sizeof(Address));
+        newClient->addr->address = addr->address;
+        newClient->addr->port = addr->port;
+    }
+    newClient->bot = bot;
     newClient->id = id;
     newClient->lastMessage = SDL_GetTicks();
     newClient->character = NULL;
@@ -16,10 +21,15 @@ Client* Client_New(Address* addr, int id) {
     return newClient;
 }
 
-void Client_Destroy(Client* c) {
+void Client_Destroy(Client* c, Server* s) {
     if(c->character != NULL)
         Character_Destroy(c->character);
-    free(c->addr);
+    if(s->map->characters[c->id] != NULL) {
+        Character_Destroy(s->map->characters[c->id]);
+        s->map->characters[c->id] = NULL;
+    }
+    if(c->addr != NULL)
+        free(c->addr);
     free(c);
 }
 
@@ -58,6 +68,16 @@ Server* Server_Open(unsigned short port) {
     }
 }
 
+void Server_Destroy(Server* s) {
+    for(int i = 0; i < s->maxClients; i++) {
+        if(s->clients[i] != NULL)
+            Client_Destroy(s->clients[i], s);
+    }
+    Map_Destroy(s->map);
+    free(s->clients);
+    free(s);
+}
+
 void Server_Close(Server* s) {
     if(s != NULL && s->running) {
         s->running = false;
@@ -67,6 +87,15 @@ void Server_Close(Server* s) {
         Server_Destroy(s);
         Network.server = NULL;
         Network.serverHost = false;
+    }
+}
+
+void Server_Shutdown(Server* s) {
+    char data[] = "SSD";
+    for(int i = 0; i < s->maxClients; i++) {
+        if(s->clients[i] != NULL) {
+            Socket_Send(s->sockfd, s->clients[i]->addr, data, sizeof(data));
+        }
     }
 }
 
@@ -95,7 +124,7 @@ void Server_PlayerDisconnect(Server* s, int clientId) {
         char data[16];
         sprintf(data, "PDC %d", clientId);
         Server_SendToAll(s, data, clientId);
-        Client_Destroy(s->clients[clientId]);
+        Client_Destroy(s->clients[clientId], s);
         s->clients[clientId] = NULL;
         s->connectedClients--;
     }
@@ -117,8 +146,10 @@ void Server_CheckInactiveClients(Server* s) {
                 printf("[Server] 5s passed since last received message from client id %d, kicking\n", i);
                 Server_KickPlayer(s, i);
             } else {
-                if(s->inGame && s->clients[i]->character != NULL)
-                    Character_Update(s->clients[i]->character, s->map);
+                if(s->inGame && s->map->characters[i] != NULL) {
+                    Character_Update(s->map->characters[i], s->map);
+                    Server_UpdateCharMovement(s, s->map->characters[i]);
+                }
             }
         }
     }
@@ -132,20 +163,11 @@ void Server_SendToAll(Server* s, char* data, int id) {
     }
 }
 
-void Server_Shutdown(Server* s) {
-    char data[] = "SSD";
-    for(int i = 0; i < s->maxClients; i++) {
-        if(s->clients[i] != NULL) {
-            Socket_Send(s->sockfd, s->clients[i]->addr, data, sizeof(data));
-        }
-    }
-}
-
 void Server_SendCharacters(Server* s, Address* addr, int id) {
     for(int i = 0; i < s->maxClients; i++) {
         if(s->clients[i] != NULL && i != id) {
             char sendData[80];
-            Character* c = s->clients[i]->character;
+            Character* c = s->map->characters[i];
             sprintf(sendData, "CHR %d %d %d %d %s", c->x, c->y, c->direction, i, c->spriteFile);
             Socket_Send(s->sockfd, addr, sendData, sizeof(sendData));
         }
@@ -172,10 +194,10 @@ void Server_GenerateMap(Server* s) {
         for(int x = 0; x < s->map->width; x++) {
             bool possibleWall = true;
             for(int i = 0; i < s->maxClients; i++) {
-                if(s->clients[i] == NULL || s->clients[i]->character == NULL) {
+                if(s->clients[i] == NULL || s->map->characters[i] == NULL) {
                     continue;
                 }
-                if(abs(s->clients[i]->character->x / TILE_SIZE - x) + abs(s->clients[i]->character->y / TILE_SIZE - y) < 2) {
+                if(abs(s->map->characters[i]->x / TILE_SIZE - x) + abs(s->map->characters[i]->y / TILE_SIZE - y) < 2) {
                     possibleWall = false;
                     break;
                 }
@@ -204,9 +226,11 @@ bool Server_CheckMovement(Server* s, int id, int x, int y) {
     if(s->clients[id] == NULL) {
         return false;
     }
-    Character* c = s->clients[id]->character;
+    Character* c = s->map->characters[id];
+    
+    if(c->forcingMovement)
+        return false;
     int maximumDistance = (1 << (c->moveSpeed)) * 2 ;
-    printf("%d %d\n", c->renderX, c->renderY);
     if(abs(x - c->renderX) > maximumDistance || abs(y - c->renderY) > maximumDistance) {
         return false;
     }
@@ -216,10 +240,10 @@ bool Server_CheckMovement(Server* s, int id, int x, int y) {
     if(Map_Passable(s->map, &collisionBox, c)) {
         bool noCollision = true;
         for(int i = 0; i < s->maxClients; i++) {
-            if(s->clients[i] == NULL || s->clients[i]->character->dead || i == id)
+            if(s->clients[i] == NULL || s->map->characters[i]->dead || i == id)
                 continue;
             SDL_Rect otherCollisionBox;
-            Character_GetCollisionBox(s->clients[i]->character, &otherCollisionBox, 0, 0); 
+            Character_GetCollisionBox(s->map->characters[i], &otherCollisionBox, 0, 0); 
             if(collisionBox.x < otherCollisionBox.x + otherCollisionBox.w &&
                     collisionBox.x + collisionBox.w > otherCollisionBox.x &&
                     collisionBox.y < otherCollisionBox.y + otherCollisionBox.h &&
@@ -261,20 +285,20 @@ void Server_CreateCharacters(Server* s) {
     for(int i = 0; i < s->maxClients; i++) {
         if(s->clients[i] != NULL) {
             if(i == 0) {
-                s->clients[i]->character = Character_Create("content/azul.png", i, true);
-                Character_Place(s->clients[i]->character, 1, 1);
+                s->map->characters[i] = Character_Create("content/azul.png", i, true);
+                Character_Place(s->map->characters[i], 1, 1);
             } else if(i == 1) {
-                s->clients[i]->character = Character_Create("content/vermelho.png", i, true);
-                Character_Place(s->clients[i]->character, 17, 1);
+                s->map->characters[i] = Character_Create("content/vermelho.png", i, true);
+                Character_Place(s->map->characters[i], 17, 1);
             } else if(i == 2) {
-                s->clients[i]->character = Character_Create("content/amarelo.png", i, true);
-                Character_Place(s->clients[i]->character, 1, 17);
+                s->map->characters[i] = Character_Create("content/amarelo.png", i, true);
+                Character_Place(s->map->characters[i], 1, 17);
             } else if(i == 3) {
-                s->clients[i]->character = Character_Create("content/roxo.png", i, true);
-                Character_Place(s->clients[i]->character, 17, 17);
+                s->map->characters[i] = Character_Create("content/roxo.png", i, true);
+                Character_Place(s->map->characters[i], 17, 17);
             }
             char sendData[80];
-            Character* c = s->clients[i]->character;
+            Character* c = s->map->characters[i];
             sprintf(sendData, "CHR %d %d %d %d %s", c->x, c->y, c->direction, i, c->spriteFile);
             Server_SendToAll(s, sendData, -1);
         }
@@ -282,10 +306,10 @@ void Server_CreateCharacters(Server* s) {
 }
 
 void Server_PlaceBomb(Server* s, int clientId) {
-    if(s->clients[clientId]->bombsPlaced >= s->clients[clientId]->maxBombs || s->clients[clientId]->character->dead)
+    if(s->clients[clientId]->bombsPlaced >= s->clients[clientId]->maxBombs || s->map->characters[clientId]->dead)
         return;
     SDL_Rect box;
-    Character_GetCollisionBox(s->clients[clientId]->character, &box, 0, 0);
+    Character_GetCollisionBox(s->map->characters[clientId], &box, 0, 0);
     int bombX = (box.x + box.w / 2) / TILE_SIZE;
     int bombY = (box.y + box.h / 2) / TILE_SIZE;
     if(s->map->objects[bombY][bombX].exists)
@@ -302,11 +326,11 @@ void Server_PlaceBomb(Server* s, int clientId) {
             s->bombs[i].count = 0;
             SDL_Rect bombCollision = {bombX * TILE_SIZE, bombY * TILE_SIZE, TILE_SIZE, TILE_SIZE};
             for(int j = 0; j < s->maxClients; j++) {
-                if(s->clients[j] != NULL && !s->clients[j]->character->dead) {
+                if(s->clients[j] != NULL && !s->map->characters[j]->dead) {
                     SDL_Rect playerCollision;
-                    Character_GetCollisionBox(s->clients[j]->character, &playerCollision, 0, 0);
+                    Character_GetCollisionBox(s->map->characters[j], &playerCollision, 0, 0);
                     if(CheckIntersection(&bombCollision, &playerCollision)) {
-                        s->clients[j]->character->bombPassId = i;
+                        s->map->characters[j]->bombPassId = i;
                     }
                 }
             }
@@ -419,19 +443,18 @@ void Server_ExplodeBomb(Server* s, int bId) {
             }
         }
         for(int cId = 0; cId < s->maxClients; cId++) {
-            if(s->clients[cId] != NULL && !s->clients[cId]->character->dead) {
+            // checar colisão da explosão com o personagem
+            if(s->clients[cId] != NULL && !s->map->characters[cId]->dead) {
                 SDL_Rect charRect;
-                Character_GetCollisionBox(s->clients[cId]->character, &charRect, 0, 0);
+                Character_GetCollisionBox(s->map->characters[cId], &charRect, 0, 0);
                 SDL_Rect expRect1 = {xMin * TILE_SIZE, b->y * TILE_SIZE, (xMax - xMin + 1) * TILE_SIZE, TILE_SIZE};
                 SDL_Rect expRect2 = {b->x * TILE_SIZE, yMin * TILE_SIZE, TILE_SIZE, (yMax - yMin + 1) * TILE_SIZE};
                 if(CheckIntersection(&charRect, &expRect1) || CheckIntersection(&charRect, &expRect2)) {
-                    printf("MORREU ESSE BOSTA: %d\n", cId);
-                    s->clients[cId]->character->dead = true;
+                    s->map->characters[cId]->dead = true;
                     char sendData[16];
                     sprintf(sendData, "DEA %d", cId);
                     Server_SendToAll(s, sendData, -1);
                 }
-                // checar colisão da explosão com o personagem
             }
         }
         s->map->objects[b->y][b->x].exists = false;
@@ -461,8 +484,8 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
             int newX, newY, dir;
             uint64_t movementId;
             sscanf(buffer + 4, "%llu %d %d %d", &movementId, &newX, &newY, &dir);
-            if(movementId > s->clients[cId]->character->lastMovementId) {
-                Character* chr = s->clients[cId]->character;
+            if(movementId > s->map->characters[cId]->lastMovementId) {
+                Character* chr = s->map->characters[cId];
                 char sendData[32];
                 if(Server_CheckMovement(s, cId, newX, newY)) {
                     chr->x = newX;
@@ -487,11 +510,11 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
                 sprintf(sendData, "MAP %s", "map.txt");
                 Server_SendToAll(s, sendData, strlen(sendData) + 1);
                 Server_GenerateMap(s);
-                //PF_Find(s->map, s->clients[0]->character, 11, 11);
             }
         } else if(strncmp("BMB", buffer, 3) == 0) {
-            if(s->inGame)
+            if(s->inGame) {
                 Server_PlaceBomb(s, cId);
+            }
         }
     } else {
         if(strncmp("INF", buffer, 3) == 0) {
@@ -513,9 +536,8 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
                     cId = Server_FindEmptySlot(s);
                     if(host == 1 && s->connectedClients == 0 && sender->address == 2130706433) {
                         s->hostId = cId;
-                        printf("carai eh o xoris\n");
                     }
-                    s->clients[cId] = Client_New(sender, cId);
+                    s->clients[cId] = Client_New(sender, cId, false);
                     strcpy(s->clients[cId]->username, username);
                     Server_CheckName(s, cId, 0);
                     s->connectedClients++;
@@ -556,7 +578,14 @@ int Server_InitLoop(Server* s) {
             Server_HandleMessage(s, &sender, buffer);
         }
         Server_CheckInactiveClients(s);
-        Server_UpdateBombs(s);
+        if(s->inGame) {
+            Server_UpdateBombs(s);
+            for(int i = 0; i < s->maxClients; i++) {
+                if(s->clients[i] != NULL && s->clients[i]->bot) {
+                    Server_UpdateBot(s, s->map->characters[i]);
+                }
+            }
+        }
         count++;
         if(count == SERVER_TICKRATE) {
             printf("[Server] Connected clients: %d\n", s->connectedClients);
@@ -573,14 +602,4 @@ int Server_InitLoop(Server* s) {
     printf("Closing server...\n");
     Socket_Close(s->sockfd);
     return 0;
-}
-
-void Server_Destroy(Server* s) {
-    for(int i = 0; i < s->maxClients; i++) {
-        if(s->clients[i] != NULL)
-            Client_Destroy(s->clients[i]);
-    }
-    Map_Destroy(s->map);
-    free(s->clients);
-    free(s);
 }
