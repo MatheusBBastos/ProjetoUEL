@@ -149,4 +149,6 @@ bool PF_Find(Map* map, Character* c, int tx, int ty) {
 
     free(instance.heap.data);
     PF_DestroyNodeGrid(instance.grid);
+    
+    return true;
 }
