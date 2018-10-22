@@ -113,13 +113,13 @@ bool PF_Find(Map* map, Character* c, int tx, int ty) {
         PF_NodeSetNeighbors(&instance, currentNode);
         currentNode = Heap_Pop(&instance.heap);
         if(currentNode == NULL) {
-            printf("impossibru\n");
+            //printf("impossibru\n");
             return false;
         }
         currentNode->closed = true;
     }
 
-    printf("omen achou\n");
+    //printf("omen achou %d %d\n", tx, ty);
     Movement* lastMovement = NULL;
     while(currentNode != NULL && currentNode->parent != NULL) {
         //printf("X: %d, Y: %d\n", currentNode->x, currentNode->y);
@@ -149,6 +149,6 @@ bool PF_Find(Map* map, Character* c, int tx, int ty) {
 
     free(instance.heap.data);
     PF_DestroyNodeGrid(instance.grid);
-    
+
     return true;
 }

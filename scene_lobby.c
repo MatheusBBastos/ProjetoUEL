@@ -136,10 +136,14 @@ void SceneLobby_handleEvent(Scene_Lobby* s, SDL_Event* e) {
             Map_Destroy(Game.map);
             Game.map = NULL;
         } else if(e->key.keysym.sym == SDLK_SPACE) {
-            //if(Network.serverHost) {
+            if(Network.serverHost) {
                 char data[] = "STA";
                 Socket_Send(Network.sockFd, Network.serverAddress, data, 4);
-            //}
+            }
+        } else if(e->key.keysym.sym == SDLK_z) {
+            if(Network.serverHost) {
+                Socket_Send(Network.sockFd, Network.serverAddress, "BOT 0", 6);
+            }
         }
     }
 }

@@ -110,6 +110,11 @@ bool Character_TryToMove(Character* c, int dir, Map* m) {
         if(noCollision) {
             c->x = newX;
             c->y = newY;
+            int x, y;
+            Character_GetTilePosition(c, &x, &y);
+            if(c->bombPassId != -1 && (!m->objects[y][x].exists || m->objects[y][x].type == OBJ_BOMB && m->objects[y][x].objId != c->bombPassId)) {
+                c->bombPassId = -1;
+            }
             return true;
         }
     }

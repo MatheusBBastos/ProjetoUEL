@@ -6,17 +6,28 @@
 #include "character.h"
 #include "map.h"
 
+enum Difficulties {
+    DIFFICULTY_EASY,
+    DIFFICULTY_MEDIUM,
+    DIFFICULTY_HARD
+};
+
+typedef struct BotInfo {
+    uint8_t difficulty;
+
+} BotInfo;
+
 typedef struct Client {
     Address* addr;
     int id;
     bool bot;
     Uint32 lastMessage;
-    Character* character;
     uint64_t lastMovementId;
     char username[32];
     int bombsPlaced;
     int maxBombs;
     int bombRadius;
+    BotInfo b;
 } Client;
 
 Client* Client_New(Address* addr, int id, bool bot);
@@ -118,6 +129,6 @@ void Server_PlacePowerUp(Server* s, int x, int y, int type);
 // Atualização da rota de movimento do personagem
 void Server_UpdateCharMovement(Server* s, Character* c);
 // Atualiza um bot
-void Server_UpdateBot(Server* s, Character* c);
+void Server_UpdateBot(Server* s, int id);
 
 #endif

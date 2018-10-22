@@ -174,6 +174,8 @@ bool Map_Passable(Map* m, SDL_Rect* box, Character* c) {
     int firstTileY = box->y;
     int lastTileX = (firstTileX + box->w - 1) / TILE_SIZE;
     int lastTileY = (firstTileY + box->h - 1) / TILE_SIZE;
+    if(lastTileX >= m->width || lastTileY >= m->height)
+        return false;
     firstTileX /= TILE_SIZE;
     firstTileY /= TILE_SIZE;
     bool usedPass = false;
@@ -196,7 +198,7 @@ bool Map_Passable(Map* m, SDL_Rect* box, Character* c) {
         }
     }
     if(!usedPass && c != NULL && c->bombPassId != -1) {
-        c->bombPassId = -1;
+        //c->bombPassId = -1;
     }
     return true;
 }

@@ -1,6 +1,5 @@
 #include "server.h"
 #include "noise.h"
-#include "pathfind.h"
 
 Client* Client_New(Address* addr, int id, bool bot) {
     Client* newClient = malloc(sizeof(Client));
@@ -14,7 +13,6 @@ Client* Client_New(Address* addr, int id, bool bot) {
     newClient->bot = bot;
     newClient->id = id;
     newClient->lastMessage = SDL_GetTicks();
-    newClient->character = NULL;
     newClient->bombsPlaced = 0;
     newClient->maxBombs = 2;
     newClient->bombRadius = 1;
@@ -22,8 +20,6 @@ Client* Client_New(Address* addr, int id, bool bot) {
 }
 
 void Client_Destroy(Client* c, Server* s) {
-    if(c->character != NULL)
-        Character_Destroy(c->character);
     if(s->map->characters[c->id] != NULL) {
         Character_Destroy(s->map->characters[c->id]);
         s->map->characters[c->id] = NULL;
@@ -93,7 +89,7 @@ void Server_Close(Server* s) {
 void Server_Shutdown(Server* s) {
     char data[] = "SSD";
     for(int i = 0; i < s->maxClients; i++) {
-        if(s->clients[i] != NULL) {
+        if(s->clients[i] != NULL && !s->clients[i]->bot) {
             Socket_Send(s->sockfd, s->clients[i]->addr, data, sizeof(data));
         }
     }
@@ -141,7 +137,7 @@ void Server_KickPlayer(Server* s, int clientId) {
 void Server_CheckInactiveClients(Server* s) {
     Uint32 now = SDL_GetTicks();
     for(int i = 0; i < s->maxClients; i++) {
-        if(s->clients[i] != NULL) {
+        if(s->clients[i] != NULL && !s->clients[i]->bot) {
             if(now - s->clients[i]->lastMessage > 5000) {
                 printf("[Server] 5s passed since last received message from client id %d, kicking\n", i);
                 Server_KickPlayer(s, i);
@@ -157,7 +153,7 @@ void Server_CheckInactiveClients(Server* s) {
 
 void Server_SendToAll(Server* s, char* data, int id) {
     for(int i = 0; i < s->maxClients; i++) {
-        if(s->clients[i] != NULL && i != id) {
+        if(s->clients[i] != NULL && i != id && !s->clients[i]->bot) {
             Socket_Send(s->sockfd, s->clients[i]->addr, data, strlen(data) + 1);
         }
     }
@@ -501,6 +497,22 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
             }
         } else if(strncmp("DCS", buffer, 3) == 0) {
             Server_PlayerDisconnect(s, cId);
+        } else if(strncmp("BOT", buffer, 3) == 0) {
+            if(s->hostId == cId && s->connectedClients < s->maxClients && !s->inGame) {
+                int difficulty;
+                sscanf(buffer + 4, "%d", &difficulty);
+                int id = Server_FindEmptySlot(s);
+                s->clients[id] = Client_New(sender, id, false);
+                s->clients[id]->bot = true;
+                s->clients[id]->b.difficulty = difficulty;
+                strcpy(s->clients[id]->username, "BOT");
+                Server_CheckName(s, id, 0);
+                s->connectedClients++;
+                printf("[Server] Bot added (%d)\n", difficulty);
+                char sendData3[40];
+                sprintf(sendData3, "PNM %d %s", id, s->clients[id]->username);
+                Server_SendToAll(s, sendData3, id);
+            }
         } else if(strncmp("STA", buffer, 3) == 0) {
             if(s->hostId == cId && !s->inGame) {
                 s->inGame = true;
@@ -582,7 +594,9 @@ int Server_InitLoop(Server* s) {
             Server_UpdateBombs(s);
             for(int i = 0; i < s->maxClients; i++) {
                 if(s->clients[i] != NULL && s->clients[i]->bot) {
-                    Server_UpdateBot(s, s->map->characters[i]);
+                    Server_UpdateBot(s, i);
+                    Server_UpdateCharMovement(s, s->map->characters[i]);
+                    Character_Update(s->map->characters[i], s->map);
                 }
             }
         }
