@@ -24,7 +24,7 @@ void Server_UpdateBot(Server* s, int id) {
 
     // ISSO AQUI TA UMA BOSTA, POR FAVOR NAO USA NADA
     Character* c = s->map->characters[id];
-    if(!c->dead && !c->forcingMovement) {
+    if(!c->dead && !c->forcingMovement && s->clients[id]->bombsPlaced == 0) {
         int x, y, bombX, bombY;
         bool actionMade = false;
         Character_GetTilePosition(c, &x, &y);
@@ -39,8 +39,8 @@ void Server_UpdateBot(Server* s, int id) {
                     // se tiver parede em volta colocar uma bomba
                     Server_PlaceBomb(s, id);
                     actionMade = true;
-                    bombX = x + x1;
-                    bombY = y + y1;
+                    bombX = x;
+                    bombY = y;
                     break;
                 }
             }
