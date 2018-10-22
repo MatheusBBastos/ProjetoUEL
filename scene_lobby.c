@@ -2,6 +2,8 @@
 
 Scene_Lobby* SceneLobby_new() {
     Scene_Lobby* newScene = malloc(sizeof(Scene_Lobby));
+     newScene->sound = Mix_LoadMUS("content/lobby.mp3");
+   Mix_PlayMusic(newScene->sound, -1);
     for(int i = 0; i < 4; i++) {
         sprintf(newScene->playerNames[i], "Slot");
     }
@@ -115,6 +117,7 @@ void SceneLobby_destroy(Scene_Lobby* s) {
     free(s->players);
     WD_TextureDestroy(s->iniciar);
     WD_TextureDestroy(s->sair);
+    Mix_FreeMusic(s->sound);
     free(s);
 }   
 

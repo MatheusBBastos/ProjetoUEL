@@ -19,6 +19,10 @@ typedef struct Scene_Login {
     WTexture* textLogarOff;
     WTexture* textModoOffOff;
     WTexture* seta;
+    WTexture* textVoltar;
+    WTexture* textVoltarOff;
+    WTexture* textCaps;
+    WTexture* textErrorBrute;
     TextBox* login;
     TextBox* senha;
     WTexture* textError;
@@ -26,6 +30,7 @@ typedef struct Scene_Login {
     WTexture* logo[2];
     bool modoOff;
     bool acessonegado;
+    bool brute;
     short int index;
     int positionAnimado;
 } Scene_Login;
