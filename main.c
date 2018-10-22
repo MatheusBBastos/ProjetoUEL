@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
         SceneManager.quit = false;
         // Fontes
         Game.mainFont = TTF_OpenFont("content/Fipps-Regular.ttf", 36);
-        Game.telaLogin = TTF_OpenFont("content/Minecraft.ttf", 72);
+        Game.telaLogin = TTF_OpenFont("content/kozuki.ttf", 48);
         Game.inputFont = TTF_OpenFont("content/Minecraft.ttf", 46);
         Game.mainMenu = TTF_OpenFont("content/RC.ttf", 65);
         Game.mainMenu_botoes = TTF_OpenFont("content/RC.ttf", 54);
@@ -102,6 +102,11 @@ int main(int argc, char* argv[]) {
         SceneManager.currentScene = SCENE_LOGIN;
         SceneManager.sLogin = SceneLogin_new();
         SDL_Event e;
+
+        Mix_Music* music;
+        music = Mix_LoadMUS("content/hang.mp3");
+        Mix_PlayMusic(music, -1);
+
         while(!SceneManager.quit) {
             while(SDL_PollEvent(&e) != 0) {
                 if(e.type == SDL_QUIT) {
