@@ -2,6 +2,8 @@
 #include "pathfind.h"
 
 void Server_UpdateCharMovement(Server* s, Character* c) {
+    if(c->dead)
+        return;
     if(c->forcingMovement && c->x == c->renderX && c->y == c->renderY) {
         if(Character_TryToMove(c, c->movementStack[c->movementStackTop], s->map)) {
             c->movementStackTop--;
@@ -16,6 +18,30 @@ void Server_UpdateCharMovement(Server* s, Character* c) {
         char sendData[32];
         sprintf(sendData, "POS %d %d %d %d", c->id, c->x, c->y, c->direction);
         Server_SendToAll(s, sendData, -1);
+    } else {
+        int x, y;
+        Character_GetTilePosition(c, &x, &y);
+        TemporaryObject *o = &s->map->objects[y][x];
+        if(o->exists && o->type == OBJ_POWERUP) {
+            switch(s->powerups[o->objId].type) {
+                case PU_BLAST_RADIUS:
+                    printf("b\n");
+                    s->clients[c->id]->bombRadius++;
+                    break;
+                case PU_PLUS_BOMB:
+                    printf("a\n");
+                    s->clients[c->id]->maxBombs++;
+                    if(s->clients[c->id]->maxBombs > MAX_BOMBS_PER_PLAYER) {
+                        s->clients[c->id]->maxBombs = MAX_BOMBS_PER_PLAYER;
+                    }
+                    break;
+            }
+            s->powerups[o->objId].exists = false;
+            o->exists = false;
+            char sendData[16];
+            sprintf(sendData, "PWD %d", o->objId);
+            Server_SendToAll(s, sendData, -1);
+        }
     }
 }
 

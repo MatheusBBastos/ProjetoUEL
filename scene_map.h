@@ -31,6 +31,7 @@ typedef struct Scene_Map {
     WTexture* animatedBomb;
     WTexture *bombSprite, *explosionSprite;
     WTexture* wallTexture;
+    WTexture* puTexture;
     Map* map;
     Mix_Chunk* bombexp;
     Mix_Chunk* bombload;

@@ -16,6 +16,7 @@ Map* Map_Create() {
     newMap->charNumber = MAX_PLAYERS;
     newMap->objects = NULL;
     newMap->walls = NULL;
+    newMap->powerups = NULL;
     return newMap;
 }
 
@@ -82,8 +83,8 @@ void Map_GenerateWalls(Map* m, int seed) {
                 }
             }
             if(possibleWall && Map_Get(m, x, y, 1) != WALL_TILE) {
-                float n = perlin2d(x, y, 0.5, 1, seed);
-                if(n <= 0.7) {
+                float n = perlin2d(x, y, PERLIN_FREQUENCY, PERLIN_DEPTH, seed);
+                if(n <= PERLIN_DELIMITER) {
                     m->objects[y][x].exists = true;
                     m->objects[y][x].type = OBJ_WALL;
                     m->objects[y][x].objId = wallNumber;
@@ -98,6 +99,11 @@ void Map_GenerateWalls(Map* m, int seed) {
                 m->objects[y][x].exists = false;
             }
         }
+    }
+    m->powerupNumber = 20;
+    m->powerups = malloc(m->powerupNumber * sizeof(PowerUp));
+    for(int i = 0; i < m->powerupNumber; i++) {
+        m->powerups[i].exists = false;
     }
 }
 
@@ -119,6 +125,15 @@ void Map_RenderWalls(Map* m, WTexture* wallTexture, int screenX, int screenY) {
             SDL_Rect src = {0, 0, wallTexture->w, wallTexture->h};
             SDL_Rect dst = {TILE_SIZE * m->walls[i].x - screenX, TILE_SIZE * m->walls[i].y - screenY, wallTexture->w, wallTexture->h};
             SDL_RenderCopy(Game.renderer, wallTexture->mTexture, &src, &dst);
+        }
+    }
+}
+
+void Map_RenderPowerUps(Map* m, WTexture* puTexture, int screenX, int screenY) {
+    for(int i = 0; i < m->powerupNumber; i++) {
+        if(m->powerups[i].exists) {
+            SDL_Rect clip = {TILE_SIZE * m->powerups[i].type, 0, TILE_SIZE, TILE_SIZE};
+            WD_TextureRenderEx(puTexture, TILE_SIZE * m->powerups[i].x - screenX, TILE_SIZE * m->powerups[i].y - screenY, &clip, 0.0, NULL, SDL_FLIP_NONE);
         }
     }
 }
@@ -225,6 +240,9 @@ void Map_Destroy(Map* m) {
     }
     if(m->walls != NULL) {
         free(m->walls);
+    }
+    if(m->powerups != NULL) {
+        free(m->powerups);
     }
     free(m->layers);
     free(m);
