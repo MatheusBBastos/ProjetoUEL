@@ -15,15 +15,21 @@ typedef struct Scene_MainMenu {
     bool connected, dataReceived;
     bool btnJogar;
     bool mult;
+    int frame;
+    bool animation;
     WTexture* seta;
-    WTexture* bemvindo  ;
+    WTexture* bemvindo;
     WTexture* nome;
     WTexture* jogar;  
     WTexture* tutorial;
     WTexture* logout;
-    WTexture* rank[6];
+    WTexture* rankName[6];
+    WTexture* scores[6];
+    WTexture* posMark[6];
     WTexture* multiplayer;
+    WTexture* animatedChar;
     WTexture* singleplayer;
+    WTexture* rankPOS; 
     char ranking[100];
 } Scene_MainMenu;
 

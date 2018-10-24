@@ -33,6 +33,12 @@ Scene_Login* SceneLogin_new() {
     newScene->enteringFrame = 0;
     newScene->frame = 0;
 
+
+    if (!Mix_PlayingMusic) {
+        Mix_PlayMusic(Game.mainMusic, -1);
+    }
+    newScene->type = Mix_LoadWAV("content/type.wav");
+
    // newScene->music = Mix_LoadMUS("content/hang.mp3");
    // Mix_PlayMusic(newScene->music, -1);
    // Mix_PauseMusic();
@@ -311,6 +317,7 @@ void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
     if (e->type == SDL_TEXTINPUT || e->type == SDL_TEXTEDITING) {
         s->acessonegado = false;
         s->brute = false;
+        Mix_PlayChannel(-1, s->type, 0);
     }
 
     if(e->type == SDL_KEYDOWN) {
@@ -320,6 +327,14 @@ void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
             }
 
         if (e->key.keysym.sym == SDLK_RETURN) {
+            if (s->index == 1 || s->index == 0) {
+                if (s->login->text != NULL && s->senha->text != NULL) {
+                    if ((strcmp(s->login->text, "") != 0) && (strcmp(s->senha->text, "")) != 0) {
+                        s->loginPressed = true;
+                    
+                    }
+                }
+            }
             switch (s->index) {
             case 2:
                 if (s->login->text!=NULL && s->senha->text != NULL) {
@@ -345,15 +360,20 @@ void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
 
 
             }
+            Mix_PlayChannel(-1, Game.enter, 0);
         }
       /*  else if (e->key.keysym.sym == SDLK_RIGHT && s->index == 2 || e->key.keysym.sym == SDLK_LEFT && s->index == 3) {
             s->modoOff = !s->modoOff;
         }*/
         else if ((e->key.keysym.sym == SDLK_DOWN || e->key.keysym.sym == SDLK_TAB) && s->index <= 3) {
             s->index++;
+            if(s->index > 1)
+            Mix_PlayChannel(-1, Game.change, 0);
         }
         else if (e->key.keysym.sym == SDLK_UP && s->index > 0) {
             s->index--;
+            if (s->index > 1)
+            Mix_PlayChannel(-1, Game.change, 0);
         }
         else if (e->key.keysym.sym == SDLK_F2) {
             if (Mix_PausedMusic()) {

@@ -22,10 +22,11 @@ void Client_Destroy(Client* c) {
     free(c);
 }
 
-Server* Server_Open(unsigned short port) {
+Server* Server_Open(unsigned short port, char nm[32]) {
     int sockFd = Socket_Open(port);
     if(sockFd != 0) {
         Server* newServer = malloc(sizeof(Server));
+        strcpy(newServer->name, nm);
         newServer->port = port;
         newServer->sockfd = sockFd;
         newServer->running = false;
@@ -40,7 +41,6 @@ Server* Server_Open(unsigned short port) {
         newServer->hostId = -1;
         newServer->inGame = false;
         newServer->map = Map_Create();
-        strcpy(newServer->name, "SERVER FORTE");
         newServer->bombNumber = MAX_BOMBS_PER_PLAYER * newServer->maxClients;
         newServer->bombs = malloc(newServer->bombNumber * sizeof(ServerBomb));
         for(int i = 0; i < newServer->bombNumber; i++) {

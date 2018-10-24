@@ -26,6 +26,7 @@ typedef struct Scene_Login {
     TextBox* login;
     TextBox* senha;
     WTexture* textError;
+    Mix_Chunk* type;
     Mix_Music* music;
     WTexture* logo[2];
     bool modoOff;

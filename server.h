@@ -48,7 +48,7 @@ typedef struct Server {
     int bombNumber;
 } Server;
 
-Server* Server_Open(unsigned short port);
+Server* Server_Open(unsigned short port, char nm[32]);
 
 void Server_Close(Server* s);
 

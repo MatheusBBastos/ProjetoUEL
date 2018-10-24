@@ -31,15 +31,12 @@ typedef struct Scene_Servers {
     WTexture* backgroundTexture;
     WTexture* server;
     WTexture* entrar;
-    WTexture* servir;
-    WTexture* server1;
-    WTexture* server2;
-    WTexture* server3;
-    WTexture* nomeServer1;
-    WTexture* nomeServer2;
-    WTexture* nomeServer3;
+    WTexture* servir[2];
+    WTexture* serverName[4];
+    WTexture* serverSlot[4];
     WTexture* voltar;
     TextBox* boxIp;
+    TextBox* boxNome;
     SDL_Rect renderQuad;
 } Scene_Servers;
 

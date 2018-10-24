@@ -90,12 +90,18 @@ int main(int argc, char* argv[]) {
         Game.mainFont = TTF_OpenFont("content/Fipps-Regular.ttf", 36);
         Game.telaLogin = TTF_OpenFont("content/kozuki.ttf", 48);
         Game.inputFont = TTF_OpenFont("content/Minecraft.ttf", 46);
-        Game.mainMenu = TTF_OpenFont("content/RC.ttf", 65);
-        Game.mainMenu_botoes = TTF_OpenFont("content/RC.ttf", 54);
+        Game.rankMini = TTF_OpenFont("content/Minecraft.ttf", 44);
+        Game.mainMenu = TTF_OpenFont("content/Minecraft.ttf", 68);
+        Game.mainMenu_botoes = TTF_OpenFont("content/kozuki.ttf", 62);
+        Game.Unisans = TTF_OpenFont("content/uni.ttf", 60);
+        Game.roboto = TTF_OpenFont("content/roboto.ttf", 60);
         Game.rank = TTF_OpenFont("content/Gamer.ttf", 96);
         Game.serversFontd = TTF_OpenFont("content/Minecraft.ttf", 56);
         Game.serversFonte = TTF_OpenFont("content/Minecraft.ttf", 48);
-        Game.serversName = TTF_OpenFont("content/Minecraft.ttf", 61);
+        Game.serversName = TTF_OpenFont("content/kozuki.ttf", 80);
+
+        Game.enter = Mix_LoadWAV("content/enter.ogg");
+        Game.change = Mix_LoadWAV("content/change.ogg");
 
 
         SDL_RenderPresent(Game.renderer);
@@ -103,9 +109,8 @@ int main(int argc, char* argv[]) {
         SceneManager.sLogin = SceneLogin_new();
         SDL_Event e;
 
-        Mix_Music* music;
-        music = Mix_LoadMUS("content/hang.mp3");
-        Mix_PlayMusic(music, -1);
+        Game.mainMusic = Mix_LoadMUS("content/hang.mp3");
+        Mix_PlayMusic(Game.mainMusic, -1);
 
         while(!SceneManager.quit) {
             while(SDL_PollEvent(&e) != 0) {
