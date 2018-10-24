@@ -27,6 +27,7 @@ typedef struct Client {
     int bombsPlaced;
     int maxBombs;
     int bombRadius;
+    int kills;
     BotInfo b;
 } Client;
 
@@ -46,8 +47,8 @@ typedef struct Position {
 } Position;
 
 enum PowerUps {
-    PU_PLUS_BOMB,
     PU_BLAST_RADIUS,
+    PU_PLUS_BOMB,
     PU_SHIELD,
     PU_SPEED,
     TOTAL_POWERUPS
@@ -123,7 +124,7 @@ void Server_DestroyWall(Server* s, int x, int y);
 // Posiciona uma bomba
 void Server_PlaceBomb(Server* s, int clientId);
 // Posiciona um PowerUp
-void Server_PlacePowerUp(Server* s, int x, int y, int type);
+void Server_PlacePowerUp(Server* s, int x, int y);
 
 /* ---- FUNÇÕES DOS BOTS ---- */
 // Atualização da rota de movimento do personagem

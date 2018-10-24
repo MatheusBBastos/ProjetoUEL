@@ -24,6 +24,11 @@ typedef struct Wall {
     int x, y;
 } Wall;
 
+typedef struct PowerUp {
+    bool exists;
+    int x, y, type;
+} PowerUp;
+
 typedef struct Map {
     int* data;
     bool loaded;
@@ -32,7 +37,9 @@ typedef struct Map {
     Character** characters;
     TemporaryObject** objects;
     Wall* walls;
+    PowerUp* powerups;
     int wallNumber;
+    int powerupNumber;
     int charNumber;
 } Map;
 
@@ -51,6 +58,8 @@ void Map_DestroyCharacters(Map* m);
 void Map_RenderFull(Map* m, WTexture* tileMap);
 
 void Map_RenderWalls(Map* m, WTexture* wallTexture, int screenX, int screenY);
+
+void Map_RenderPowerUps(Map* m, WTexture* puTexture, int screenX, int screenY);
 
 void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY);
 

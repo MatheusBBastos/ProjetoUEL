@@ -29,6 +29,7 @@ typedef struct Scene_Map {
     WTexture* tileMap;
     WTexture *bombSprite, *explosionSprite;
     WTexture* wallTexture;
+    WTexture* puTexture;
     Map* map;
     int tileWidth, tileHeight, mapWidth, mapHeight;
     int screenX, screenY;

@@ -15,6 +15,8 @@ Scene_Map* SceneMap_new() {
     WD_TextureLoadFromFile(newScene->explosionSprite, "content/explosion.png");
     newScene->wallTexture = WD_CreateTexture();
     WD_TextureLoadFromFile(newScene->wallTexture, "content/wall.png");
+    newScene->puTexture = WD_CreateTexture();
+    WD_TextureLoadFromFile(newScene->puTexture, "content/powerup.png");
     newScene->screenX = 0;
     newScene->screenY = 0;
     newScene->player = Game.map->characters[Network.clientId];
@@ -172,6 +174,20 @@ void SceneMap_update(Scene_Map* s) {
                     Game.map->walls[id].exists = false;
                     int x = Game.map->walls[id].x, y = Game.map->walls[id].y;
                     Game.map->objects[y][x].exists = false;
+                } else if(strncmp("PWU", data, 3) == 0) {
+                    int id, x, y, type;
+                    sscanf(data + 4, "%d %d %d %d", &id, &x, &y, &type);
+                    Game.map->powerups[id].exists = true;
+                    Game.map->powerups[id].x = x;
+                    Game.map->powerups[id].y = y;
+                    Game.map->powerups[id].type = type;
+                    Game.map->objects[y][x].exists = true;
+                    Game.map->objects[y][x].type = OBJ_POWERUP;
+                    Game.map->objects[y][x].objId = id;
+                } else if(strncmp("PWD", data, 3) == 0) {
+                    int id;
+                    sscanf(data + 4, "%d", &id);
+                    Game.map->powerups[id].exists = false;
                 } else if(strncmp("DEA", data, 3) == 0) {
                     int id;
                     sscanf(data + 4, "%d", &id);
@@ -251,6 +267,8 @@ void SceneMap_update(Scene_Map* s) {
     }
 
     Map_RenderWalls(Game.map, s->wallTexture, s->screenX, s->screenY);
+
+    Map_RenderPowerUps(Game.map, s->puTexture, s->screenX, s->screenY);
     
     for(int i = 0; i < 20; i++) {
         Bomb_Render(&s->bombs[i], s->screenX, s->screenY, s->bombSprite);
@@ -392,5 +410,6 @@ void SceneMap_destroy(Scene_Map* s) {
     WD_TextureDestroy(s->bombSprite);
     WD_TextureDestroy(s->explosionSprite);
     WD_TextureDestroy(s->wallTexture);
+    WD_TextureDestroy(s->puTexture);
     free(s);
 }

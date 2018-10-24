@@ -16,6 +16,7 @@ Client* Client_New(Address* addr, int id, bool bot) {
     newClient->bombsPlaced = 0;
     newClient->maxBombs = 2;
     newClient->bombRadius = 1;
+    newClient->kills = 0;
     return newClient;
 }
 
@@ -47,7 +48,7 @@ Server* Server_Open(unsigned short port) {
         newServer->hostId = -1;
         newServer->inGame = false;
         newServer->map = Map_Create();
-        strcpy(newServer->name, "SERVER FORTE");
+        strcpy(newServer->name, "vinicius hetero");
         newServer->bombNumber = MAX_BOMBS_PER_PLAYER * newServer->maxClients;
         newServer->bombs = malloc(newServer->bombNumber * sizeof(ServerBomb));
         for(int i = 0; i < newServer->bombNumber; i++) {
@@ -199,8 +200,8 @@ void Server_GenerateMap(Server* s) {
                 }
             }
             if(possibleWall && Map_Get(s->map, x, y, 1) != WALL_TILE) {
-                float n = perlin2d(x, y, 0.5, 1, seed);
-                if(n <= 0.7) {
+                float n = perlin2d(x, y, PERLIN_FREQUENCY, PERLIN_DEPTH, seed);
+                if(n <= PERLIN_DELIMITER) {
                     s->map->objects[y][x].exists = true;
                     s->map->objects[y][x].type = OBJ_WALL;
                     s->map->objects[y][x].objId = wallNumber;
@@ -339,12 +340,11 @@ void Server_PlaceBomb(Server* s, int clientId) {
     }
 }
 
-void Server_PlacePowerUp(Server* s, int x, int y, int type) {
+void Server_PlacePowerUp(Server* s, int x, int y) {
     if(s->map->objects[y][x].exists)
         return;
     for(int i = 0; i < s->powerupNumber; i++) {
         if(!s->powerups[i].exists) {
-            srand(time(NULL));
             int type = rand() % TOTAL_POWERUPS;
             s->powerups[i].exists = true;
             s->powerups[i].x = x;
@@ -365,6 +365,10 @@ void Server_DestroyWall(Server* s, int x, int y) {
     char sendData[16];
     sprintf(sendData, "WDS %d", s->map->objects[y][x].objId);
     s->map->objects[y][x].exists = false;
+    int r = random() % 4;
+    if(r == 0) {
+        Server_PlacePowerUp(s, x, y);
+    }
     Server_SendToAll(s, sendData, -1);
 }
 
@@ -450,6 +454,7 @@ void Server_ExplodeBomb(Server* s, int bId) {
                     char sendData[16];
                     sprintf(sendData, "DEA %d", cId);
                     Server_SendToAll(s, sendData, -1);
+                    c->kills++;
                 }
             }
         }

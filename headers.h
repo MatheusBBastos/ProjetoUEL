@@ -56,6 +56,12 @@
 // Número máximo de bombas por jogador
 #define MAX_BOMBS_PER_PLAYER 5
 
+#define PERLIN_FREQUENCY 57
+
+#define PERLIN_DEPTH 1
+
+#define PERLIN_DELIMITER 0.7
+
 typedef struct Address Address;
 typedef struct Map Map;
 
