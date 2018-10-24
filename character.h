@@ -38,7 +38,10 @@ typedef struct Character {
     uint8_t opacity;
     int bombPassId;
     bool forcingMovement;
-    Movement* moveRoute;
+    int targetX, targetY;
+    uint8_t movementStack[64];
+    int8_t movementStackTop;
+    //Movement* moveRoute;
 } Character;
 
 Character* Character_Create(char* spritePath, int id, bool noTexture);

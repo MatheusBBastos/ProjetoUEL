@@ -14,7 +14,6 @@ enum Difficulties {
 
 typedef struct BotInfo {
     uint8_t difficulty;
-
 } BotInfo;
 
 typedef struct Client {

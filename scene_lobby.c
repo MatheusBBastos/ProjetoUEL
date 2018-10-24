@@ -144,6 +144,14 @@ void SceneLobby_handleEvent(Scene_Lobby* s, SDL_Event* e) {
             if(Network.serverHost) {
                 Socket_Send(Network.sockFd, Network.serverAddress, "BOT 0", 6);
             }
+        } else if(e->key.keysym.sym == SDLK_x) {
+            if(Network.serverHost) {
+                Socket_Send(Network.sockFd, Network.serverAddress, "BOT 1", 6);
+            }
+        } else if(e->key.keysym.sym == SDLK_c) {
+            if(Network.serverHost) {
+                Socket_Send(Network.sockFd, Network.serverAddress, "BOT 2", 6);
+            }
         }
     }
 }

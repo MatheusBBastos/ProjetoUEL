@@ -4,23 +4,23 @@ void Heap_Insert(NodeHeap* heap, Node* node) {
     heap->data[heap->size] = node;
     int i = heap->size;
     Node* temp;
-    while(i != 0 && heap->data[i]->h + heap->data[i]->g < heap->data[i/2]->h + heap->data[i/2]->g) {
+    while(i != 0 && heap->data[i]->h + heap->data[i]->g < heap->data[(i-1)/2]->h + heap->data[(i-1)/2]->g) {
         temp = heap->data[i/2];
-        heap->data[i/2] = heap->data[i];
+        heap->data[(i-1)/2] = heap->data[i];
         heap->data[i] = temp;
-        i /= 2;
+        i = (i-1)/2;
     }
     heap->size++;
 }
 
 int Heap_MinChild(NodeHeap* heap, int i) {
-    if(i * 2 + 1 > heap->size) {
-        return i * 2;
+    if(i * 2 + 2 > heap->size) {
+        return i * 2 + 1;
     } else {
-        if(heap->data[i * 2]->g + heap->data[i * 2]->h < heap->data[i * 2 + 1]->g + heap->data[i * 2 + 1]->h) {
-            return i * 2;
-        } else {
+        if(heap->data[i * 2 + 1]->g + heap->data[i * 2 + 1]->h < heap->data[i * 2 + 2]->g + heap->data[i * 2 + 2]->h) {
             return i * 2 + 1;
+        } else {
+            return i * 2 + 2;
         }
     }
 }
@@ -33,7 +33,7 @@ Node* Heap_Pop(NodeHeap* heap) {
     heap->data[0] = heap->data[heap->size - 1];
     heap->size--;
     int i = 0, mc;
-    while(i * 2 < heap->size) {
+    while(i * 2 + 1 < heap->size) {
         mc = Heap_MinChild(heap, i);
         if(heap->data[i]->g + heap->data[i]->h > heap->data[mc]->g + heap->data[mc]->h) {
             temp = heap->data[i];
@@ -113,16 +113,12 @@ bool PF_Find(Map* map, Character* c, int tx, int ty) {
         PF_NodeSetNeighbors(&instance, currentNode);
         currentNode = Heap_Pop(&instance.heap);
         if(currentNode == NULL) {
-            //printf("impossibru\n");
             return false;
         }
         currentNode->closed = true;
     }
 
-    //printf("omen achou %d %d\n", tx, ty);
-    Movement* lastMovement = NULL;
     while(currentNode != NULL && currentNode->parent != NULL) {
-        //printf("X: %d, Y: %d\n", currentNode->x, currentNode->y);
         uint8_t dir;
         if(currentNode->y - currentNode->parent->y > 0) {
             dir = DIR_DOWN;
@@ -134,17 +130,16 @@ bool PF_Find(Map* map, Character* c, int tx, int ty) {
             dir = DIR_UP;
         }
         for(int i = 0; i < MOVEMENT_PARTS; i++) {
-            Movement* newMovement = malloc(sizeof(Movement));
-            newMovement->dir = dir;
-            newMovement->next = lastMovement;
-            instance.character->moveRoute = newMovement;
-            lastMovement = newMovement;
+            instance.character->movementStackTop++;
+            instance.character->movementStack[instance.character->movementStackTop] = dir;
         }
         currentNode = currentNode->parent;
     }
 
-    if(instance.character->moveRoute != NULL) {
+    if(instance.character->movementStackTop > -1) {
         instance.character->forcingMovement = true;
+        instance.character->targetX = tx;
+        instance.character->targetY = ty;
     }
 
     free(instance.heap.data);

@@ -28,7 +28,7 @@ Character* Character_Create(char* spritePath, int id, bool noTexture) {
     newCharacter->opacity = 255;
     newCharacter->bombPassId = -1;
     newCharacter->forcingMovement = false;
-    newCharacter->moveRoute = NULL;
+    newCharacter->movementStackTop = -1;
     return newCharacter;
 }
 
@@ -76,7 +76,7 @@ bool Character_Passable(Character* c, Map* m, int x, int y) {
 
 bool Character_TryToMove(Character* c, int dir, Map* m) {
     if(c->dead)
-        return;
+        return false;
     c->direction = dir;
     SDL_Rect collisionBox;
     int newX = c->x, newY = c->y;
@@ -118,6 +118,7 @@ bool Character_TryToMove(Character* c, int dir, Map* m) {
             return true;
         }
     }
+    return false;
 }
 
 void Character_Place(Character* c, int x, int y) {

@@ -282,10 +282,10 @@ void Server_CreateCharacters(Server* s) {
         if(s->clients[i] != NULL) {
             if(i == 0) {
                 s->map->characters[i] = Character_Create("content/azul.png", i, true);
-                Character_Place(s->map->characters[i], 1, 1);
+                Character_Place(s->map->characters[i], 17, 1);
             } else if(i == 1) {
                 s->map->characters[i] = Character_Create("content/vermelho.png", i, true);
-                Character_Place(s->map->characters[i], 17, 1);
+                Character_Place(s->map->characters[i], 1, 1);
             } else if(i == 2) {
                 s->map->characters[i] = Character_Create("content/amarelo.png", i, true);
                 Character_Place(s->map->characters[i], 1, 17);

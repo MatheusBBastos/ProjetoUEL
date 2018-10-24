@@ -21,8 +21,9 @@ typedef struct Scene_Servers {
     int receivingTimeout;
     int connectionTimeout;
     int frame;
-    short int indexd, indexe, page, posTela;
+    short int indexd, indexe, page, posTela, indexShow;
     bool esquerda;
+    bool needServersRefresh;
     ServerInfo* servers;
     char string1[20], string2[20], string3[20];
     WTexture* loading;
