@@ -75,7 +75,7 @@ typedef struct Server {
 } Server;
 
 // Abrir servidor na porta informada
-Server* Server_Open(unsigned short port);
+Server* Server_Open(unsigned short port, char nm[32]);
 // Loop principal do servidor
 int Server_InitLoop(Server* s);
 // Desalocar servidor

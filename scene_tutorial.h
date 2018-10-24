@@ -9,6 +9,7 @@ typedef struct SceneManagerS SceneManagerS;
 
 typedef struct Scene_Tutorial {
     WTexture* msg;
+    WTexture *img;
 } Scene_Tutorial;
 
 Scene_Tutorial* SceneTutorial_new();

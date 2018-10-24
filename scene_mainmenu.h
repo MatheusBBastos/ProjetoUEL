@@ -15,15 +15,21 @@ typedef struct Scene_MainMenu {
     bool connected, dataReceived;
     bool btnJogar;
     bool mult;
+    int frame;
+    bool animation;
     WTexture* seta;
-    WTexture* bemvindo  ;
+    WTexture* bemvindo;
     WTexture* nome;
     WTexture* jogar;  
     WTexture* tutorial;
     WTexture* logout;
-    WTexture* rank[6];
+    WTexture* rankName[6];
+    WTexture* scores[6];
+    WTexture* posMark[6];
     WTexture* multiplayer;
+    WTexture* animatedChar;
     WTexture* singleplayer;
+    WTexture* rankPOS; 
     char ranking[100];
 } Scene_MainMenu;
 
@@ -35,6 +41,6 @@ void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e);
 
 void SceneMainMenu_destroy(Scene_MainMenu* s);
 
-int getRank(char s[6][20], char* data);
+int getRank(char s[2][6][30], char* data);
 
 #endif

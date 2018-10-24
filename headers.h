@@ -89,6 +89,11 @@ typedef struct GameInfo {
     TTF_Font* mainMenu_botoes;
     // Fonte menu start
     TTF_Font* startFont;
+    TTF_Font* rankMini;
+    TTF_Font* Unisans;
+    TTF_Font* roboto;
+    Mix_Chunk* enter;
+    Mix_Chunk* change;
     // Fontes servers
     TTF_Font* serversFonte;
     TTF_Font* serversName;
@@ -98,6 +103,8 @@ typedef struct GameInfo {
     char nome[50];
     char loginID[50];
     int rankPos;
+
+    Mix_Music* mainMusic;
 
     TTF_Font* rank;
 

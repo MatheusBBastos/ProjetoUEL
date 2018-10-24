@@ -6,6 +6,7 @@ Scene_Map* SceneMap_new() {
     newScene->keyRight = false;
     newScene->bombexp = Mix_LoadWAV("content/bexp.mp3");
     newScene->bombload = Mix_LoadWAV("content/bload.mp3");
+    newScene->ded = Mix_LoadWAV("content/dedp.mp3");
     newScene->backgroundMusic = Mix_LoadMUS("content/train.mp3");
     newScene->keyDown = false;
     newScene->keyUp = false;
@@ -31,7 +32,7 @@ Scene_Map* SceneMap_new() {
         newScene->explosions[i].active = false;
     }
     Mix_PlayMusic(newScene->backgroundMusic, -1);
-    Mix_VolumeMusic(60);
+    Mix_VolumeMusic(80);
     if (Mix_PausedMusic())
         Mix_ResumeMusic();
     return newScene;
@@ -196,6 +197,9 @@ void SceneMap_update(Scene_Map* s) {
                     sscanf(data + 4, "%d", &id);
                     if(Game.map->characters[id] != NULL)
                         Game.map->characters[id]->dead = true;
+                    if (s->player->dead) {
+                        Mix_PlayChannel(-1, s->ded, 0);
+                    }
                 }
             }
         }
@@ -290,7 +294,7 @@ void SceneMap_update(Scene_Map* s) {
     }
     SDL_RenderCopy(Game.renderer, Game.map->layers[2], &renderQuad, &dstRect);
     s->currentFrame++;
-    if (s->currentFrame >= 60) {
+    if (s->currentFrame >= Game.screenFreq) {
         s->currentFrame = 0;
     }
 }
@@ -413,6 +417,9 @@ void SceneMap_destroy(Scene_Map* s) {
     if(s->renderCharacters != NULL) {
         free(s->renderCharacters);
     }
+    Mix_FreeChunk(s->bombexp);
+    Mix_FreeChunk(s->bombload);
+    Mix_FreeMusic(s->backgroundMusic);
     WD_TextureDestroy(s->bombSprite);
     WD_TextureDestroy(s->explosionSprite);
     WD_TextureDestroy(s->wallTexture);

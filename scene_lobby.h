@@ -15,6 +15,7 @@ typedef struct Scene_Lobby {
     WTexture** players;
     WTexture* iniciar;
     WTexture* sair;
+    Mix_Music* sound;
 } Scene_Lobby;
 
 Scene_Lobby* SceneLobby_new();
