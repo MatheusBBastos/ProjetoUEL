@@ -105,6 +105,8 @@ void Server_SendToAll(Server* s, char* data, int id);
 
 // Enviar informações dos personagens para um cliente
 void Server_SendCharacters(Server* s, Address* addr, int id);
+// Atualiza um personagem no servidor
+void Server_CharacterUpdate(Server* s, Character* c, Map* m);
 // Checa a movimentação feita por um jogador, retornando se foi ilegal ou não
 bool Server_CheckMovement(Server* s, int id, int x, int y);
 // Lida com uma mensagem enviada para o servidor

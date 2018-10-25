@@ -74,8 +74,8 @@ void SceneServers_RefreshList(Scene_Servers* s) {
     }
     s->numServers = 0;
     s->indexShow = 0;
-    s-> indexd = 0;
-    s-> posTela = 0;
+    s->indexd = 0;
+    s->posTela = 0;
     s->esquerda = true;
 
     char sendData[] = "INF";
@@ -113,7 +113,6 @@ void SceneServers_update(Scene_Servers* s) {
         s->connectionTimeout++;
         if(!Network.connectedToServer && s->connectionTimeout >= 3 * Game.screenFreq) {
             s->waitingConnection = false;
-            printf("timeout\n");
         }
     }
     if(s->receivingInfo) {
@@ -121,7 +120,6 @@ void SceneServers_update(Scene_Servers* s) {
         char data[64];
         int bytes = Socket_Receive(s->receiveSock, &sender, data, sizeof(data));
         if(bytes > 0) {
-            printf("Received info: %s\n", data);
             if(strncmp("INF", data, 3) == 0) {
                 int min, max;
                 char serverName[32];
@@ -132,12 +130,15 @@ void SceneServers_update(Scene_Servers* s) {
                         s->servers[i].addr.address = sender.address;
                         s->servers[i].addr.port = sender.port;
                         sprintf(s->servers[i].text, "%s", serverName);
-                        sprintf(s->servers[i].num, "%d/%d", min, max );
+                        sprintf(s->servers[i].num, "%d/%d", min, max);
                         s->needServersRefresh = true;
-                        //SDL_Color color = {255, 255, 255};
-                        //WD_TextureLoadFromText(s->nomeServer[s->posTela], s->servers[i].text, Game.serversFontd, color); 
                         break;   
-                    } 
+                    } else if(s->servers[i].addr.address == sender.address && s->servers[i].addr.port == sender.port) {
+                        sprintf(s->servers[i].text, "%s", serverName);
+                        sprintf(s->servers[i].num, "%d/%d", min, max);
+                        s->needServersRefresh = true;
+                        break;
+                    }
                 }
             }
         }
@@ -308,7 +309,7 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
     if(SceneManager.inTransition)
         return;
     if(e->type == SDL_KEYDOWN) {   
-        if(e->key.keysym.sym == SDLK_TAB) {
+        if(e->key.keysym.sym == SDLK_ESCAPE) {
             if (s->boxIp->active || s->boxNome->active) {
                 s->boxIp->active = false;
                 s->boxNome->active = false;
@@ -323,7 +324,6 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
                 s->indexe++;
             else if(s->indexd < (s->numServers - 1) && !s->esquerda)
                 s->indexd++;
-            printf("%d\n", s->numServers);
 
             if(s->posTela == 3 && !s->esquerda) {
                 SDL_Color color = {255, 255, 255};
@@ -352,7 +352,6 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
             s->esquerda = true; 
         } else if(e->key.keysym.sym == SDLK_RETURN) {
             if(s->esquerda == false) {
-                printf("%d\n",s->indexd );
                 if(s->servers[s->indexd].text[0] != '\0') {
                     if(Network.serverAddress != NULL)
                         DestroyAddress(Network.serverAddress);
@@ -387,7 +386,6 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
                     Network.serverHost = true;
                     Network.server = Server_Open(SERVER_DEFAULT_PORT, s->boxNome->text);
                     if (Network.server != NULL) {
-                        printf("Server open\n");
                         Network.serverThread = SDL_CreateThread(Server_InitLoop, "ServerLoop", Network.server);
                         if (Network.serverAddress != NULL)
                             DestroyAddress(Network.serverAddress);

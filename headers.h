@@ -54,14 +54,15 @@
 // Porta de broadcast
 #define BROADCAST_PORT 7566
 // Tickrate do servidor (por segundo)
-#define SERVER_TICKRATE 60
+#define SERVER_TICKRATE 120
 // Número máximo de bombas por jogador
 #define MAX_BOMBS_PER_PLAYER 5
 
+// Frequência do Perlin Noise
 #define PERLIN_FREQUENCY 57
-
+// Profundidade do Perlin Noise
 #define PERLIN_DEPTH 1
-
+// Delimitador do que será parede ou não com base no resultado do Perlin Noise
 #define PERLIN_DELIMITER 0.7
 
 typedef struct Address Address;
@@ -129,7 +130,7 @@ typedef struct NetworkS {
     Address* serverAddress;
     Server* server;
     SDL_Thread* serverThread;
-    uint64_t lastMovementId;
+    int lastReceivedCount;
 } NetworkS;
 
 typedef struct SceneManagerS SceneManagerS;

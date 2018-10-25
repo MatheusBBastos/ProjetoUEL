@@ -52,9 +52,12 @@ typedef struct Scene_Map {
     Bomb bombs[20];
     Explosion explosions[20];
     int currentFrame;
+    int pingCount;
 } Scene_Map;
 
 Scene_Map* SceneMap_new();
+
+void SceneMap_Receive(Scene_Map* s);
 
 void SceneMap_update(Scene_Map* s);
 

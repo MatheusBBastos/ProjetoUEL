@@ -147,8 +147,9 @@ void Server_CheckInactiveClients(Server* s) {
                 printf("[Server] 5s passed since last received message from client id %d, kicking\n", i);
                 Server_KickPlayer(s, i);
             } else {
+                Socket_Send(s->sockfd, s->clients[i]->addr, "PNG", 4);
                 if(s->inGame && s->map->characters[i] != NULL) {
-                    Character_Update(s->map->characters[i], s->map);
+                    Server_CharacterUpdate(s, s->map->characters[i], s->map);
                     Server_UpdateCharMovement(s, s->map->characters[i]);
                 }
             }
@@ -221,6 +222,43 @@ void Server_GenerateMap(Server* s) {
     char sendData[16];
     sprintf(sendData, "GEN %d %d", seed, wallNumber);
     Server_SendToAll(s, sendData, -1);
+}
+
+void Server_CharacterUpdate(Server* s, Character* c, Map* m) {
+    if(c->x != c->renderX || c->y != c->renderY) {
+        c->moving = true;
+        int x4 = c->x * 4;
+        int y4 = c->y * 4;
+        int distance = (1 << c->moveSpeed) * 60.0 / SERVER_TICKRATE;
+        if(c->renderX < c->x) {
+            if(c->x4 + distance > x4) {
+                c->x4 = x4;
+            } else {
+                c->x4 += distance;
+            }
+        } else {
+            if(c->x4 - distance < x4) {
+                c->x4 = x4;
+            } else {
+                c->x4 -= distance;
+            }
+        }
+        if(c->renderY < c->y) {
+            if(c->y4 + distance > y4) {
+                c->y4 = y4;
+            } else {
+                c->y4 += distance;
+            }
+        } else {
+            if(c->y4 - distance < y4) {
+                c->y4 = y4;
+            } else {
+                c->y4 -= distance;
+            }
+        }
+        c->renderX = c->x4 / 4;
+        c->renderY = c->y4 / 4;
+    }
 }
 
 bool Server_CheckMovement(Server* s, int id, int x, int y) {
@@ -605,7 +643,7 @@ int Server_InitLoop(Server* s) {
                 if(s->clients[i] != NULL && s->clients[i]->bot) {
                     Server_UpdateBot(s, i);
                     Server_UpdateCharMovement(s, s->map->characters[i]);
-                    Character_Update(s->map->characters[i], s->map);
+                    Server_CharacterUpdate(s, s->map->characters[i], s->map);
                 }
             }
         }
