@@ -25,10 +25,10 @@ Scene_Servers* SceneServers_new() {
     newScene->indexShow = 0;
     newScene-> indexd = 0;
     newScene-> posTela = 0;
-    newScene->page = newScene->indexd/3;
     newScene->esquerda = true;
-    newScene->numServers = 10;
-    newScene->servers = malloc(newScene->numServers * sizeof(ServerInfo));
+    newScene->numServers = 0;
+    newScene->maxServers = 10;
+    newScene->servers = malloc(newScene->maxServers * sizeof(ServerInfo));
     newScene->waitingConnection = false;
 
     newScene->needServersRefresh = false;
@@ -47,8 +47,8 @@ Scene_Servers* SceneServers_new() {
     for (int i = 0; i < 4; i++) {
         newScene->serverName[i] = WD_CreateTexture();
         newScene->serverSlot[i] = WD_CreateTexture();
-        WD_TextureLoadFromText(newScene->serverName[i], "mlv", Game.serversName, blue);
-        WD_TextureLoadFromText(newScene->serverSlot[i], "03/04", Game.telaLogin, Cwhite);
+        //WD_TextureLoadFromText(newScene->serverName[i], "mlv", Game.serversName, blue);
+    //    WD_TextureLoadFromText(newScene->serverSlot[i], "03/04", Game.telaLogin, Cwhite);
     }
     WD_TextureLoadFromText(newScene->voltar, "Voltar", Game.mainMenu_botoes, orange);
     WD_TextureLoadFromFile(newScene->loading, "content/loading.png");
@@ -69,13 +69,12 @@ Scene_Servers* SceneServers_new() {
 }
 
 void SceneServers_RefreshList(Scene_Servers* s) {
-    for(int i = 0; i < s->numServers; i++) {
+    for(int i = 0; i < s->maxServers; i++) {
         s->servers[i].text[0] = '\0';
     }
     char sendData[] = "INF";
     Address* broad = NewAddress(255, 255, 255, 255, SERVER_DEFAULT_PORT);
     Socket_Send(s->receiveSock, broad, sendData, sizeof(sendData));
-    printf("OI\n");
     DestroyAddress(broad);
     SDL_Color Cwhite = {255, 255, 255};
     s->receivingInfo = true;
@@ -121,11 +120,13 @@ void SceneServers_update(Scene_Servers* s) {
                 int min, max;
                 char serverName[32];
                 sscanf(data + 4, "%d %d %31[^\n]", &min, &max, serverName);
-                for(int i = 0; i < s->numServers; i++) {
+                for(int i = 0; i < s->maxServers; i++) {
                     if(s->servers[i].text[0] == '\0') {
+                        s->numServers++;
                         s->servers[i].addr.address = sender.address;
                         s->servers[i].addr.port = sender.port;
-                        sprintf(s->servers[i].text, "%s - %d/%d", serverName, min, max);
+                        sprintf(s->servers[i].text, "%s", serverName);
+                        sprintf(s->servers[i].num, "%d/%d", min, max );
                         s->needServersRefresh = true;
                         //SDL_Color color = {255, 255, 255};
                         //WD_TextureLoadFromText(s->nomeServer[s->posTela], s->servers[i].text, Game.serversFontd, color); 
@@ -147,11 +148,20 @@ void SceneServers_update(Scene_Servers* s) {
 
     if(s->needServersRefresh) {
         SDL_Color white = {255, 255, 255};
+        SDL_Color green = {153, 204, 50};
+        SDL_Color red = {255, 0, 0};
         for(int i = 0; i <= 3; i++) {
             if(s->servers[s->indexShow + i].text[0] != '\0') {
                 WD_TextureLoadFromText(s->serverName[i], s->servers[s->indexShow + i].text, Game.serversFontd, white);
+                int min, max;
+                sscanf(s->servers[i].num, "%d/%d", &min, &max);
+                if(min < 4)
+                    WD_TextureLoadFromText(s->serverSlot[i], s->servers[s->indexShow + i].num, Game.serversFontd, green);
+                else
+                    WD_TextureLoadFromText(s->serverSlot[i], s->servers[s->indexShow + i].num, Game.serversFontd, red);
             } else {
                 WD_TextureLoadFromText(s->serverName[i], " ", Game.serversFontd, white);
+                WD_TextureLoadFromText(s->serverSlot[i], " ", Game.serversFontd, white);
             }
         }
     }
@@ -203,6 +213,13 @@ void SceneServers_update(Scene_Servers* s) {
     SDL_Rect indexServir = { 135, 770 + s->servir[1]->h , s->servir[1]->w, 5 };
     SDL_Rect indexVoltar = { 135, 945 + s->voltar->h , s->voltar->w, 5 };
 
+    int pos = 3 * 1440 / 4;
+    SDL_Rect indexPos0 = { pos - (s->serverName[s->indexShow]->w / 2), 365 + s->serverName[0]->h, s->serverName[0]->w, 5};
+    SDL_Rect indexPos1 = { pos - (s->serverName[s->indexShow + 1]->w / 2), 365 + ((1)*175) + s->serverName[1]->h, s->serverName[1]->w, 5};
+    SDL_Rect indexPos2 = { pos - (s->serverName[s->indexShow + 2]->w / 2), 365 + ((2)*175) + s->serverName[2]->h, s->serverName[2]->w, 5};
+    SDL_Rect indexPos3 = { pos - (s->serverName[s->indexShow + 3]->w / 2), 365 + ((3)*175) + s->serverName[2]->h, s->serverName[2]->w, 5};
+
+
     SDL_SetRenderDrawBlendMode(Game.renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(Game.renderer, 0xFF, 0xFF, 0xFF, 100);
 
@@ -237,19 +254,22 @@ void SceneServers_update(Scene_Servers* s) {
         }
     } else {
         s->boxIp->active = false;
-       /* if(s->posTela == 0)
-            SDL_SetTextureColorMod(s->nomeServer1->mTexture, 255, 66, 0);
+        if(s->posTela == 0)
+            SDL_RenderFillRect(Game.renderer, &indexPos0);
         else if(s->posTela == 1)
-            SDL_SetTextureColorMod(s->nomeServer[1]->mTexture, 255, 66, 0);
-        else if (s->posTela == 2)
-            SDL_SetTextureColorMod(s->nomeServer3->mTexture, 255, 66, 0);*/
+            SDL_RenderFillRect(Game.renderer, &indexPos1);
+        else if(s->posTela == 2)
+            SDL_RenderFillRect(Game.renderer, &indexPos2);
+        else if(s->posTela == 3)
+            SDL_RenderFillRect(Game.renderer, &indexPos3);
+
     }
 
 
-    int pos = 3 * 1440 / 4;
+    //int pos = 3 * 1440 / 4;
     for (int i = 0; i < 4; i++) {
         WD_TextureRender(s->serverName[i], pos - (s->serverName[i]->w / 2), 365 + ((i)*175));
-        WD_TextureRender(s->serverSlot [i], pos - (s->serverSlot[i]->w / 2), 445 + ((i) * 175));
+        WD_TextureRender(s->serverSlot[i], pos - (s->serverSlot[i]->w / 2), 445 + ((i) * 175));
     }
 
     WD_TextureRender(s->voltar, 135, 945);
@@ -291,25 +311,17 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
                 SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
             }
         } else if(e->key.keysym.sym == SDLK_DOWN && !s->boxIp->active && !s->boxNome->active) {
-            if(s->posTela < 2 && !s->esquerda)
+            if(s->posTela < 3 && !s->esquerda && s->posTela < (s->numServers - 1))// pra ir só até o num servers
                 s->posTela++;
-
-            if(s->indexe < 2 && s->esquerda)
+            if(s->indexe < 3 && s->esquerda)
                 s->indexe++;
-            else if(s->indexd < s->numServers-1 && !s->esquerda) //colocar variavel do nmr de servidores
+            else if(s->indexd < (s->numServers - 1) && !s->esquerda)
                 s->indexd++;
 
-            if(s->posTela == 2 && !s->esquerda) {
+            if(s->posTela == 3 && !s->esquerda) {
                 SDL_Color color = {255, 255, 255};
-                //s->page = s->index/3;
-                s->indexShow = s->indexd-2;
-                sprintf(s->string1, "Server #%d", s->indexd-1);
-                sprintf(s->string2, "Server #%d", s->indexd);   
-                sprintf(s->string3, "Server #%d", s->indexd+1);
+                s->indexShow = s->indexd-3;
                 s->needServersRefresh = true;
-             //   WD_TextureLoadFromText(s->server1, s->string1, Game.serversFontd, color);
-           //     WD_TextureLoadFromText(s->server2, s->string2, Game.serversFontd, color);
-            //    WD_TextureLoadFromText(s->server3, s->string3, Game.serversFontd, color);
             }
 
         } else if(e->key.keysym.sym == SDLK_UP && !s->boxIp->active && !s->boxNome->active) {
@@ -323,24 +335,17 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
             
             if(!s->esquerda && s->posTela == 0) {
                 SDL_Color color = {255, 255, 255};
-                //s->page = s->index/3;
                 s->indexShow = s->indexd;
-                sprintf(s->string1, "Server #%d", s->indexd+1);
-                sprintf(s->string2, "Server #%d", s->indexd+2);
-                sprintf(s->string3, "Server #%d", s->indexd+3);
-            //    WD_TextureLoadFromText(s->server1, s->string1, Game.serversFontd, color);
-            //    WD_TextureLoadFromText(s->server2, s->string2, Game.serversFontd, color);
-            //    WD_TextureLoadFromText(s->server3, s->string3, Game.serversFontd, color);
             }
             
             
-        } else if(e->key.keysym.sym == SDLK_RIGHT) {
+        } else if(e->key.keysym.sym == SDLK_RIGHT && s->numServers != 0) {
             s->esquerda = false;
         } else if(e->key.keysym.sym == SDLK_LEFT) {
             s->esquerda = true; 
         } else if(e->key.keysym.sym == SDLK_RETURN) {
             if(s->esquerda == false) {
-                printf("%d\n", s->indexd);
+                printf("%d\n",s->indexd );
                 if(s->servers[s->indexd].text[0] != '\0') {
                     if(Network.serverAddress != NULL)
                         DestroyAddress(Network.serverAddress);

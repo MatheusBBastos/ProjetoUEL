@@ -92,6 +92,8 @@ void Server_UpdateBot(Server* s, int id) {
         if(menorDist < (s->clients[id]->bombRadius + 2) && s->clients[id]->b.difficulty > DIFFICULTY_EASY) {
             if(s->clients[id]->b.difficulty == DIFFICULTY_MEDIUM || (x == posX_prox || y == posY_prox)) {
                 Server_PlaceBomb(s, id);
+                bombX = x;
+                bombY = y;
                 actionMade = true;
             }
         } else if(distY > 0 && distX > 0 || distY > 0 && distX == 0) {// cima esquerda
@@ -190,6 +192,24 @@ void Server_UpdateBot(Server* s, int id) {
                     if(x + x1 == bombX || y + y1 == bombY) {
                         continue;
                     }
+
+                    if(s->clients[id]->b.difficulty == DIFFICULTY_HARD) {
+                        bool next = false;
+                        for(int i=0; i<s->bombNumber; i++) {
+                            if(s->bombs[i].active) {
+                                if((y + y1) == s->bombs[i].y && (s->bombs[i].x + s->clients[s->bombs[i].clientId]->bombRadius > x+x1 ||
+                                s->bombs[i].x - s->clients[s->bombs[i].clientId]->bombRadius < x+x1) ||
+                                (x + x1) == s->bombs[i].x && (s->bombs[i].y + s->clients[s->bombs[i].clientId]->bombRadius > y+y1 ||
+                                s->bombs[i].y - s->clients[s->bombs[i].clientId]->bombRadius < y+y1)){
+                                    next = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if(next)
+                            continue;
+                    }
+                    
                     
                     if(PF_Find(s->map, c, x + x1, y + y1)) {
                         actionMade = true;

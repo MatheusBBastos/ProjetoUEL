@@ -9,7 +9,7 @@ typedef struct SceneManagerS SceneManagerS;
 #include "network.h"
 
 typedef struct ServerInfo {
-    char text[32];
+    char text[32], num[10];
     Address addr;
 } ServerInfo;
 
@@ -21,7 +21,8 @@ typedef struct Scene_Servers {
     int receivingTimeout;
     int connectionTimeout;
     int frame;
-    short int indexd, indexe, page, posTela, indexShow;
+    short int maxServers;
+    short int indexd, indexe, posTela, indexShow;
     bool esquerda;
     bool needServersRefresh;
     ServerInfo* servers;
