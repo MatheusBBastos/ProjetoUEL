@@ -54,7 +54,9 @@ void SceneLobby_Receive(Scene_Lobby* s) {
     char data[256];
     while(Socket_Receive(Network.sockFd, &sender, data, 256) > 0) {
         if(sender.address == Network.serverAddress->address && sender.port == Network.serverAddress->port) {
-            printf("[Client] Received from server: %s\n", data);
+            if(strcmp("PNG", data) != 0)
+                printf("[Client] Received from server: %s\n", data);
+            Network.lastReceivedCount = 0;
             if(strncmp("KCK", data, 3) == 0 || strncmp("SSD", data, 3) == 0) {
                 Network.connectedToServer = false;
                 SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
@@ -116,14 +118,30 @@ void SceneLobby_Receive(Scene_Lobby* s) {
             }
         }
     }
+    Network.lastReceivedCount++;
+    if(Network.lastReceivedCount > Game.screenFreq * 5) {
+        SceneLobby_Disconnect(s);
+    }
+}
+
+void SceneLobby_Disconnect(Scene_Lobby* s) {
+    if(Network.connectedToServer) {
+        char data[] = "DCS";
+        Socket_Send(Network.sockFd, Network.serverAddress, data, 4);
+        Network.connectedToServer = false;
+    }
+    if(Network.serverHost)
+        Server_Close(Network.server);
+    SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
+    Map_Destroy(Game.map);
+    Game.map = NULL;
 }
 
 void SceneLobby_update(Scene_Lobby* s) {
     s->pingCount++;
     if(s->pingCount == Game.screenFreq) {
         s->pingCount = 0;
-        char data[] = "PNG";
-        Socket_Send(Network.sockFd, Network.serverAddress, data, 4);
+        Socket_Send(Network.sockFd, Network.serverAddress, "PNG", 4);
     }
     if(!SceneManager.inTransition)
         SceneLobby_Receive(s);

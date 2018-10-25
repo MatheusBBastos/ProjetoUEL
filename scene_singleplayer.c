@@ -11,8 +11,6 @@ Scene_Singleplayer* SceneSingleplayer_new() {
     newScene->renderQuad.x = (Game.screenWidth - newScene->textTexture->w) / 2;
     newScene->renderQuad.y = (Game.screenHeight - newScene->textTexture->h) / 2;
     newScene->cont = 0;
-    newScene->socketFd = Socket_Open(3000);
-    newScene->s2 = Socket_Open(0);
     return newScene;
 }
 
@@ -36,8 +34,6 @@ void SceneSingleplayer_update(Scene_Singleplayer* s) {
 }
 
 void SceneSingleplayer_destroy(Scene_Singleplayer* s) {
-    Socket_Close(s->socketFd);
-    Socket_Close(s->s2);
     WD_TextureDestroy(s->textTexture);
     WD_TextureDestroy(s->testTexture);
     free(s);

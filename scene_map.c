@@ -29,6 +29,7 @@ Scene_Map* SceneMap_new() {
     newScene->renderCharacters = malloc(Game.map->charNumber * sizeof(int));
     newScene->waitingConnection = false;
     newScene->currentFrame = 0;
+    newScene->pingCount = 0;
     for(int i = 0; i < 20; i++) {
         newScene->bombs[i].active = false;
         newScene->explosions[i].active = false;
@@ -104,127 +105,145 @@ Explosion_Render(Explosion* e, int screenX, int screenY, WTexture* explosionSpri
     }
 }
 
-void SceneMap_update(Scene_Map* s) {
-    if(s->waitingConnection) {
-        Address sender;
-        char data[512];
-        int bytes = Socket_Receive(Network.sockFd, &sender, data, sizeof(data));
-        if(bytes > 0 && sender.address == Network.serverAddress->address && sender.port == Network.serverAddress->port) {
-            if(strncmp("CON", data, 3) == 0) {
-                Network.connectedToServer = true;
-                printf("[Client] Connection to server estabilished\n");
-                s->waitingConnection = false;
-            }
-        }
-    }
-    if(Network.connectedToServer) {
-        char sendData[] = "PNG";
-        Socket_Send(Network.sockFd, Network.serverAddress, sendData, sizeof(sendData));
-        Address sender;
-        char data[512];
-        while(Socket_Receive(Network.sockFd, &sender, data, sizeof(data)) > 0) {
-            if(sender.address == Network.serverAddress->address && sender.port == Network.serverAddress->port) {
+void SceneMap_Receive(Scene_Map* s) {
+    Address sender;
+    char data[512];
+    while(Socket_Receive(Network.sockFd, &sender, data, sizeof(data)) > 0) {
+        Network.lastReceivedCount = 0;
+        if(sender.address == Network.serverAddress->address && sender.port == Network.serverAddress->port) {
+            if(strcmp("PNG", data) != 0)
                 printf("[Client] Received from server: %s\n", data);
-                if(strncmp("KCK", data, 3) == 0) {
-                    Network.connectedToServer = false;
-                    Socket_Close(Network.sockFd);
-                } else if(strncmp("FIX", data, 3) == 0) {
-                    uint64_t mId;
-                    int x, y;
-                    sscanf(data + 4, "%llu %d %d", &mId, &x, &y);
-                    if(s->player != NULL) {
-                        s->player->x = x;
-                        s->player->y = y;
+            // Kick
+            if(strncmp("KCK", data, 3) == 0) {
+                Network.connectedToServer = false;
+                Mix_PauseMusic();
+                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
+            // Correção de posição
+            } else if(strncmp("FIX", data, 3) == 0) {
+                uint64_t mId;
+                int x, y;
+                sscanf(data + 4, "%llu %d %d", &mId, &x, &y);
+                if(s->player != NULL) {
+                    s->player->x = x;
+                    s->player->y = y;
+                }
+            // Atualização de posição
+            } else if(strncmp("POS", data, 3) == 0) {
+                int id, x, y, dir;
+                sscanf(data + 4, "%d %d %d %d", &id, &x, &y, &dir);
+                if(Game.map->characters != NULL && Game.map->characters[id] != NULL) {
+                    Game.map->characters[id]->renderX = Game.map->characters[id]->x;
+                    Game.map->characters[id]->renderY = Game.map->characters[id]->y;
+                    Game.map->characters[id]->x4 = Game.map->characters[id]->x * 4;
+                    Game.map->characters[id]->y4 = Game.map->characters[id]->y * 4;
+                    Game.map->characters[id]->x = x;
+                    Game.map->characters[id]->y = y;
+                    Game.map->characters[id]->direction = dir;
+                }
+            // Desconexão de um jogador
+            } else if(strncmp("PDC", data, 3) == 0) {
+                int id;
+                sscanf(data + 4, "%d", &id);
+                if(Game.map->characters[id] != NULL) {
+                    Character_Destroy(Game.map->characters[id]);
+                    Game.map->characters[id] = NULL;
+                }
+            // Desligamento do servidor
+            } else if(strncmp("SSD", data, 3) == 0) {
+                Network.connectedToServer = false;
+                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
+            // Colocação de uma bomba
+            } else if(strncmp("BMB", data, 3) == 0) {
+                int id, x, y;
+                sscanf(data + 4, "%d %d %d", &id, &x, &y);
+                s->bombs[id].active = true;
+                s->bombs[id].frame = 0;
+                s->bombs[id].x = x;
+                s->bombs[id].y = y;
+                Game.map->objects[y][x].exists = true;
+                Game.map->objects[y][x].type = OBJ_BOMB;
+                Game.map->objects[y][x].objId = id;
+                if(s->player != NULL && !s->player->dead) {
+                    SDL_Rect bombCollision = {x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+                    SDL_Rect playerCollision;
+                    Character_GetCollisionBox(s->player, &playerCollision, 0, 0);
+                    if(CheckIntersection(&bombCollision, &playerCollision)) {
+                        s->player->bombPassId = id;
                     }
-                } else if(strncmp("POS", data, 3) == 0) {
-                    int id, x, y, dir;
-                    sscanf(data + 4, "%d %d %d %d", &id, &x, &y, &dir);
-                    if(Game.map->characters != NULL && Game.map->characters[id] != NULL) {
-                        Game.map->characters[id]->x = x;
-                        Game.map->characters[id]->y = y;
-                        Game.map->characters[id]->direction = dir;
-                    }
-                } else if(strncmp("PDC", data, 3) == 0) {
-                    int id;
-                    sscanf(data + 4, "%d", &id);
-                    if(Game.map->characters[id] != NULL) {
-                        Character_Destroy(Game.map->characters[id]);
-                        Game.map->characters[id] = NULL;
-                    }
-                } else if(strncmp("SSD", data, 3) == 0) {
-                    Network.connectedToServer = false;
-                    SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
-                } else if(strncmp("BMB", data, 3) == 0) {
-                    int id, x, y;
-                    sscanf(data + 4, "%d %d %d", &id, &x, &y);
-                    s->bombs[id].active = true;
-                    s->bombs[id].frame = 0;
-                    s->bombs[id].x = x;
-                    s->bombs[id].y = y;
-                    Game.map->objects[y][x].exists = true;
-                    Game.map->objects[y][x].type = OBJ_BOMB;
-                    Game.map->objects[y][x].objId = id;
-                    if(s->player != NULL && !s->player->dead) {
-                        SDL_Rect bombCollision = {x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-                        SDL_Rect playerCollision;
-                        Character_GetCollisionBox(s->player, &playerCollision, 0, 0);
-                        if(CheckIntersection(&bombCollision, &playerCollision)) {
-                            s->player->bombPassId = id;
-                        }
-                    }
-                    Mix_PlayChannel(id, s->bombload, 0);
-                } else if(strncmp("EXP", data, 3) == 0) {
-                    int id, xMin, xMax, yMin, yMax;
-                    sscanf(data + 4, "%d %d %d %d %d", &id, &xMin, &xMax, &yMin, &yMax);
-                    s->bombs[id].active = false;
-                    Game.map->objects[s->bombs[id].y][s->bombs[id].x].exists = false;
-                    s->explosions[id].active = true;
-                    s->explosions[id].x = s->bombs[id].x;
-                    s->explosions[id].y = s->bombs[id].y;
-                    s->explosions[id].xMin = xMin;
-                    s->explosions[id].xMax = xMax;
-                    s->explosions[id].yMin = yMin;
-                    s->explosions[id].yMax = yMax;
-                    s->explosions[id].explosionCount = Game.screenFreq * 0.5;
-                    Mix_HaltChannel(id);
-                    Mix_PlayChannel(id, s->bombexp, 0);
-                } else if(strncmp("WDS", data, 3) == 0) {
-                    int id;
-                    sscanf(data + 4, "%d", &id);
-                    Game.map->walls[id].exists = false;
-                    int x = Game.map->walls[id].x, y = Game.map->walls[id].y;
-                    Game.map->objects[y][x].exists = false;
-                } else if(strncmp("PWU", data, 3) == 0) {
-                    int id, x, y, type;
-                    sscanf(data + 4, "%d %d %d %d", &id, &x, &y, &type);
-                    Game.map->powerups[id].exists = true;
-                    Game.map->powerups[id].x = x;
-                    Game.map->powerups[id].y = y;
-                    Game.map->powerups[id].type = type;
-                    Game.map->objects[y][x].exists = true;
-                    Game.map->objects[y][x].type = OBJ_POWERUP;
-                    Game.map->objects[y][x].objId = id;
-                } else if(strncmp("PWD", data, 3) == 0) {
-                    int id;
-                    sscanf(data + 4, "%d", &id);
-                    Game.map->powerups[id].exists = false;
-                } else if(strncmp("DEA", data, 3) == 0) {
-                    int id;
-                    sscanf(data + 4, "%d", &id);
-                    if(Game.map->characters[id] != NULL)
-                        Game.map->characters[id]->dead = true;
-                    if (s->player->dead) {
-                        Mix_PlayChannel(-1, s->ded, 0);
-                    }
+                }
+                Mix_PlayChannel(id, s->bombload, 0);
+            // Explosão de uma bomba
+            } else if(strncmp("EXP", data, 3) == 0) {
+                int id, xMin, xMax, yMin, yMax;
+                sscanf(data + 4, "%d %d %d %d %d", &id, &xMin, &xMax, &yMin, &yMax);
+                s->bombs[id].active = false;
+                Game.map->objects[s->bombs[id].y][s->bombs[id].x].exists = false;
+                s->explosions[id].active = true;
+                s->explosions[id].x = s->bombs[id].x;
+                s->explosions[id].y = s->bombs[id].y;
+                s->explosions[id].xMin = xMin;
+                s->explosions[id].xMax = xMax;
+                s->explosions[id].yMin = yMin;
+                s->explosions[id].yMax = yMax;
+                s->explosions[id].explosionCount = Game.screenFreq * 0.5;
+                Mix_HaltChannel(id);
+                Mix_PlayChannel(id, s->bombexp, 0);
+            // Destruição de uma parede
+            } else if(strncmp("WDS", data, 3) == 0) {
+                int id;
+                sscanf(data + 4, "%d", &id);
+                Game.map->walls[id].exists = false;
+                int x = Game.map->walls[id].x, y = Game.map->walls[id].y;
+                Game.map->objects[y][x].exists = false;
+            // Aparição de um powerup
+            } else if(strncmp("PWU", data, 3) == 0) {
+                int id, x, y, type;
+                sscanf(data + 4, "%d %d %d %d", &id, &x, &y, &type);
+                Game.map->powerups[id].exists = true;
+                Game.map->powerups[id].x = x;
+                Game.map->powerups[id].y = y;
+                Game.map->powerups[id].type = type;
+                Game.map->objects[y][x].exists = true;
+                Game.map->objects[y][x].type = OBJ_POWERUP;
+                Game.map->objects[y][x].objId = id;
+            // Desaparecimento de um powerup
+            } else if(strncmp("PWD", data, 3) == 0) {
+                int id;
+                sscanf(data + 4, "%d", &id);
+                Game.map->powerups[id].exists = false;
+            // Morte de um jogador
+            } else if(strncmp("DEA", data, 3) == 0) {
+                int id;
+                sscanf(data + 4, "%d", &id);
+                if(Game.map->characters[id] != NULL)
+                    Game.map->characters[id]->dead = true;
+                if (s->player->dead) {
+                    Mix_PlayChannel(-1, s->ded, 0);
                 }
             }
         }
     }
+    s->pingCount++;
+    if(s->pingCount == Game.screenFreq) {
+        s->pingCount = 0;
+        Socket_Send(Network.sockFd, Network.serverAddress, "PNG", 4);
+    }
+    Network.lastReceivedCount++;
+    if(Network.lastReceivedCount > Game.screenFreq * 5) {
+        Mix_PauseMusic();
+        SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
+    }
+}
+
+void SceneMap_update(Scene_Map* s) {
+    if(!SceneManager.inTransition && Network.connectedToServer)
+        SceneMap_Receive(s);
     // Centralizar a câmera no jogador
     if(s->player != NULL) {
         s->screenX = ((int) s->player->renderX + s->player->sprite->w / 6) - (REFERENCE_WIDTH) / 2;
         s->screenY = ((int) s->player->renderY + s->player->sprite->h / 8) - (REFERENCE_HEIGHT) / 2;
     }
+    // Verificação se passou do limite do mapa
     if(s->screenX > Game.map->width * TILE_SIZE - REFERENCE_WIDTH) {
         s->screenX = Game.map->width * TILE_SIZE - REFERENCE_WIDTH;
     }
@@ -252,6 +271,7 @@ void SceneMap_update(Scene_Map* s) {
     SDL_RenderCopy(Game.renderer, Game.map->layers[0], &renderQuad, &dstRect);
     SDL_RenderCopy(Game.renderer, Game.map->layers[1], &renderQuad, &dstRect);
 
+    // Movimentação do jogador
     if (s->player != NULL && s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
         if(s->player->moving) {
             bool moved = false;
@@ -289,14 +309,16 @@ void SceneMap_update(Scene_Map* s) {
         }
     }
 
-    Map_RenderWalls(Game.map, s->wallTexture, s->screenX, s->screenY);
 
+    // Renderizar paredes
+    Map_RenderWalls(Game.map, s->wallTexture, s->screenX, s->screenY);
+    // Renderizar PowerUps
     Map_RenderPowerUps(Game.map, s->puTexture, s->screenX, s->screenY);
-    
+    // Renderizar bombas
     for(int i = 0; i < 20; i++) {
         Bomb_Render(&s->bombs[i], s->screenX, s->screenY, s->animatedBomb, s->currentFrame);
     }
-
+    // Renderizar explosões
     for(int i = 0; i < 20; i++) {
         Explosion_Render(&s->explosions[i], s->screenX, s->screenY, s->explosionSprite);
     }
@@ -310,7 +332,10 @@ void SceneMap_update(Scene_Map* s) {
             Character_Render(Game.map->characters[s->renderCharacters[i]], s->screenX, s->screenY);
         }
     }
+
+    // Renderizar terceira camada
     SDL_RenderCopy(Game.renderer, Game.map->layers[2], &renderQuad, &dstRect);
+
     s->currentFrame++;
     if (s->currentFrame >= Game.screenFreq) {
         s->currentFrame = 0;
@@ -416,8 +441,6 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
             s->lastMov = 'N';
         }
     }
-
-
 }
 
 
@@ -428,7 +451,7 @@ void SceneMap_destroy(Scene_Map* s) {
         Network.connectedToServer = false;
     }
     if(Network.serverHost)
-            Server_Close(Network.server);
+        Server_Close(Network.server);
     Map_Destroy(Game.map);
     Game.map = NULL;
     WD_TextureDestroy(s->tileMap);

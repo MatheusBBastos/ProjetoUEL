@@ -32,6 +32,8 @@ void SceneLobby_update(Scene_Lobby* s);
 
 void SceneLobby_Receive(Scene_Lobby* s);
 
+void SceneLobby_Disconnect(Scene_Lobby* s);
+
 void SceneLobby_handleEvent(Scene_Lobby* s, SDL_Event* e);
 
 void SceneLobby_destroy(Scene_Lobby* s);

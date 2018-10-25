@@ -3,12 +3,12 @@
 
 Scene_Servers* SceneServers_new() {
     if(Network.sockFd == 0) {
-        Network.sockFd = Socket_Open(0);
+        Network.sockFd = Socket_Open(0, false);
     }
 
     Scene_Servers* newScene = malloc(sizeof(Scene_Servers));
 
-    newScene->receiveSock = Socket_Open(0);
+    newScene->receiveSock = Socket_Open(0, false);
     int broadcast = 1;
     setsockopt(newScene->receiveSock, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast));
 
@@ -74,12 +74,12 @@ void SceneServers_RefreshList(Scene_Servers* s) {
     }
     s->numServers = 0;
     s->indexShow = 0;
-    s-> indexd = 0;
-    s-> posTela = 0;
+    s->indexd = 0;
+    s->posTela = 0;
     s->esquerda = true;
 
     char sendData[] = "INF";
-    Address* broad = NewAddress(255, 255, 255, 255, SERVER_DEFAULT_PORT);
+    Address* broad = NewAddress(255, 255, 255, 255, BROADCAST_PORT);
     Socket_Send(s->receiveSock, broad, sendData, sizeof(sendData));
     DestroyAddress(broad);
     SDL_Color Cwhite = {255, 255, 255};
@@ -113,7 +113,6 @@ void SceneServers_update(Scene_Servers* s) {
         s->connectionTimeout++;
         if(!Network.connectedToServer && s->connectionTimeout >= 3 * Game.screenFreq) {
             s->waitingConnection = false;
-            printf("timeout\n");
         }
     }
     if(s->receivingInfo) {
@@ -121,7 +120,6 @@ void SceneServers_update(Scene_Servers* s) {
         char data[64];
         int bytes = Socket_Receive(s->receiveSock, &sender, data, sizeof(data));
         if(bytes > 0) {
-            printf("Received info: %s\n", data);
             if(strncmp("INF", data, 3) == 0) {
                 int min, max;
                 char serverName[32];
@@ -132,12 +130,15 @@ void SceneServers_update(Scene_Servers* s) {
                         s->servers[i].addr.address = sender.address;
                         s->servers[i].addr.port = sender.port;
                         sprintf(s->servers[i].text, "%s", serverName);
-                        sprintf(s->servers[i].num, "%d/%d", min, max );
+                        sprintf(s->servers[i].num, "%d/%d", min, max);
                         s->needServersRefresh = true;
-                        //SDL_Color color = {255, 255, 255};
-                        //WD_TextureLoadFromText(s->nomeServer[s->posTela], s->servers[i].text, Game.serversFontd, color); 
                         break;   
-                    } 
+                    } else if(s->servers[i].addr.address == sender.address && s->servers[i].addr.port == sender.port) {
+                        sprintf(s->servers[i].text, "%s", serverName);
+                        sprintf(s->servers[i].num, "%d/%d", min, max);
+                        s->needServersRefresh = true;
+                        break;
+                    }
                 }
             }
         }
@@ -220,10 +221,10 @@ void SceneServers_update(Scene_Servers* s) {
     SDL_Rect indexVoltar = { 135, 945 + s->voltar->h , s->voltar->w, 5 };
 
     int pos = 3 * 1440 / 4;
-    SDL_Rect indexPos0 = { pos - (s->serverName[s->indexShow]->w / 2), 365 + s->serverName[0]->h, s->serverName[0]->w, 5};
-    SDL_Rect indexPos1 = { pos - (s->serverName[s->indexShow + 1]->w / 2), 365 + ((1)*175) + s->serverName[1]->h, s->serverName[1]->w, 5};
-    SDL_Rect indexPos2 = { pos - (s->serverName[s->indexShow + 2]->w / 2), 365 + ((2)*175) + s->serverName[2]->h, s->serverName[2]->w, 5};
-    SDL_Rect indexPos3 = { pos - (s->serverName[s->indexShow + 3]->w / 2), 365 + ((3)*175) + s->serverName[2]->h, s->serverName[2]->w, 5};
+    SDL_Rect indexPos0 = { pos - (s->serverName[0]->w / 2), 365 + s->serverName[0]->h, s->serverName[0]->w, 5};
+    SDL_Rect indexPos1 = { pos - (s->serverName[1]->w / 2), 365 + ((1)*175) + s->serverName[1]->h, s->serverName[1]->w, 5};
+    SDL_Rect indexPos2 = { pos - (s->serverName[2]->w / 2), 365 + ((2)*175) + s->serverName[2]->h, s->serverName[2]->w, 5};
+    SDL_Rect indexPos3 = { pos - (s->serverName[3]->w / 2), 365 + ((3)*175) + s->serverName[3]->h, s->serverName[3]->w, 5};
 
 
     SDL_SetRenderDrawBlendMode(Game.renderer, SDL_BLENDMODE_BLEND);
@@ -308,7 +309,7 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
     if(SceneManager.inTransition)
         return;
     if(e->type == SDL_KEYDOWN) {   
-        if(e->key.keysym.sym == SDLK_TAB) {
+        if(e->key.keysym.sym == SDLK_ESCAPE) {
             if (s->boxIp->active || s->boxNome->active) {
                 s->boxIp->active = false;
                 s->boxNome->active = false;
@@ -319,11 +320,10 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
         } else if(e->key.keysym.sym == SDLK_DOWN && !s->boxIp->active && !s->boxNome->active) {
             if(s->posTela < 3 && !s->esquerda && s->posTela < (s->numServers - 1))// pra ir só até o num servers
                 s->posTela++;
-            if(s->indexe < 3 && s->esquerda)
+            if(s->indexe < 2 && s->esquerda)
                 s->indexe++;
             else if(s->indexd < (s->numServers - 1) && !s->esquerda)
                 s->indexd++;
-            printf("%d\n", s->numServers);
 
             if(s->posTela == 3 && !s->esquerda) {
                 SDL_Color color = {255, 255, 255};
@@ -352,7 +352,6 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
             s->esquerda = true; 
         } else if(e->key.keysym.sym == SDLK_RETURN) {
             if(s->esquerda == false) {
-                printf("%d\n",s->indexd );
                 if(s->servers[s->indexd].text[0] != '\0') {
                     if(Network.serverAddress != NULL)
                         DestroyAddress(Network.serverAddress);
@@ -387,11 +386,15 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
                     Network.serverHost = true;
                     Network.server = Server_Open(SERVER_DEFAULT_PORT, s->boxNome->text);
                     if (Network.server != NULL) {
-                        printf("Server open\n");
                         Network.serverThread = SDL_CreateThread(Server_InitLoop, "ServerLoop", Network.server);
                         if (Network.serverAddress != NULL)
                             DestroyAddress(Network.serverAddress);
-                        Network.serverAddress = NewAddress(127, 0, 0, 1, SERVER_DEFAULT_PORT);
+                        struct sockaddr_in sin;
+                        socklen_t len = sizeof(sin);
+                        unsigned short port;
+                        getsockname(Network.server->sockfd, (struct sockaddr *)&sin, &len);
+                        port = ntohs(sin.sin_port);
+                        Network.serverAddress = NewAddress(127, 0, 0, 1, port);
                         char data[32];
                         sprintf(data, "CON 1 1 %s", Game.nome);
                         Socket_Send(Network.sockFd, Network.serverAddress, data, sizeof(data));

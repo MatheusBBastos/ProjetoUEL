@@ -135,7 +135,7 @@ void Character_Update(Character* c, Map* m) {
         c->moving = true;
         int x4 = c->x * 4;
         int y4 = c->y * 4;
-        int distance = (1 << c->moveSpeed);
+        int distance = (1 << c->moveSpeed) * 60.0 / Game.screenFreq;
         if(c->renderX < c->x) {
             if(c->x4 + distance > x4) {
                 c->x4 = x4;
