@@ -132,6 +132,10 @@ void SceneMap_Receive(Scene_Map* s) {
                 int id, x, y, dir;
                 sscanf(data + 4, "%d %d %d %d", &id, &x, &y, &dir);
                 if(Game.map->characters != NULL && Game.map->characters[id] != NULL) {
+                    Game.map->characters[id]->renderX = Game.map->characters[id]->x;
+                    Game.map->characters[id]->renderY = Game.map->characters[id]->y;
+                    Game.map->characters[id]->x4 = Game.map->characters[id]->x * 4;
+                    Game.map->characters[id]->y4 = Game.map->characters[id]->y * 4;
                     Game.map->characters[id]->x = x;
                     Game.map->characters[id]->y = y;
                     Game.map->characters[id]->direction = dir;
