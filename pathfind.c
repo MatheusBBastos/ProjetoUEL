@@ -114,7 +114,7 @@ bool PF_Find(Map* map, Character* c, int tx, int ty, int minRange, bool findSafe
     instance.grid = PF_CreateNodeGrid(map->width, map->height);
     int sx, sy;
     Character_GetTilePosition(c, &sx, &sy);
-    int hScore = findSafeSpot ? 0 : abs(tx - sx) + abs(ty - sx);
+    int hScore = findSafeSpot ? 0 : abs(tx - sx) + abs(ty - sy);
     Node* currentNode = PF_NodeGet(instance.grid, sx, sy);
     currentNode->h = hScore;
     instance.targetNode = PF_NodeGet(instance.grid, tx, ty);
