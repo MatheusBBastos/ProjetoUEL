@@ -220,10 +220,10 @@ void SceneServers_update(Scene_Servers* s) {
     SDL_Rect indexVoltar = { 135, 945 + s->voltar->h , s->voltar->w, 5 };
 
     int pos = 3 * 1440 / 4;
-    SDL_Rect indexPos0 = { pos - (s->serverName[s->indexShow]->w / 2), 365 + s->serverName[0]->h, s->serverName[0]->w, 5};
-    SDL_Rect indexPos1 = { pos - (s->serverName[s->indexShow + 1]->w / 2), 365 + ((1)*175) + s->serverName[1]->h, s->serverName[1]->w, 5};
-    SDL_Rect indexPos2 = { pos - (s->serverName[s->indexShow + 2]->w / 2), 365 + ((2)*175) + s->serverName[2]->h, s->serverName[2]->w, 5};
-    SDL_Rect indexPos3 = { pos - (s->serverName[s->indexShow + 3]->w / 2), 365 + ((3)*175) + s->serverName[2]->h, s->serverName[2]->w, 5};
+    SDL_Rect indexPos0 = { pos - (s->serverName[0]->w / 2), 365 + s->serverName[0]->h, s->serverName[0]->w, 5};
+    SDL_Rect indexPos1 = { pos - (s->serverName[1]->w / 2), 365 + ((1)*175) + s->serverName[1]->h, s->serverName[1]->w, 5};
+    SDL_Rect indexPos2 = { pos - (s->serverName[2]->w / 2), 365 + ((2)*175) + s->serverName[2]->h, s->serverName[2]->w, 5};
+    SDL_Rect indexPos3 = { pos - (s->serverName[3]->w / 2), 365 + ((3)*175) + s->serverName[3]->h, s->serverName[3]->w, 5};
 
 
     SDL_SetRenderDrawBlendMode(Game.renderer, SDL_BLENDMODE_BLEND);
@@ -319,7 +319,7 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
         } else if(e->key.keysym.sym == SDLK_DOWN && !s->boxIp->active && !s->boxNome->active) {
             if(s->posTela < 3 && !s->esquerda && s->posTela < (s->numServers - 1))// pra ir só até o num servers
                 s->posTela++;
-            if(s->indexe < 3 && s->esquerda)
+            if(s->indexe < 2 && s->esquerda)
                 s->indexe++;
             else if(s->indexd < (s->numServers - 1) && !s->esquerda)
                 s->indexd++;
