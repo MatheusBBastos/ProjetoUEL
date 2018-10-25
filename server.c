@@ -45,13 +45,18 @@ Server* Server_Open(unsigned short port, char nm[32]) {
         newServer->delayMs = round(1.0 / SERVER_TICKRATE * 1000);
         newServer->maxClients = MAX_PLAYERS;
         newServer->connectedClients = 0;
+        newServer->placements = malloc(newServer->maxClients * sizeof(int));
         newServer->clients = malloc(newServer->maxClients * sizeof(Client*));
         for(int i = 0; i < newServer->maxClients; i++) {
             newServer->clients[i] = NULL;
+            newServer->placements[i] = -1;
         }
+
+        newServer->currentPlacement = newServer->maxClients - 1;
 
         newServer->hostId = -1;
         newServer->inGame = false;
+        newServer->gameEnded = false;
         newServer->map = Map_Create();
         newServer->bombNumber = MAX_BOMBS_PER_PLAYER * newServer->maxClients;
         newServer->bombs = malloc(newServer->bombNumber * sizeof(ServerBomb));
@@ -76,6 +81,7 @@ void Server_Destroy(Server* s) {
     }
     Map_Destroy(s->map);
     free(s->clients);
+    free(s->placements);
     free(s);
 }
 
@@ -500,6 +506,8 @@ void Server_ExplodeBomb(Server* s, int bId) {
                     char sendData[16];
                     sprintf(sendData, "DEA %d", cId);
                     Server_SendToAll(s, sendData, -1);
+                    s->placements[s->currentPlacement] = cId;
+                    s->currentPlacement--;
                     c->kills++;
                 }
             }
@@ -520,6 +528,28 @@ void Server_UpdateBombs(Server* s) {
                 Server_ExplodeBomb(s, i);
             }
         }
+    }
+}
+
+void Server_CheckEnd(Server* s) {
+    if(s->currentPlacement <= s->maxClients - s->connectedClients) {
+        int alive = 0;
+        for(int i = 0; i < s->maxClients; i++) {
+            if(s->clients[i] != NULL && !s->map->characters[i]->dead) {
+                alive++;
+                s->placements[s->currentPlacement] = i;
+            }
+        }
+        s->gameEnded = true;
+        s->inGame = false;
+        char sendData[16];
+        sprintf(sendData, "END %d", alive);
+        for(int i = 0; i < s->maxClients; i++) {
+            char addData[4];
+            sprintf(addData, " %d", s->placements[i]);
+            strcat(sendData, addData);
+        }
+        Server_SendToAll(s, sendData, -1);
     }
 }
 
@@ -549,7 +579,7 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
         } else if(strncmp("DCS", buffer, 3) == 0) {
             Server_PlayerDisconnect(s, cId);
         } else if(strncmp("BOT", buffer, 3) == 0) {
-            if(s->hostId == cId && s->connectedClients < s->maxClients && !s->inGame) {
+            if(s->hostId == cId && s->connectedClients < s->maxClients && !s->inGame && !s->gameEnded) {
                 int difficulty;
                 sscanf(buffer + 4, "%d", &difficulty);
                 int id = Server_FindEmptySlot(s);
@@ -565,7 +595,7 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
                 Server_SendToAll(s, sendData3, id);
             }
         } else if(strncmp("STA", buffer, 3) == 0) {
-            if(s->hostId == cId && !s->inGame) {
+            if(s->hostId == cId && !s->inGame && !s->gameEnded) {
                 s->inGame = true;
                 Server_CreateCharacters(s);
                 Map_Load(s->map, "map.txt", false);
@@ -591,7 +621,7 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
             sscanf(buffer + 4, "%3d %1d %31[^\n]", &version, &host, username);
             printf("[Server] Client trying to connect with version %d\n", version);
             if(s->connectedClients < s->maxClients) {
-                if(s->inGame) {
+                if(s->inGame || s->gameEnded) {
                     printf("[Server] Game in Progress!\n");
                     char sendData[] = "ING";
                     Socket_Send(s->sockfd, sender, sendData, sizeof(sendData));
@@ -640,6 +670,8 @@ int Server_InitLoop(Server* s) {
                 printf("[Server] Received from %s (Port: %hu): %s\n", sender.addrString, sender.port, buffer);
             Server_HandleMessage(s, &sender, buffer);
         }
+        if(s->inGame)
+            Server_CheckEnd(s);
         Server_CheckInactiveClients(s);
         if(s->inGame) {
             Server_UpdateBombs(s);

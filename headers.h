@@ -131,6 +131,7 @@ typedef struct NetworkS {
     Server* server;
     SDL_Thread* serverThread;
     int lastReceivedCount;
+    char playerNames[4][32];
 } NetworkS;
 
 typedef struct SceneManagerS SceneManagerS;

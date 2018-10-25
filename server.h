@@ -69,11 +69,14 @@ typedef struct Server {
     Map* map;
     int hostId;
     bool inGame;
+    bool gameEnded;
     char name[32];
     ServerBomb *bombs;
     int bombNumber;
     ServerPowerUp *powerups;
     int powerupNumber;
+    int *placements;
+    int currentPlacement;
 } Server;
 
 // Abrir servidor na porta informada
@@ -133,5 +136,7 @@ void Server_PlacePowerUp(Server* s, int x, int y);
 void Server_UpdateCharMovement(Server* s, Character* c);
 // Atualiza um bot
 void Server_UpdateBot(Server* s, int id);
+// Checa se o jogo acabou
+void Server_CheckEnd(Server* s);
 
 #endif

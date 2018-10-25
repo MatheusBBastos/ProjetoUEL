@@ -5,7 +5,6 @@ void Server_UpdateCharMovement(Server* s, Character* c) {
     if(c->dead)
         return;
     if(c->forcingMovement && c->x == c->renderX && c->y == c->renderY) {
-        printf("SERVER MEXEU 1\n");
         if(Character_TryToMove(c, c->movementStack[c->movementStackTop], s->map)) {
             c->movementStackTop--;
             if(c->movementStackTop == -1) {

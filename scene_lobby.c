@@ -64,9 +64,9 @@ void SceneLobby_Receive(Scene_Lobby* s) {
                 int id;
                 char name[32];
                 sscanf(data + 4, "%d %31[^\n]", &id, name);
-                strcpy(s->playerNames[id], name);
+                strcpy(Network.playerNames[id], name);
                 SDL_Color color = {255, 255, 255};
-                WD_TextureLoadFromText(s->players[id], s->playerNames[id], Game.inputFont, color);
+                WD_TextureLoadFromText(s->players[id], Network.playerNames[id], Game.inputFont, color);
                 s->started[id] = true;
                 s->conected[id] = true;
                 printf("Recebido comando, iniciando procedimentos com o jogador ID %d com nome de %s\n", id, name);
@@ -80,9 +80,9 @@ void SceneLobby_Receive(Scene_Lobby* s) {
             } else if(strncmp("PDC", data, 3) == 0) {
                 int id;
                 sscanf(data + 4, "%d", &id);
-                strcpy(s->playerNames[id], "Slot");
+                strcpy(Network.playerNames[id], "Slot");
                 SDL_Color color = {255, 255, 255};
-                WD_TextureLoadFromText(s->players[id], s->playerNames[id], Game.inputFont, color);
+                WD_TextureLoadFromText(s->players[id], Network.playerNames[id], Game.inputFont, color);
                 s->started[id] = false;
                 s->conected[id] = false;
             } else if(strncmp("CHR", data, 3) == 0) {
@@ -173,7 +173,7 @@ void SceneLobby_update(Scene_Lobby* s) {
 
     for (int i = 0; i < 4; i++) {
         if (s->started[i]) {
-            printf("ID %d em inicialização", i);
+            printf("ID %d em inicializaï¿½ï¿½o", i);
             int posX = (288 * (i + 1));
             SDL_Rect clip = { 0, 192 * s->curPos[i], 192, 192 };
             WD_TextureRenderExCustom(s->animation, posX - 448 / 2, 350, &clip, 0.0, NULL, SDL_FLIP_NONE, 448, 448);

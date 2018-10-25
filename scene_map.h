@@ -53,6 +53,9 @@ typedef struct Scene_Map {
     Explosion explosions[20];
     int currentFrame;
     int pingCount;
+    bool frozen, ended;
+    int endOpacity;
+    WTexture* placement[4];
 } Scene_Map;
 
 Scene_Map* SceneMap_new();

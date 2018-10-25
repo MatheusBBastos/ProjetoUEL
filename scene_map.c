@@ -30,9 +30,15 @@ Scene_Map* SceneMap_new() {
     newScene->waitingConnection = false;
     newScene->currentFrame = 0;
     newScene->pingCount = 0;
+    newScene->frozen = false;
+    newScene->ended = false;
+    newScene->endOpacity = 0;
     for(int i = 0; i < 20; i++) {
         newScene->bombs[i].active = false;
         newScene->explosions[i].active = false;
+    }
+    for(int i = 0; i < 4; i++) {
+        newScene->placement[i] = WD_CreateTexture();
     }
     Mix_PlayMusic(newScene->backgroundMusic, -1);
     Mix_VolumeMusic(80);
@@ -220,6 +226,29 @@ void SceneMap_Receive(Scene_Map* s) {
                 if (s->player->dead) {
                     Mix_PlayChannel(-1, s->ded, 0);
                 }
+            // Fim de jogo
+            } else if(strncmp("END", data, 3) == 0) {
+                int type, n, totaln = 0;
+                sscanf(data + 4, "%d%n", &type, &n);
+                totaln += n;
+                // EMPATE: type = 0; VITORIA: type = 1
+                int placement = 0;
+                for(int i = 0; i < Game.map->charNumber; i++) {
+                    int id;
+                    sscanf(data + 4 + totaln, "%d%n", &id, &n);
+                    if(id != -1) {
+                        char ganhador[4];
+                        sprintf(ganhador, "#%d: %s", placement + 1, Network.playerNames[id]);
+                        WD_TextureLoadFromText(s->placement[placement], ganhador, Game.inputFont, (SDL_Color) {255, 255, 255});
+                        placement++;
+                    }
+                    totaln += n;
+                }
+                for(; placement < Game.map->charNumber; placement++) {
+                    WD_TextureLoadFromText(s->placement[placement], " ", Game.inputFont, (SDL_Color) {255, 255, 255});
+                }
+                s->frozen = true;
+                s->ended = true;
             }
         }
     }
@@ -272,7 +301,7 @@ void SceneMap_update(Scene_Map* s) {
     SDL_RenderCopy(Game.renderer, Game.map->layers[1], &renderQuad, &dstRect);
 
     // Movimentação do jogador
-    if (s->player != NULL && s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
+    if (!s->frozen && s->player != NULL && s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
         if(s->player->moving) {
             bool moved = false;
             switch (s->lastMov) {
@@ -335,6 +364,22 @@ void SceneMap_update(Scene_Map* s) {
 
     // Renderizar terceira camada
     SDL_RenderCopy(Game.renderer, Game.map->layers[2], &renderQuad, &dstRect);
+
+    // Tela final
+    if(s->ended) {
+        if(s->endOpacity < 150) {
+            s->endOpacity += 150 / Game.screenFreq * 3;
+            if(s->endOpacity > 150) {
+                s->endOpacity = 150;
+            }
+        }
+        SDL_Rect fillRect = {0, 0, REFERENCE_WIDTH, REFERENCE_HEIGHT};
+        SDL_SetRenderDrawColor(Game.renderer, 0, 0, 0, s->endOpacity);
+        SDL_RenderFillRect(Game.renderer, &fillRect);
+        for(int i = 0; i < Game.map->charNumber; i++) {
+            WD_TextureRender(s->placement[i], 15, 15 + 30 * i);
+        }
+    }
 
     s->currentFrame++;
     if (s->currentFrame >= Game.screenFreq) {
@@ -457,6 +502,9 @@ void SceneMap_destroy(Scene_Map* s) {
     WD_TextureDestroy(s->tileMap);
     if(s->renderCharacters != NULL) {
         free(s->renderCharacters);
+    }
+    for(int i = 0; i < 4; i++) {
+        WD_TextureDestroy(s->placement[i]);
     }
     Mix_FreeChunk(s->bombexp);
     Mix_FreeChunk(s->bombload);
