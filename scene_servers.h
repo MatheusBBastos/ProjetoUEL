@@ -48,6 +48,8 @@ void SceneServers_update(Scene_Servers* s);
 
 void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e);
 
+void SceneServers_RefreshList(Scene_Servers* s);
+
 void SceneServers_destroy(Scene_Servers* s);
 
 #endif
