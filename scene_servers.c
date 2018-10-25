@@ -72,6 +72,12 @@ void SceneServers_RefreshList(Scene_Servers* s) {
     for(int i = 0; i < s->maxServers; i++) {
         s->servers[i].text[0] = '\0';
     }
+    s->numServers = 0;
+    s->indexShow = 0;
+    s-> indexd = 0;
+    s-> posTela = 0;
+    s->esquerda = true;
+
     char sendData[] = "INF";
     Address* broad = NewAddress(255, 255, 255, 255, SERVER_DEFAULT_PORT);
     Socket_Send(s->receiveSock, broad, sendData, sizeof(sendData));
@@ -317,6 +323,7 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
                 s->indexe++;
             else if(s->indexd < (s->numServers - 1) && !s->esquerda)
                 s->indexd++;
+            printf("%d\n", s->numServers);
 
             if(s->posTela == 3 && !s->esquerda) {
                 SDL_Color color = {255, 255, 255};
