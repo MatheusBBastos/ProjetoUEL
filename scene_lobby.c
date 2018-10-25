@@ -3,6 +3,7 @@
 Scene_Lobby* SceneLobby_new() {
     Scene_Lobby* newScene = malloc(sizeof(Scene_Lobby));
      newScene->sound = Mix_LoadMUS("content/lobby.mp3");
+     SDL_Color Cmsg = { 255, 255, 255 };
    Mix_PlayMusic(newScene->sound, -1);
     for(int i = 0; i < 4; i++) {
         sprintf(newScene->playerNames[i], "Slot");
@@ -11,20 +12,37 @@ Scene_Lobby* SceneLobby_new() {
     for(int i = 0; i < MAX_PLAYERS; i++) {
         newScene->players[i] = WD_CreateTexture();
     }
+
+    for (int i = 0; i < MAX_PLAYERS; i++) {
+        WD_TextureLoadFromText(newScene->players[i], newScene->playerNames[i], Game.inputFont, Cmsg);
+        newScene->started[i] = false;
+        newScene->curPos[i] = 0;
+        newScene->conected[i] = false;
+        newScene->animfinished[i] = false;
+        newScene->playersSprite[i] = WD_CreateTexture();
+    }
+
     newScene->iniciar = WD_CreateTexture();
     newScene->sair = WD_CreateTexture();
 
+    newScene->spawn = Mix_LoadWAV("content/feffect.mp3");
+
     newScene->pingCount = 0;
+    newScene->frame = 0;
+
+    newScene->animation = WD_CreateTexture();
+
+    WD_TextureLoadFromFile(newScene->animation, "content/ASK.png");
 
     Game.map = Map_Create();
-    
     SceneLobby_Receive(newScene);
+    newScene->curPos[0] = 0;
 
-    SDL_Color Cmsg = {255, 255, 255};
+    WD_TextureLoadFromFile(newScene->playersSprite[0], "content/azul.png");
+    WD_TextureLoadFromFile(newScene->playersSprite[1], "content/amarelo.png");
+    WD_TextureLoadFromFile(newScene->playersSprite[2], "content/vermelho.png");
+    WD_TextureLoadFromFile(newScene->playersSprite[3], "content/roxo.png");
 
-    for(int i = 0; i < MAX_PLAYERS; i++) {
-        WD_TextureLoadFromText(newScene->players[i], newScene->playerNames[i], Game.inputFont, Cmsg);
-    }
     WD_TextureLoadFromText(newScene->iniciar, "Iniciar", Game.inputFont, Cmsg);
     WD_TextureLoadFromText(newScene->sair, "Sair", Game.inputFont, Cmsg);
 
@@ -47,6 +65,9 @@ void SceneLobby_Receive(Scene_Lobby* s) {
                 strcpy(s->playerNames[id], name);
                 SDL_Color color = {255, 255, 255};
                 WD_TextureLoadFromText(s->players[id], s->playerNames[id], Game.inputFont, color);
+                s->started[id] = true;
+                s->conected[id] = true;
+                printf("Recebido comando, iniciando procedimentos com o jogador ID %d com nome de %s\n", id, name);
             } else if(strncmp("CNM", data, 3) == 0) {
                 int nmb;
                 sscanf(data + 4, "%d", &nmb);
@@ -60,6 +81,8 @@ void SceneLobby_Receive(Scene_Lobby* s) {
                 strcpy(s->playerNames[id], "Slot");
                 SDL_Color color = {255, 255, 255};
                 WD_TextureLoadFromText(s->players[id], s->playerNames[id], Game.inputFont, color);
+                s->started[id] = false;
+                s->conected[id] = false;
             } else if(strncmp("CHR", data, 3) == 0) {
                 int id;
                 int x, y, dir;
@@ -106,10 +129,62 @@ void SceneLobby_update(Scene_Lobby* s) {
         SceneLobby_Receive(s);
     SDL_SetRenderDrawColor(Game.renderer, 0, 0, 0, 255);
     SDL_RenderClear(Game.renderer);
-    WD_TextureRender(s->players[0], 300, 300);
-    WD_TextureRender(s->players[1], 1000, 300);
-    WD_TextureRender(s->players[2], 300, 750);
-    WD_TextureRender(s->players[3], 1000, 750);
+
+    SDL_Rect defaultPos = { 64,0, 64, 64 };
+    for (int i = 0; i < 4; i++) {
+        if (s->conected[i] && s->animfinished[i]) {
+            printf("Renderizando id %d", i);
+            int posX = (288 * (i + 1));
+            switch (i) {
+            case 0:
+                WD_TextureRenderExCustom(s->playersSprite[i], posX - 192 / 2, 500, &defaultPos, 0.0, NULL, SDL_FLIP_NONE, 192, 192);
+                break;
+            case 1:
+                WD_TextureRenderExCustom(s->playersSprite[i], posX - 192 / 2, 500, &defaultPos, 0.0, NULL, SDL_FLIP_NONE, 192, 192);
+                break;
+            case 2:
+                WD_TextureRenderExCustom(s->playersSprite[i], posX - 192 / 2, 500, &defaultPos, 0.0, NULL, SDL_FLIP_NONE, 192, 192);
+                break;
+            case 3:
+                WD_TextureRenderExCustom(s->playersSprite[i], posX - 192 / 2, 500, &defaultPos, 0.0, NULL, SDL_FLIP_NONE, 192, 192);
+                break;
+            }
+            WD_TextureRender(s->players[i], posX - s->players[i]->w / 2, 700);
+        }
+    }
+
+    for (int i = 0; i < 4; i++) {
+        if (s->started[i]) {
+            printf("ID %d em inicialização", i);
+            int posX = (288 * (i + 1));
+            SDL_Rect clip = { 0, 192 * s->curPos[i], 192, 192 };
+            WD_TextureRenderExCustom(s->animation, posX - 448 / 2, 350, &clip, 0.0, NULL, SDL_FLIP_NONE, 448, 448);
+
+            if (s->curPos[i] == 0) {
+                Mix_PlayChannel(-1, s->spawn, 0);
+            }
+
+            if (s->frame % 4 == 0) {
+                s->curPos[i]++;
+            }
+            if (s->curPos[i] == 5) {
+                s->animfinished[i] = true;
+            }
+
+            if (s->curPos[i] > 11) {
+                s->started[i] = false;
+            }
+        }
+    }
+
+
+
+    
+    s->frame++;
+    if (s->frame >= 60) {
+        s->frame = 0;
+    }
+
 }
 
 void SceneLobby_destroy(Scene_Lobby* s) {
@@ -120,6 +195,7 @@ void SceneLobby_destroy(Scene_Lobby* s) {
     WD_TextureDestroy(s->iniciar);
     WD_TextureDestroy(s->sair);
     Mix_FreeMusic(s->sound);
+    Mix_FreeChunk(s->spawn);
     free(s);
 }   
 
