@@ -31,10 +31,14 @@ void Client_Destroy(Client* c, Server* s) {
 }
 
 Server* Server_Open(unsigned short port, char nm[32]) {
-    int sockFd = Socket_Open(port);
+    int sockFd = Socket_Open(port, false);
     if(sockFd != 0) {
         Server* newServer = malloc(sizeof(Server));
         strcpy(newServer->name, nm);
+        newServer->listenSockFd = Socket_Open(BROADCAST_PORT, true);
+        if(newServer->listenSockFd != 0) {
+            printf("%d\n", newServer->listenSockFd);
+        }
         newServer->port = port;
         newServer->sockfd = sockFd;
         newServer->running = false;
@@ -605,6 +609,17 @@ int Server_InitLoop(Server* s) {
                 }
             }
         }
+        if(s->listenSockFd != 0) {
+            while((bytes = Socket_Receive(s->listenSockFd, &sender, buffer, sizeof(buffer))) > 0) {
+                buffer[bytes] = '\0';
+                if(strncmp("INF", buffer, 3) == 0) {
+                    printf("[Server] Received from %s (Port: %hu): %s\n", sender.addrString, sender.port, buffer);
+                    char sendData[64];
+                    sprintf(sendData, "INF %d %d %s", s->connectedClients, s->maxClients, s->name);
+                    Socket_Send(s->sockfd, &sender, sendData, strlen(sendData) + 1);
+                }
+            }
+        }
         count++;
         if(count == SERVER_TICKRATE) {
             printf("[Server] Connected clients: %d\n", s->connectedClients);
@@ -620,5 +635,7 @@ int Server_InitLoop(Server* s) {
     Server_Shutdown(s);
     printf("Closing server...\n");
     Socket_Close(s->sockfd);
+    if(s->listenSockFd != 0)
+        Socket_Close(s->listenSockFd);
     return 0;
 }

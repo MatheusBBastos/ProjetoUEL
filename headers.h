@@ -51,6 +51,8 @@
 #define MOVEMENT_PARTS 4
 // Porta padrão do servidor
 #define SERVER_DEFAULT_PORT 7567
+// Porta de broadcast
+#define BROADCAST_PORT 7566
 // Tickrate do servidor (por segundo)
 #define SERVER_TICKRATE 60
 // Número máximo de bombas por jogador

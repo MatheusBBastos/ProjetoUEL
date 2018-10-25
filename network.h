@@ -41,7 +41,7 @@ int TCPSocket_Send(int socketFd, void* data, int size);
 int TCPSocket_Receive(int socketFd, char* data, int size);
 
 // Cria uma socket UDP no modo non-blocking na porta fornecida, retornando seu descriptor; retorna 0 se houve falha
-int Socket_Open(unsigned short port);
+int Socket_Open(unsigned short port, bool reuse);
 // Fecha uma socket (UDP ou TCP)
 void Socket_Close(int socketFd);
 // Envia dados através de uma socket UDP para um destinatário fornecido

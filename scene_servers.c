@@ -3,12 +3,12 @@
 
 Scene_Servers* SceneServers_new() {
     if(Network.sockFd == 0) {
-        Network.sockFd = Socket_Open(0);
+        Network.sockFd = Socket_Open(0, false);
     }
 
     Scene_Servers* newScene = malloc(sizeof(Scene_Servers));
 
-    newScene->receiveSock = Socket_Open(0);
+    newScene->receiveSock = Socket_Open(0, false);
     int broadcast = 1;
     setsockopt(newScene->receiveSock, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast));
 
@@ -79,7 +79,7 @@ void SceneServers_RefreshList(Scene_Servers* s) {
     s->esquerda = true;
 
     char sendData[] = "INF";
-    Address* broad = NewAddress(255, 255, 255, 255, SERVER_DEFAULT_PORT);
+    Address* broad = NewAddress(255, 255, 255, 255, BROADCAST_PORT);
     Socket_Send(s->receiveSock, broad, sendData, sizeof(sendData));
     DestroyAddress(broad);
     SDL_Color Cwhite = {255, 255, 255};
@@ -391,7 +391,12 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
                         Network.serverThread = SDL_CreateThread(Server_InitLoop, "ServerLoop", Network.server);
                         if (Network.serverAddress != NULL)
                             DestroyAddress(Network.serverAddress);
-                        Network.serverAddress = NewAddress(127, 0, 0, 1, SERVER_DEFAULT_PORT);
+                        struct sockaddr_in sin;
+                        socklen_t len = sizeof(sin);
+                        unsigned short port;
+                        getsockname(Network.server->sockfd, (struct sockaddr *)&sin, &len);
+                        port = ntohs(sin.sin_port);
+                        Network.serverAddress = NewAddress(127, 0, 0, 1, port);
                         char data[32];
                         sprintf(data, "CON 1 1 %s", Game.nome);
                         Socket_Send(Network.sockFd, Network.serverAddress, data, sizeof(data));

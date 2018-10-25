@@ -114,19 +114,34 @@ int TCPSocket_Receive(int socketFd, char* data, int size) {
     }
 }
 
-int Socket_Open(unsigned short port) {
+int Socket_Open(unsigned short port, bool reuse) {
     int socketFd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if(socketFd <= 0) {
         printf("Falha ao criar socket!\n");
         return 0;
     }
+    if(reuse) {
+        int reuse = 1;
+        setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+    }
     struct sockaddr_in address;
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons((unsigned short) port);
-    if(bind(socketFd, (const struct sockaddr*) &address, sizeof(struct sockaddr_in)) < 0) {
-        printf("Falha ao dar bind na socket!\n");
-        return 0;
+    if(reuse) {
+        address.sin_port = htons((unsigned short) port);
+        if(bind(socketFd, (const struct sockaddr*) &address, sizeof(struct sockaddr_in)) < 0) {
+            printf("Falha ao dar bind na socket!\n");
+            return 0;
+        }
+    } else {
+        unsigned short trueport = port;
+        while(address.sin_port = htons(trueport), bind(socketFd, (const struct sockaddr*) &address, sizeof(struct sockaddr_in)) < 0) {
+            trueport++;
+            if(trueport - port > 5) {
+                printf("Falha ao dar bind na socket!\n");
+                return 0;
+            }
+        }
     }
     #if PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
         int a = 1;

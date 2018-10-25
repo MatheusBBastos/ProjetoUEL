@@ -61,6 +61,7 @@ typedef struct ServerPowerUp {
 typedef struct Server {
     unsigned short port;
     int sockfd;
+    int listenSockFd;
     bool running;
     int delayMs;
     Client** clients;
