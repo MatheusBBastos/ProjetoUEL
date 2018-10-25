@@ -69,7 +69,6 @@ void SceneLobby_Receive(Scene_Lobby* s) {
                 WD_TextureLoadFromText(s->players[id], Network.playerNames[id], Game.inputFont, color);
                 s->started[id] = true;
                 s->conected[id] = true;
-                printf("Recebido comando, iniciando procedimentos com o jogador ID %d com nome de %s\n", id, name);
             } else if(strncmp("CNM", data, 3) == 0) {
                 int nmb;
                 sscanf(data + 4, "%d", &nmb);
@@ -151,7 +150,6 @@ void SceneLobby_update(Scene_Lobby* s) {
     SDL_Rect defaultPos = { 64,0, 64, 64 };
     for (int i = 0; i < 4; i++) {
         if (s->conected[i] && s->animfinished[i]) {
-            printf("Renderizando id %d", i);
             int posX = (288 * (i + 1));
             switch (i) {
             case 0:
@@ -173,7 +171,6 @@ void SceneLobby_update(Scene_Lobby* s) {
 
     for (int i = 0; i < 4; i++) {
         if (s->started[i]) {
-            printf("ID %d em inicializa��o", i);
             int posX = (288 * (i + 1));
             SDL_Rect clip = { 0, 192 * s->curPos[i], 192, 192 };
             WD_TextureRenderExCustom(s->animation, posX - 448 / 2, 350, &clip, 0.0, NULL, SDL_FLIP_NONE, 448, 448);
