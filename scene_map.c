@@ -235,7 +235,7 @@ void SceneMap_Receive(Scene_Map* s) {
                 int placement = 0;
                 for(int i = 0; i < Game.map->charNumber; i++) {
                     int id;
-                    sscanf(data + 4 + totaln, "%d%n", &id, &n);
+                    sscanf(data + 6 + i * 2, "%d%n", &id, &n);
                     if(id != -1) {
                         char ganhador[4];
                         sprintf(ganhador, "#%d: %s", placement + 1, Network.playerNames[id]);
@@ -377,7 +377,7 @@ void SceneMap_update(Scene_Map* s) {
         SDL_SetRenderDrawColor(Game.renderer, 0, 0, 0, s->endOpacity);
         SDL_RenderFillRect(Game.renderer, &fillRect);
         for(int i = 0; i < Game.map->charNumber; i++) {
-            WD_TextureRender(s->placement[i], 15, 15 + 30 * i);
+            WD_TextureRender(s->placement[i], 15, 15 + 45 * i);
         }
     }
 

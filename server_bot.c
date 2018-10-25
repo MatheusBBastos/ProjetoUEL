@@ -13,7 +13,7 @@ void Server_UpdateCharMovement(Server* s, Character* c) {
         } else {
             c->forcingMovement = false;
             c->movementStackTop = -1;
-            PF_Find(s->map, c, c->targetX, c->targetY);
+            PF_Find(s->map, c, c->targetX, c->targetY, 0, false);
         }
         char sendData[32];
         sprintf(sendData, "POS %d %d %d %d", c->id, c->x, c->y, c->direction);
@@ -184,45 +184,10 @@ void Server_UpdateBot(Server* s, int id) {
         if(actionMade) {
             actionMade = false;
             // achar um lugar perto pra correr
-            for(int x1 = -2; x1 <= 2; x1++) {
-                for(int y1 = -2; y1 <= 2; y1++) {
-                    if(x1 == 0 && y1 == 0 || !Character_Passable(c, s->map, x + x1, y + y1)) {
-                        continue;
-                    }
-                    if(x + x1 == bombX || y + y1 == bombY) {
-                        continue;
-                    }
-
-                    if(s->clients[id]->b.difficulty == DIFFICULTY_HARD) {
-                        bool next = false;
-                        for(int i=0; i<s->bombNumber; i++) {
-                            if(s->bombs[i].active) {
-                                if((y + y1) == s->bombs[i].y && (s->bombs[i].x + s->clients[s->bombs[i].clientId]->bombRadius > x+x1 ||
-                                s->bombs[i].x - s->clients[s->bombs[i].clientId]->bombRadius < x+x1) ||
-                                (x + x1) == s->bombs[i].x && (s->bombs[i].y + s->clients[s->bombs[i].clientId]->bombRadius > y+y1 ||
-                                s->bombs[i].y - s->clients[s->bombs[i].clientId]->bombRadius < y+y1)){
-                                    next = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if(next)
-                            continue;
-                    }
-                    
-                    
-                    if(PF_Find(s->map, c, x + x1, y + y1)) {
-                        actionMade = true;
-                        break;
-                    }
-                }
-                if(actionMade) {
-                    break;
-                }
-            }
+            PF_Find(s->map, c, 0, 0, 1 + s->clients[id]->b.difficulty * 2, true);
         } else {
                 //AQIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
-            if(PF_Find(s->map, c, posX_prox, posY_prox)) {
+            if(PF_Find(s->map, c, posX_prox, posY_prox, 0, false)) {
                 actionMade = true;
             } else {
                 if(distY > 0 && distX > 0 || distY > 0 && distX == 0) {
@@ -231,7 +196,7 @@ void Server_UpdateBot(Server* s, int id) {
                             if(x1 == 0 && y1 == 0 || !Character_Passable(c, s->map, x + x1, y + y1)) {
                                 continue;
                             }
-                            if(PF_Find(s->map, c, x + x1, y + y1)) {
+                            if(PF_Find(s->map, c, x + x1, y + y1, 0, false)) {
                                 actionMade = true;
                                 break;
                             }
@@ -246,7 +211,7 @@ void Server_UpdateBot(Server* s, int id) {
                             if(x1 == 0 && y1 == 0 || !Character_Passable(c, s->map, x + x1, y + y1)) {
                                 continue;
                             }
-                            if(PF_Find(s->map, c, x + x1, y + y1)) {
+                            if(PF_Find(s->map, c, x + x1, y + y1, 0, false)) {
                                 actionMade = true;
                                 break;
                             }
@@ -263,7 +228,7 @@ void Server_UpdateBot(Server* s, int id) {
                             if(x1 == 0 && y1 == 0 || !Character_Passable(c, s->map, x + x1, y + y1)) {
                                 continue;
                             }
-                            if(PF_Find(s->map, c, x + x1, y + y1)) {
+                            if(PF_Find(s->map, c, x + x1, y + y1, 0, false)) {
                                 actionMade = true;
                                 break;
                             }
@@ -280,7 +245,7 @@ void Server_UpdateBot(Server* s, int id) {
                             if(x1 == 0 && y1 == 0 || !Character_Passable(c, s->map, x + x1, y + y1)) {
                                 continue;
                             }
-                            if(PF_Find(s->map, c, x + x1, y + y1)) {
+                            if(PF_Find(s->map, c, x + x1, y + y1, 0, false)) {
                                 actionMade = true;
                                 break;
                             } 

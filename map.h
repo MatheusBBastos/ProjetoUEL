@@ -65,6 +65,8 @@ void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY);
 
 bool Map_Passable(Map* m, SDL_Rect* box, Character* c);
 
+bool Map_CheckSafeSpot(Map* m, int x, int y, int checkRange);
+
 void Map_Destroy(Map* m);
 
 #endif

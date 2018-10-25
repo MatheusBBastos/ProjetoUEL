@@ -20,6 +20,8 @@ typedef struct NodeHeap {
 } NodeHeap;
 
 typedef struct PFInstance {
+    bool safeSpot;
+    int minRange;
     NodeHeap heap;
     NodeGrid* grid;
     Node* targetNode;
@@ -27,6 +29,6 @@ typedef struct PFInstance {
     Map* map;
 } PFInstance;
 
-bool PF_Find(Map* map, Character* c, int tx, int ty);
+bool PF_Find(Map* map, Character* c, int tx, int ty, int minRange, bool findSafeSpot);
 
 #endif

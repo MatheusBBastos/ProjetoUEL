@@ -218,6 +218,69 @@ bool Map_Passable(Map* m, SDL_Rect* box, Character* c) {
     return true;
 }
 
+bool Map_CheckSafeSpot(Map* m, int x, int y, int checkRange) {
+    if(m->objects[y][x].exists && m->objects[y][x].type == OBJ_BOMB) {
+        return false;
+    }
+    for(int x1 = 1; x1 <= checkRange; x1++) {
+        if(x + x1 >= m->width) {
+            break;
+        }
+        if(m->objects[y][x + x1].exists) {
+            int t = m->objects[y][x + x1].type;
+            if(t == OBJ_BOMB) {
+                return false;
+            } else if(t == OBJ_WALL) {
+                break;
+            }
+        }
+    }
+
+    for(int x1 = 1; x1 <= checkRange; x1++) {
+        if(x - x1 < 0) {
+            break;
+        }
+        if(m->objects[y][x - x1].exists) {
+            int t = m->objects[y][x - x1].type;
+            if(t == OBJ_BOMB) {
+                return false;
+            } else if(t == OBJ_WALL) {
+                break;
+            }
+        }
+    }
+
+    for(int y1 = 1; y1 <= checkRange; y1++) {
+        if(y + y1 >= m->height) {
+            break;
+        }
+        if(m->objects[y + y1][x].exists) {
+            int t = m->objects[y + y1][x].type;
+            if(t == OBJ_BOMB) {
+                return false;
+            } else if(t == OBJ_WALL) {
+                break;
+            }
+        }
+    }
+
+    for(int y1 = 1; y1 <= 5; y1++) {
+        if(y - y1 < 0) {
+            break;
+        }
+        if(m->objects[y - y1][x].exists) {
+            int t = m->objects[y - y1][x].type;
+            if(t == OBJ_BOMB) {
+                return false;
+            } else if(t == OBJ_WALL) {
+                break;
+            }
+        }
+    }
+
+    return true;
+}
+
 void Map_Destroy(Map* m) {
     if(m->loaded)
         free(m->data);

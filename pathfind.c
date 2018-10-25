@@ -68,6 +68,10 @@ Node* PF_NodeGet(NodeGrid* ng, int x, int y) {
     return &ng->data[index];
 }
 
+int PF_ManhattanDistance(PFInstance* instance, Node* node) {
+    return abs(instance->targetNode->x - node->x) + abs(instance->targetNode->y - node->y);
+}
+
 void PF_NodeSetNeighbors(PFInstance* instance, Node* node) {
     int newx, newy;
     for(int y1 = -1; y1 <= 1; y1++) {
@@ -86,21 +90,31 @@ void PF_NodeSetNeighbors(PFInstance* instance, Node* node) {
             } else {
                 newNode->parent = node;
                 newNode->g = node->g + 1;
-                newNode->h = abs(instance->targetNode->x - newx) + abs(instance->targetNode->y - newy);
+                newNode->h = instance->safeSpot ? 0 : PF_ManhattanDistance(instance, newNode);
                 Heap_Insert(&instance->heap, newNode);
             }
         }
     }
 }
 
-bool PF_Find(Map* map, Character* c, int tx, int ty) {
+bool PF_ConditionSatisfied(PFInstance* instance, Node* node) {
+    if(instance->safeSpot) {
+        return Map_CheckSafeSpot(instance->map, node->x, node->y, instance->minRange);
+    } else {
+        return (PF_ManhattanDistance(instance, node) <= instance->minRange);
+    }
+}
+
+bool PF_Find(Map* map, Character* c, int tx, int ty, int minRange, bool findSafeSpot) {
     PFInstance instance;
+    instance.safeSpot = findSafeSpot;
+    instance.minRange = minRange;
     instance.map = map;
     instance.character = c;
     instance.grid = PF_CreateNodeGrid(map->width, map->height);
     int sx, sy;
     Character_GetTilePosition(c, &sx, &sy);
-    int hScore = abs(tx - sx) + abs(ty - sx);
+    int hScore = findSafeSpot ? 0 : abs(tx - sx) + abs(ty - sx);
     Node* currentNode = PF_NodeGet(instance.grid, sx, sy);
     currentNode->h = hScore;
     instance.targetNode = PF_NodeGet(instance.grid, tx, ty);
@@ -109,7 +123,7 @@ bool PF_Find(Map* map, Character* c, int tx, int ty) {
     instance.heap.data = malloc(map->width * map->height * sizeof(Node*));
 
     currentNode->closed = true;
-    while(currentNode != instance.targetNode) {
+    while(!PF_ConditionSatisfied(&instance, currentNode)) {
         PF_NodeSetNeighbors(&instance, currentNode);
         currentNode = Heap_Pop(&instance.heap);
         if(currentNode == NULL) {
@@ -117,6 +131,8 @@ bool PF_Find(Map* map, Character* c, int tx, int ty) {
         }
         currentNode->closed = true;
     }
+
+    int foundX = currentNode->x, foundY = currentNode->y;
 
     while(currentNode != NULL && currentNode->parent != NULL) {
         uint8_t dir;
@@ -138,8 +154,8 @@ bool PF_Find(Map* map, Character* c, int tx, int ty) {
 
     if(instance.character->movementStackTop > -1) {
         instance.character->forcingMovement = true;
-        instance.character->targetX = tx;
-        instance.character->targetY = ty;
+        instance.character->targetX = foundX;
+        instance.character->targetY = foundY;
     }
 
     free(instance.heap.data);
