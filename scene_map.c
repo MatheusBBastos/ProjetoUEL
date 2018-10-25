@@ -119,8 +119,10 @@ void SceneMap_Receive(Scene_Map* s) {
         if(sender.address == Network.serverAddress->address && sender.port == Network.serverAddress->port) {
             if(strcmp("PNG", data) != 0)
                 printf("[Client] Received from server: %s\n", data);
+            if(strncmp("PSE", data, 3) == 0) {
+                s->frozen = !s->frozen;
             // Kick
-            if(strncmp("KCK", data, 3) == 0) {
+            } else if(strncmp("KCK", data, 3) == 0) {
                 Network.connectedToServer = false;
                 Mix_PauseMusic();
                 SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
@@ -381,9 +383,11 @@ void SceneMap_update(Scene_Map* s) {
         }
     }
 
-    s->currentFrame++;
-    if (s->currentFrame >= Game.screenFreq) {
-        s->currentFrame = 0;
+    if(!s->frozen) {
+        s->currentFrame++;
+        if (s->currentFrame >= Game.screenFreq) {
+            s->currentFrame = 0;
+        }
     }
 }
 
@@ -394,6 +398,8 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
         } else if(e->key.keysym.sym == SDLK_SPACE && s->player != NULL && !s->player->dead) {
             Socket_Send(Network.sockFd, Network.serverAddress, "BMB", 4);
+        } else if(e->key.keysym.sym == SDLK_p) {
+            Socket_Send(Network.sockFd, Network.serverAddress, "PSE", 4);
         }
         //Atualiza estado da tecla se o evento dela for mais recente
         if(s->player != NULL) {

@@ -70,6 +70,7 @@ typedef struct Server {
     int hostId;
     bool inGame;
     bool gameEnded;
+    bool paused;
     char name[32];
     ServerBomb *bombs;
     int bombNumber;

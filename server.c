@@ -51,12 +51,12 @@ Server* Server_Open(unsigned short port, char nm[32]) {
             newServer->clients[i] = NULL;
             newServer->placements[i] = -1;
         }
-
         newServer->currentPlacement = newServer->maxClients - 1;
 
         newServer->hostId = -1;
         newServer->inGame = false;
         newServer->gameEnded = false;
+        newServer->paused = false;
         newServer->map = Map_Create();
         newServer->bombNumber = MAX_BOMBS_PER_PLAYER * newServer->maxClients;
         newServer->bombs = malloc(newServer->bombNumber * sizeof(ServerBomb));
@@ -154,7 +154,7 @@ void Server_CheckInactiveClients(Server* s) {
                 Server_KickPlayer(s, i);
             } else {
                 Socket_Send(s->sockfd, s->clients[i]->addr, "PNG", 4);
-                if(s->inGame && s->map->characters[i] != NULL) {
+                if(s->inGame && !s->paused && s->map->characters[i] != NULL) {
                     Server_CharacterUpdate(s, s->map->characters[i], s->map);
                     Server_UpdateCharMovement(s, s->map->characters[i]);
                 }
@@ -542,7 +542,7 @@ void Server_CheckEnd(Server* s) {
         }
         s->gameEnded = true;
         s->inGame = false;
-        char sendData[16];
+        char sendData[32];
         sprintf(sendData, "END %d", alive);
         for(int i = 0; i < s->maxClients; i++) {
             char addData[4];
@@ -557,63 +557,75 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
     int cId = Server_FindClient(s, sender);
     if(cId != -1) {
         s->clients[cId]->lastMessage = SDL_GetTicks();
-        if(strncmp("POS", buffer, 3) == 0) {
-            int newX, newY, dir;
-            uint64_t movementId;
-            sscanf(buffer + 4, "%llu %d %d %d", &movementId, &newX, &newY, &dir);
-            if(movementId > s->map->characters[cId]->lastMovementId) {
-                Character* chr = s->map->characters[cId];
-                char sendData[32];
-                if(Server_CheckMovement(s, cId, newX, newY)) {
-                    chr->x = newX;
-                    chr->y = newY;
-                    chr->direction = dir;
-                    sprintf(sendData, "POS %d %d %d %d", cId, newX, newY, dir);
-                    Server_SendToAll(s, sendData, cId);
-                } else {
-                    sprintf(sendData, "FIX %llu %d %d", movementId, chr->x, chr->y);
-                    Socket_Send(s->sockfd, sender, sendData, strlen(sendData) + 1);
+        if(s->paused) {
+            if(strncmp("PSE", buffer, 3) == 0 && cId == s->hostId && s->inGame) {
+                s->paused = false;
+                Server_SendToAll(s, "PSE", -1);
+            }
+        } else {
+            if(strncmp("PSE", buffer, 3) == 0 && cId == s->hostId && s->inGame) {
+                s->paused = true;
+                Server_SendToAll(s, "PSE", -1);
+            } else if(strncmp("POS", buffer, 3) == 0 && s->inGame) {
+                int newX, newY, dir;
+                uint64_t movementId;
+                sscanf(buffer + 4, "%llu %d %d %d", &movementId, &newX, &newY, &dir);
+                if(movementId > s->map->characters[cId]->lastMovementId) {
+                    Character* chr = s->map->characters[cId];
+                    char sendData[32];
+                    if(Server_CheckMovement(s, cId, newX, newY)) {
+                        chr->x = newX;
+                        chr->y = newY;
+                        chr->direction = dir;
+                        sprintf(sendData, "POS %d %d %d %d", cId, newX, newY, dir);
+                        Server_SendToAll(s, sendData, cId);
+                    } else {
+                        sprintf(sendData, "FIX %llu %d %d", movementId, chr->x, chr->y);
+                        Socket_Send(s->sockfd, sender, sendData, strlen(sendData) + 1);
+                    }
+                    chr->lastMovementId = movementId;
                 }
-                chr->lastMovementId = movementId;
-            }
-        } else if(strncmp("DCS", buffer, 3) == 0) {
-            Server_PlayerDisconnect(s, cId);
-        } else if(strncmp("BOT", buffer, 3) == 0) {
-            if(s->hostId == cId && s->connectedClients < s->maxClients && !s->inGame && !s->gameEnded) {
-                int difficulty;
-                sscanf(buffer + 4, "%d", &difficulty);
-                int id = Server_FindEmptySlot(s);
-                s->clients[id] = Client_New(sender, id, false);
-                s->clients[id]->bot = true;
-                s->clients[id]->b.difficulty = difficulty;
-                strcpy(s->clients[id]->username, "BOT");
-                Server_CheckName(s, id, 0);
-                s->connectedClients++;
-                printf("[Server] Bot added (%d)\n", difficulty);
-                char sendData3[40];
-                sprintf(sendData3, "PNM %d %s", id, s->clients[id]->username);
-                Server_SendToAll(s, sendData3, id);
-            }
-        } else if(strncmp("STA", buffer, 3) == 0) {
-            if(s->hostId == cId && !s->inGame && !s->gameEnded) {
-                s->inGame = true;
-                Server_CreateCharacters(s);
-                Map_Load(s->map, "map.txt", false);
-                char sendData[64];
-                sprintf(sendData, "MAP %s", "map.txt");
-                Server_SendToAll(s, sendData, strlen(sendData) + 1);
-                Server_GenerateMap(s);
-            }
-        } else if(strncmp("BMB", buffer, 3) == 0) {
-            if(s->inGame) {
-                Server_PlaceBomb(s, cId);
+            } else if(strncmp("DCS", buffer, 3) == 0) {
+                Server_PlayerDisconnect(s, cId);
+            } else if(strncmp("BOT", buffer, 3) == 0) {
+                if(s->hostId == cId && s->connectedClients < s->maxClients && !s->inGame && !s->gameEnded) {
+                    int difficulty;
+                    sscanf(buffer + 4, "%d", &difficulty);
+                    int id = Server_FindEmptySlot(s);
+                    s->clients[id] = Client_New(sender, id, false);
+                    s->clients[id]->bot = true;
+                    s->clients[id]->b.difficulty = difficulty;
+                    strcpy(s->clients[id]->username, "BOT");
+                    Server_CheckName(s, id, 0);
+                    s->connectedClients++;
+                    printf("[Server] Bot added (%d)\n", difficulty);
+                    char sendData3[40];
+                    sprintf(sendData3, "PNM %d %s", id, s->clients[id]->username);
+                    Server_SendToAll(s, sendData3, id);
+                }
+            } else if(strncmp("STA", buffer, 3) == 0) {
+                if(s->hostId == cId && !s->inGame && !s->gameEnded) {
+                    s->inGame = true;
+                    Server_CreateCharacters(s);
+                    Map_Load(s->map, "map.txt", false);
+                    char sendData[64];
+                    sprintf(sendData, "MAP %s", "map.txt");
+                    Server_SendToAll(s, sendData, strlen(sendData) + 1);
+                    Server_GenerateMap(s);
+                }
+            } else if(strncmp("BMB", buffer, 3) == 0) {
+                if(s->inGame) {
+                    Server_PlaceBomb(s, cId);
+                }
             }
         }
     } else {
         if(strncmp("INF", buffer, 3) == 0) {
-            char sendData[64];
-            sprintf(sendData, "INF %d %d %s", s->connectedClients, s->maxClients, s->name);
-            Socket_Send(s->sockfd, sender, sendData, strlen(sendData) + 1);
+            if(!s->inGame && !s->gameEnded) {
+                char sendData[64];
+                sprintf(sendData, "INF %d %d %s", s->connectedClients, s->maxClients, s->name);
+                Socket_Send(s->sockfd, sender, sendData, strlen(sendData) + 1);
+            }
         } else if(strncmp("CON", buffer, 3) == 0) {
             int version;
             char username[32];
@@ -670,10 +682,9 @@ int Server_InitLoop(Server* s) {
                 printf("[Server] Received from %s (Port: %hu): %s\n", sender.addrString, sender.port, buffer);
             Server_HandleMessage(s, &sender, buffer);
         }
-        if(s->inGame)
-            Server_CheckEnd(s);
         Server_CheckInactiveClients(s);
-        if(s->inGame) {
+        if(s->inGame && !s->paused) {
+            Server_CheckEnd(s);
             Server_UpdateBombs(s);
             for(int i = 0; i < s->maxClients; i++) {
                 if(s->clients[i] != NULL && s->clients[i]->bot) {
