@@ -390,7 +390,7 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
                         if (Network.serverAddress != NULL)
                             DestroyAddress(Network.serverAddress);
                         struct sockaddr_in sin;
-                        socklen_t len = sizeof(sin);
+                        int len = sizeof(sin);
                         unsigned short port;
                         getsockname(Network.server->sockfd, (struct sockaddr *)&sin, &len);
                         port = ntohs(sin.sin_port);

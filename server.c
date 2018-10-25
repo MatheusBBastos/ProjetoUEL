@@ -407,7 +407,11 @@ void Server_DestroyWall(Server* s, int x, int y) {
     char sendData[16];
     sprintf(sendData, "WDS %d", s->map->objects[y][x].objId);
     s->map->objects[y][x].exists = false;
+#if PLATFORM == PLATFORM_WINDOWS
+    int r = rand() % 4;
+#else
     int r = random() % 4;
+#endif
     if(r == 0) {
         Server_PlacePowerUp(s, x, y);
     }
