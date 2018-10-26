@@ -250,7 +250,7 @@ void SceneMap_Receive(Scene_Map* s) {
                 int id;
                 sscanf(data + 4, "%d", &id);
                 Game.map->powerups[id].exists = false;
-                Mix_PlayChannel(-1, s->pickup, 0);
+                Mix_PlayChannel(id*2, s->pickup, 0);
             // Morte de um jogador
             } else if(strncmp("DEA", data, 3) == 0) {
                 int id;
@@ -259,7 +259,7 @@ void SceneMap_Receive(Scene_Map* s) {
                     Game.map->characters[id]->dead = true;
                 WD_TextureLoadFromText(s->status[id], "Morto", Game.roboto, (SDL_Color) { 255, 255, 255 });
                 if (s->player->dead) {
-                    Mix_PlayChannel(-1, s->ded, 0);
+                    Mix_PlayChannel(id*3, s->ded, 0);
                 }
             // Número de kills
             } else if(strncmp("KIL", data, 3) == 0) {
@@ -632,12 +632,20 @@ void SceneMap_destroy(Scene_Map* s) {
     }
     for(int i = 0; i < 4; i++) {
         WD_TextureDestroy(s->placement[i]);
+        WD_TextureDestroy(s->playerNames[i]);
+        WD_TextureDestroy(s->status[i]);
     }
     Mix_FreeChunk(s->bombexp);
     Mix_FreeChunk(s->bombload);
     Mix_FreeMusic(s->backgroundMusic);
+    Mix_FreeChunk(s->winSound);
+    Mix_FreeChunk(s->pickup);
+    WD_TextureDestroy(s->bg);
     WD_TextureDestroy(s->bombSprite);
     WD_TextureDestroy(s->explosionSprite);
+    WD_TextureDestroy(s->winText);
+    WD_TextureDestroy(s->winChar);
+    WD_TextureDestroy(s->loseChar);
     WD_TextureDestroy(s->wallTexture);
     WD_TextureDestroy(s->animatedBomb);
     WD_TextureDestroy(s->puTexture);

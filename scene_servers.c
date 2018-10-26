@@ -311,6 +311,10 @@ void SceneServers_destroy(Scene_Servers* s) {
     Socket_Close(s->receiveSock);
     WD_TextureDestroy(s->backgroundTexture);
     WD_TextureDestroy(s->entrar);
+    WD_TextureDestroy(s->server);
+    WD_TextureDestroy(s->mutiplayer);
+    WD_TextBoxDestroy(s->boxIp);
+    WD_TextBoxDestroy(s->boxNome);
     WD_TextureDestroy(s->servir[0]);
     WD_TextureDestroy(s->servir[1]);
     for (int i = 0; i < 4; i++) {
@@ -319,12 +323,18 @@ void SceneServers_destroy(Scene_Servers* s) {
     }
     WD_TextureDestroy(s->voltar);
     WD_TextureDestroy(s->loading);
+    SDL_StopTextInput();
     free(s);
 }
 
 void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
     if(SceneManager.inTransition)
         return;
+
+    if ((e->type == SDL_TEXTINPUT || e->type == SDL_TEXTEDITING) && (s->boxIp->active || s->boxNome->active)) {
+        Mix_PlayChannel(-1, Game.type, 0);
+    }
+
     if(e->type == SDL_KEYDOWN) {   
         if(e->key.keysym.sym == SDLK_ESCAPE) {
             if (s->boxIp->active || s->boxNome->active) {
@@ -335,12 +345,18 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
                 SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
             }
         } else if(e->key.keysym.sym == SDLK_DOWN && !s->boxIp->active && !s->boxNome->active) {
-            if(s->posTela < 3 && !s->esquerda && s->posTela < (s->numServers - 1))// pra ir só até o num servers
+            if (s->posTela < 3 && !s->esquerda && s->posTela < (s->numServers - 1)) {// pra ir só até o num servers
                 s->posTela++;
-            if(s->indexe < 2 && s->esquerda)
+                Mix_PlayChannel(-1, Game.change, 0);
+            }
+            if (s->indexe < 2 && s->esquerda) {
                 s->indexe++;
-            else if(s->indexd < (s->numServers - 1) && !s->esquerda)
+                Mix_PlayChannel(-1, Game.change, 0);
+            }
+            else if (s->indexd < (s->numServers - 1) && !s->esquerda) {
                 s->indexd++;
+                Mix_PlayChannel(-1, Game.change, 0);
+            }
 
             if(s->posTela == 3 && !s->esquerda) {
                 SDL_Color color = {255, 255, 255};
@@ -349,13 +365,19 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
             }
 
         } else if(e->key.keysym.sym == SDLK_UP && !s->boxIp->active && !s->boxNome->active) {
-            if(s->posTela > 0 && !s->esquerda)
+            if (s->posTela > 0 && !s->esquerda) {
                 s->posTela--;
+                Mix_PlayChannel(-1, Game.change, 0);
+            }
 
-            if(s->esquerda && s->indexe > 0)
+            if (s->esquerda && s->indexe > 0) {
                 s->indexe--;
-            else if(!s->esquerda && s->indexd > 0)
+                Mix_PlayChannel(-1, Game.change, 0);
+            }
+            else if (!s->esquerda && s->indexd > 0) {
                 s->indexd--;
+                Mix_PlayChannel(-1, Game.change, 0);
+            }
             
             if(!s->esquerda && s->posTela == 0) {
                 SDL_Color color = {255, 255, 255};
@@ -365,9 +387,12 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
             
         } else if(e->key.keysym.sym == SDLK_RIGHT && s->numServers != 0) {
             s->esquerda = false;
+            Mix_PlayChannel(-1,Game.change,0);
         } else if(e->key.keysym.sym == SDLK_LEFT) {
             s->esquerda = true; 
+            Mix_PlayChannel(-1, Game.change, 0);
         } else if(e->key.keysym.sym == SDLK_RETURN) {
+            Mix_PlayChannel(-1, Game.enter, 0);
             if(s->esquerda == false) {
                 if(s->servers[s->indexd].text[0] != '\0') {
                     if(Network.serverAddress != NULL)

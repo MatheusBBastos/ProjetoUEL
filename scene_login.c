@@ -2,32 +2,6 @@
 #include "jsmn.h"
 #include "rsa.h"
 
-int posSetaX[2] = { 720,245 };
-int posSetaY = 806;
-
-int posLogarX = 135;
-int posLogarY = 800;
-
-int posModoX = 135;
-int posModoY = 875;
-
-int posVoltarX = 135;
-int posVoltarY = 950;
-
-int posLoginX = 480;
-int posLoginY = 580;
-int sizeLogin[2] = { 520,52 };
-
-int posSenhaX = 480;
-int posSenhaY = 670;
-int sizeSenha[2] = { 520,52 };
-
-int posErroX = 660;
-int posErroY = 700;
-
-int posLogoX = 215;
-int posLogoY = 200;
-
 Scene_Login* SceneLogin_new() {
     Scene_Login* newScene = malloc(sizeof(Scene_Login));
     newScene->enteringFrame = 0;
@@ -37,7 +11,6 @@ Scene_Login* SceneLogin_new() {
     if (!Mix_PlayingMusic) {
         Mix_PlayMusic(Game.mainMusic, -1);
     }
-    newScene->type = Mix_LoadWAV("content/type.wav");
 
    // newScene->music = Mix_LoadMUS("content/hang.mp3");
    // Mix_PlayMusic(newScene->music, -1);
@@ -57,23 +30,19 @@ Scene_Login* SceneLogin_new() {
     newScene->backgroundTexture = WD_CreateTexture();
     newScene->textLogar = WD_CreateTexture();
     newScene->textModoOff = WD_CreateTexture();
-    newScene->seta = WD_CreateTexture();
     newScene->modoOff = false;
     newScene->brute = false;
     newScene->textCaps = WD_CreateTexture();
     newScene->textErrorBrute = WD_CreateTexture();
     newScene->textVoltar = WD_CreateTexture();
-    newScene->textVoltarOff = WD_CreateTexture();
     newScene->index = 0; // Começar no login
 
 
     WD_TextureLoadFromFile(newScene->loading, "content/loading.png");
     WD_TextureLoadFromFile(newScene->logo[0], "content/torch.png");
     WD_TextureLoadFromFile(newScene->logo[1], "content/logo.png");
-    WD_TextureLoadFromFile(newScene->seta, "content/seta.png");
     WD_TextureLoadFromText(newScene->textLogar, "ENTRAR", Game.telaLogin, colorSelected);
     WD_TextureLoadFromText(newScene->textVoltar, "VOLTAR", Game.telaLogin, colorNotSelected);
-    WD_TextureLoadFromText(newScene->textVoltarOff, "VOLTAR", Game.telaLogin, colorNotSelected);
     WD_TextureLoadFromText(newScene->textModoOff, "MODO OFFLINE", Game.telaLogin, colorSelected);
     WD_TextureLoadFromText(newScene->textCaps, "*CAPS LIGADO", Game.telaLogin, colorNotSelected);
     WD_TextureLoadFromText(newScene->textError, "*Acesso negado", Game.telaLogin, colorNotSelected);
@@ -185,9 +154,9 @@ void SceneLogin_update(Scene_Login* s) {
     }
     ///// -- HANDLE NETWORK -- //////
 
-    SDL_Rect indexLogin = { posLogarX, posLogarY + s->textLogar->h , s->textLogar->w, 5 };
-    SDL_Rect indexModoOff = { posModoX, posModoY + s->textModoOff->h , s->textModoOff->w, 5 };
-    SDL_Rect indexVoltar = { posVoltarX, posVoltarY + s->textVoltar->h , s->textVoltar->w, 5 };
+    SDL_Rect indexLogin = { 135, 800 + s->textLogar->h , s->textLogar->w, 5 };
+    SDL_Rect indexModoOff = { 135, 875 + s->textModoOff->h , s->textModoOff->w, 5 };
+    SDL_Rect indexVoltar = { 135, 950 + s->textVoltar->h , s->textVoltar->w, 5 };
 
     SDL_SetRenderDrawColor(Game.renderer, 0x12, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(Game.renderer);
@@ -196,10 +165,10 @@ void SceneLogin_update(Scene_Login* s) {
 
 
     if (SDL_GetModState() & KMOD_CAPS) {
-        WD_TextureRender(s->textCaps, posErroX, posErroY);
+        WD_TextureRender(s->textCaps, 660, 700);
     }
     if (s->brute) {
-        WD_TextureRender(s->textErrorBrute, posErroX, posErroY + 100);
+        WD_TextureRender(s->textErrorBrute, 660, 700 + 100);
     }
 
 
@@ -211,16 +180,15 @@ void SceneLogin_update(Scene_Login* s) {
         SDL_Rect c = {loadingX, loadingY, 100, 100};
         SDL_RenderCopyEx(Game.renderer, s->loading->mTexture, NULL, &c, angle, NULL, SDL_FLIP_NONE);
     }
-    WD_TextureRender(s->textLogar, posLogarX, posLogarY);
-    WD_TextureRender(s->textModoOff, posModoX, posModoY);
-    WD_TextureRender(s->textVoltar, posVoltarX, posVoltarY);
-    //WD_TextureRender(s->logo[1], posLogoX, posLogoY);
+    WD_TextureRender(s->textLogar, 135, 800);
+    WD_TextureRender(s->textModoOff, 135, 875);
+    WD_TextureRender(s->textVoltar, 135, 950);
 
     SDL_SetRenderDrawBlendMode(Game.renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(Game.renderer, 0xFF, 0xFF, 0xFF, 100);
 
     if (s->acessonegado) {
-        WD_TextureRender(s->textError, posErroX, posErroY+50);
+        WD_TextureRender(s->textError, 660, 700+50);
     }
 
     switch (s->index) {
@@ -237,13 +205,13 @@ void SceneLogin_update(Scene_Login* s) {
 
     /*
     if (s->modoOff && s->index == 2) {
-        WD_TextureRender(s->textLogarOff, posLogarX, posLogarY);
-       WD_TextureRender(s->textModoOff, posModoX, posModoY);
+        WD_TextureRender(s->textLogarOff, 135, 800);
+       WD_TextureRender(s->textModoOff, 135, 875);
         WD_TextureRender(s->seta, posSetaX[0], posSetaY);
     }
     else if (!s->modoOff && s->index == 2) {
-        WD_TextureRender(s->textLogar, posLogarX, posLogarY);
-       WD_TextureRender(s->textModoOffOff, posModoX, posModoY);
+        WD_TextureRender(s->textLogar, 135, 800);
+       WD_TextureRender(s->textModoOffOff, 135, 875);
        WD_TextureRender(s->seta, posSetaX[1], posSetaY);
     }
     
@@ -300,6 +268,9 @@ void SceneLogin_destroy(Scene_Login* s) {
     WD_TextureDestroy(s->textModoOff);
     WD_TextBoxDestroy(s->login);
     WD_TextBoxDestroy(s->senha);
+    WD_TextureDestroy(s->textErrorBrute);
+    WD_TextureDestroy(s->textVoltar);
+    WD_TextureDestroy(s->textCaps);
     SDL_StopTextInput();
     free(s);
 }
@@ -310,7 +281,7 @@ void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
     if (e->type == SDL_TEXTINPUT || e->type == SDL_TEXTEDITING) {
         s->acessonegado = false;
         s->brute = false;
-        Mix_PlayChannel(-1, s->type, 0);
+        Mix_PlayChannel(-1, Game.type, 0);
     }
 
     if(e->type == SDL_KEYDOWN) {
