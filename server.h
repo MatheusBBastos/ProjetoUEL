@@ -77,10 +77,11 @@ typedef struct Server {
     int powerupNumber;
     int *placements;
     int currentPlacement;
+    bool singleplayer;
 } Server;
 
 // Abrir servidor na porta informada
-Server* Server_Open(unsigned short port, char nm[32]);
+Server* Server_Open(unsigned short port, char nm[32], bool singleplayer);
 // Loop principal do servidor
 int Server_InitLoop(Server* s);
 // Desalocar servidor

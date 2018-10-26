@@ -30,15 +30,18 @@ void Client_Destroy(Client* c, Server* s) {
     free(c);
 }
 
-Server* Server_Open(unsigned short port, char nm[32]) {
+Server* Server_Open(unsigned short port, char nm[32], bool singleplayer) {
     int sockFd = Socket_Open(port, false);
     if(sockFd != 0) {
         Server* newServer = malloc(sizeof(Server));
         strcpy(newServer->name, nm);
-        newServer->listenSockFd = Socket_Open(BROADCAST_PORT, true);
-        if(newServer->listenSockFd != 0) {
-            printf("%d\n", newServer->listenSockFd);
+        if(!singleplayer) {
+            newServer->listenSockFd = Socket_Open(BROADCAST_PORT, true);
+            if(newServer->listenSockFd != 0) {
+                printf("%d\n", newServer->listenSockFd);
+            }
         }
+        newServer->singleplayer = singleplayer;
         newServer->port = port;
         newServer->sockfd = sockFd;
         newServer->running = false;
@@ -632,12 +635,14 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
         }
     } else {
         if(strncmp("INF", buffer, 3) == 0) {
-            if(!s->inGame && !s->gameEnded) {
+            if(!s->inGame && !s->gameEnded && !s->singleplayer) {
                 char sendData[64];
                 sprintf(sendData, "INF %d %d %s", s->connectedClients, s->maxClients, s->name);
                 Socket_Send(s->sockfd, sender, sendData, strlen(sendData) + 1);
             }
         } else if(strncmp("CON", buffer, 3) == 0) {
+            if(s->singleplayer && s->connectedClients > 0)
+                return;
             int version;
             char username[32];
             int host;

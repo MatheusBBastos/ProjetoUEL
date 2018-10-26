@@ -396,7 +396,7 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
             } else if(s->esquerda && s->indexe == 0) {
                 if (s->boxNome->active == true) {
                     Network.serverHost = true;
-                    Network.server = Server_Open(SERVER_DEFAULT_PORT, s->boxNome->text);
+                    Network.server = Server_Open(SERVER_DEFAULT_PORT, s->boxNome->text, false);
                     if (Network.server != NULL) {
                         Network.serverThread = SDL_CreateThread(Server_InitLoop, "ServerLoop", Network.server);
                         if (Network.serverAddress != NULL)
