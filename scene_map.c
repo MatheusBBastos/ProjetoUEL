@@ -361,7 +361,7 @@ void SceneMap_update(Scene_Map* s) {
     // Renderizar paredes
     Map_RenderWalls(Game.map, s->wallTexture, s->screenX, s->screenY);
     // Renderizar PowerUps
-    Map_RenderPowerUps(Game.map, s->puTexture, s->screenX, s->screenY);
+    Map_RenderPowerUps(Game.map, s->puTexture, s->screenX, s->screenY, s->currentFrame);
     // Renderizar bombas
     for(int i = 0; i < 20; i++) {
         Bomb_Render(&s->bombs[i], s->screenX, s->screenY, s->animatedBomb, s->currentFrame);

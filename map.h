@@ -59,7 +59,7 @@ void Map_RenderFull(Map* m, WTexture* tileMap);
 
 void Map_RenderWalls(Map* m, WTexture* wallTexture, int screenX, int screenY);
 
-void Map_RenderPowerUps(Map* m, WTexture* puTexture, int screenX, int screenY);
+void Map_RenderPowerUps(Map* m, WTexture* puTexture, int screenX, int screenY, int currentFrame);
 
 void Map_Render(Map* m, WTexture* tileMap, int screenX, int screenY);
 

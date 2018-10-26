@@ -129,11 +129,12 @@ void Map_RenderWalls(Map* m, WTexture* wallTexture, int screenX, int screenY) {
     }
 }
 
-void Map_RenderPowerUps(Map* m, WTexture* puTexture, int screenX, int screenY) {
+void Map_RenderPowerUps(Map* m, WTexture* puTexture, int screenX, int screenY, int currentFrame) {
+    int offY = currentFrame >= Game.screenFreq / 2 ? -2 : 0;
     for(int i = 0; i < m->powerupNumber; i++) {
         if(m->powerups[i].exists) {
             SDL_Rect clip = {TILE_SIZE * m->powerups[i].type, 0, TILE_SIZE, TILE_SIZE};
-            WD_TextureRenderEx(puTexture, TILE_SIZE * m->powerups[i].x - screenX, TILE_SIZE * m->powerups[i].y - screenY, &clip, 0.0, NULL, SDL_FLIP_NONE);
+            WD_TextureRenderEx(puTexture, TILE_SIZE * m->powerups[i].x - screenX, TILE_SIZE * m->powerups[i].y - screenY + offY, &clip, 0.0, NULL, SDL_FLIP_NONE);
         }
     }
 }
