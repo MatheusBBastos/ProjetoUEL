@@ -5,7 +5,6 @@ void Server_UpdateCharMovement(Server* s, Character* c) {
     if(c->dead)
         return;
     if(c->forcingMovement && c->x == c->renderX && c->y == c->renderY) {
-        printf("SERVER MEXEU 1\n");
         if(Character_TryToMove(c, c->movementStack[c->movementStackTop], s->map)) {
             c->movementStackTop--;
             if(c->movementStackTop == -1) {
@@ -49,22 +48,12 @@ int distance(int xBot, int yBot, int xOthers, int yOthers) {
     return (abs(xBot - xOthers) + abs(yBot - yOthers));
 }
 
-int clientsLives(Server *s) {
-    int cont=0;
-    for(int i=0; i< s->maxClients; i++) {
-        if(s->clients[i] != NULL && !s->map->characters[i]->dead) {
-            cont++;
-        }
-    }
-    return cont;
-}
-
 void Server_UpdateBot(Server* s, int id) {
     // Character: s->map->characters[id]
     // Client: s->clients[id]
     // PF_Find(s->map, s->map->characters[id], x, y)
     // -> retorna true se achou um caminho, false é impossível
-    // s->clients[id]->b.difficulty
+    // s->clients[id]->b.difficultyy
 
     Character* c = s->map->characters[id];
     if(!c->dead && !c->forcingMovement && s->clients[id]->bombsPlaced == 0) {
