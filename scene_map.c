@@ -10,6 +10,8 @@ Scene_Map* SceneMap_new() {
     newScene->backgroundMusic = Mix_LoadMUS("content/train.mp3");
     newScene->keyDown = false;
     newScene->keyUp = false;
+    newScene->bg = WD_CreateTexture();
+    WD_TextureLoadFromFile(newScene->bg, "content/bgingame.png");
     newScene->tileMap = WD_CreateTexture();
     newScene->animatedBomb = WD_CreateTexture();
     WD_TextureLoadFromFile(newScene->animatedBomb, "content/FSD.png");
@@ -41,6 +43,17 @@ Scene_Map* SceneMap_new() {
     newScene->endOpacity = 0;
     newScene->connected = false;
     newScene->socketFd = 0;
+    for (int i = 0; i < 4; i++) {
+        newScene->status[i] = WD_CreateTexture();
+        if (Game.map->characters[i] != NULL) {
+            WD_TextureLoadFromText(newScene->status[i], "Vivo", Game.roboto, (SDL_Color) { 255, 255, 255 });
+        }
+        else {
+            WD_TextureLoadFromText(newScene->status[i], " ", Game.rankMini, (SDL_Color) { 255, 255, 255 });
+        }
+    }
+
+
     for(int i = 0; i < 20; i++) {
         newScene->bombs[i].active = false;
         newScene->explosions[i].active = false;
@@ -241,6 +254,7 @@ void SceneMap_Receive(Scene_Map* s) {
                 sscanf(data + 4, "%d", &id);
                 if(Game.map->characters[id] != NULL)
                     Game.map->characters[id]->dead = true;
+                WD_TextureLoadFromText(s->status[id], "Morto", Game.roboto, (SDL_Color) { 255, 255, 255 });
                 if (s->player->dead) {
                     Mix_PlayChannel(-1, s->ded, 0);
                 }
@@ -352,6 +366,7 @@ void SceneMap_update(Scene_Map* s) {
         s->screenY = 0;
     SDL_SetRenderDrawColor(Game.renderer, 0x00, 0x00, 0x00, 0xFF);
     SDL_RenderClear(Game.renderer);
+    WD_TextureRender(s->bg, 0, 0);
     SDL_Rect renderQuad = {s->screenX, s->screenY, REFERENCE_WIDTH, REFERENCE_HEIGHT};
     s->screenX -= (REFERENCE_WIDTH - Game.map->width * TILE_SIZE) / 2;
     int dstWidth, dstHeight;
@@ -367,6 +382,10 @@ void SceneMap_update(Scene_Map* s) {
     // Renderizar as camadas do mapa
     SDL_RenderCopy(Game.renderer, Game.map->layers[0], &renderQuad, &dstRect);
     SDL_RenderCopy(Game.renderer, Game.map->layers[1], &renderQuad, &dstRect);
+    for (int i = 0; i < 4; i++) {
+        WD_TextureRender(s->status[i], 1300, 125 + (i * 125));
+    }
+
 
     // Movimentação do jogador
     if (!s->frozen && s->player != NULL && s->player->x == s->player->renderX && s->player->y == s->player->renderY) {

@@ -162,7 +162,7 @@ void SceneServers_update(Scene_Servers* s) {
         SDL_Color orange = {228, 120, 51};
         for(int i = 0; i <= 3; i++) {
             if(s->servers[s->indexShow + i].text[0] != '\0') {
-                WD_TextureLoadFromText(s->serverName[i], s->servers[s->indexShow + i].text, Game.serversFontd, white);
+                WD_TextureLoadFromText(s->serverName[i], s->servers[s->indexShow + i].text, Game.mainMenu_botoes, white);
 
                 int min, max;
                 sscanf(s->servers[i].num, "%d/%d", &min, &max);

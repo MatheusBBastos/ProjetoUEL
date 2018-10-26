@@ -65,6 +65,8 @@ typedef struct Scene_Map {
     int kills[4];
     int socketFd;
     int myScore;
+    WTexture* bg;
+    WTexture* status[4];
     bool connected;
 } Scene_Map;
 

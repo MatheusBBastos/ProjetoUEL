@@ -1,6 +1,7 @@
 #include "headers.h"
 #include "scene_base.h"
 #include "network.h"
+#include <locale.h>
 
 GameInfo Game;
 SceneManagerS SceneManager;
@@ -16,6 +17,7 @@ bool initialize() {
         Game.debug = false;
         Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
         SDL_DisplayMode current;
+        setlocale(LC_ALL, "Portuguese");
         SDL_GetCurrentDisplayMode(0, &current);
         Game.screenFreq = current.refresh_rate;
         if (current.w >= 1920) {
@@ -89,7 +91,7 @@ int main(int argc, char* argv[]) {
         // Fontes
         Game.mainFont = TTF_OpenFont("content/Fipps-Regular.ttf", 36);
         Game.telaLogin = TTF_OpenFont("content/kozuki.ttf", 48);
-        Game.inputFont = TTF_OpenFont("content/Minecraft.ttf", 46);
+        Game.inputFont = TTF_OpenFont("content/kozuki.ttf", 40);
         Game.rankMini = TTF_OpenFont("content/Minecraft.ttf", 44);
         Game.mainMenu = TTF_OpenFont("content/Minecraft.ttf", 68);
         Game.mainMenu_botoes = TTF_OpenFont("content/kozuki.ttf", 62);
@@ -100,6 +102,8 @@ int main(int argc, char* argv[]) {
         Game.serversFonte = TTF_OpenFont("content/Minecraft.ttf", 48);
         Game.startFont = TTF_OpenFont("content/kozuki.ttf", 25); 
         Game.serversName = TTF_OpenFont("content/kozuki.ttf", 80);
+        Game.tip = TTF_OpenFont("content/roboto.ttf", 48);
+        Game.win = TTF_OpenFont("content/roboto.ttf", 80);
 
         Game.enter = Mix_LoadWAV("content/enter.ogg");
         Game.change = Mix_LoadWAV("content/change.ogg");
