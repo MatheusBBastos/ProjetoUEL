@@ -21,10 +21,12 @@ Scene_Servers* SceneServers_new() {
     newScene->servir[1] = WD_CreateTexture();
     newScene->voltar = WD_CreateTexture();
     newScene->loading = WD_CreateTexture();
+    newScene->emJogo = WD_CreateTexture();
     newScene->indexe = 0;
     newScene->indexShow = 0;
-    newScene-> indexd = 0;
-    newScene-> posTela = 0;
+    newScene->indexd = 0;
+    newScene->posTela = 0;
+    newScene->inGame = false;
     newScene->esquerda = true;
     newScene->numServers = 0;
     newScene->maxServers = 10;
@@ -108,6 +110,7 @@ void SceneServers_update(Scene_Servers* s) {
             } else if(strncmp("ING", data, 3) == 0) {
                 printf("[Client] Server in-game\n");
                 s->waitingConnection = false;
+                s->inGame = true;
             }
         }
         s->connectionTimeout++;
@@ -157,15 +160,25 @@ void SceneServers_update(Scene_Servers* s) {
         SDL_Color white = {255, 255, 255};
         SDL_Color green = {153, 204, 50};
         SDL_Color red = {255, 0, 0};
+        SDL_Color orange = {228, 120, 51};
         for(int i = 0; i <= 3; i++) {
             if(s->servers[s->indexShow + i].text[0] != '\0') {
                 WD_TextureLoadFromText(s->serverName[i], s->servers[s->indexShow + i].text, Game.serversFontd, white);
+
                 int min, max;
                 sscanf(s->servers[i].num, "%d/%d", &min, &max);
-                if(min < 4)
-                    WD_TextureLoadFromText(s->serverSlot[i], s->servers[s->indexShow + i].num, Game.serversFontd, green);
+                if(s->inGame)    
+                    WD_TextureLoadFromText(s->emJogo, "EM JOGO", Game.serversFontd, orange);
+                else if(min == 4)
+                    WD_TextureLoadFromText(s->serverSlot[i], "LOTADO", Game.serversFontd, red);
+                else if(min == 3)
+                    WD_TextureLoadFromText(s->serverSlot[i], s->servers[s->indexShow + i].num, Game.serversFontd, orange);
                 else
-                    WD_TextureLoadFromText(s->serverSlot[i], s->servers[s->indexShow + i].num, Game.serversFontd, red);
+                    WD_TextureLoadFromText(s->serverSlot[i], s->servers[s->indexShow + i].num, Game.serversFontd, green);
+
+                
+                
+                
             } else {
                 WD_TextureLoadFromText(s->serverName[i], " ", Game.serversFontd, white);
                 WD_TextureLoadFromText(s->serverSlot[i], " ", Game.serversFontd, white);

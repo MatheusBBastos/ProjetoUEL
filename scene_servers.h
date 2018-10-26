@@ -14,7 +14,7 @@ typedef struct ServerInfo {
 } ServerInfo;
 
 typedef struct Scene_Servers {
-    int numServers; //tirar dps
+    int numServers;
     bool waitingConnection;
     int receiveSock;
     bool receivingInfo;
@@ -25,8 +25,10 @@ typedef struct Scene_Servers {
     short int indexd, indexe, posTela, indexShow;
     bool esquerda;
     bool needServersRefresh;
+    bool inGame;
     ServerInfo* servers;
     char string1[20], string2[20], string3[20];
+    WTexture* emJogo;
     WTexture* loading;
     WTexture* nome;
     WTexture* mutiplayer;
