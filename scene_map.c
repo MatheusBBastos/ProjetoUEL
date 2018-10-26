@@ -256,15 +256,14 @@ void SceneMap_Receive(Scene_Map* s) {
                     if(id != -1) {
                         char ganhador[32];
                         sprintf(ganhador, "#%d: %s", placement + 1, Network.playerNames[id]);
-                        s->finalRanking[placement] = id;
                         WD_TextureLoadFromText(s->playerNames[placement], Network.playerNames[id], Game.roboto, (SDL_Color) { 255, 255, 255 });
                         WD_TextureLoadFromText(s->placement[placement], ganhador, Game.inputFont, (SDL_Color) {255, 255, 255});
                         if (placement == 0 && id == Network.clientId) {
                             WD_TextureLoadFromText(s->winText, "Vitória", Game.win, (SDL_Color) { 255, 172, 65 });
                         }
+                        s->finalRanking[placement] = id;
                         placement++;
                     }
-                    printf("%s\n", Network.playerNames[i]);
                 }
                 for(; placement < Game.map->charNumber; placement++) {
                     WD_TextureLoadFromText(s->placement[placement], " ", Game.inputFont, (SDL_Color) {255, 255, 255});
@@ -407,17 +406,18 @@ void SceneMap_update(Scene_Map* s) {
         SDL_SetRenderDrawColor(Game.renderer, 0, 0, 0, s->endOpacity);
         SDL_RenderFillRect(Game.renderer, &fillRect);
 
-        SDL_Rect winPos = { 0 * ( 128 *  s->finalRanking[0]),0, 128, 128 };
-        WD_TextureRenderExCustom(s->winChar, 1440/2 - 320 / 2, 200, &winPos, 0.0, NULL, SDL_FLIP_NONE, 320, 320);
         WD_TextureRender(s->winText, 1440 / 2 - s->winText->w / 2, 500);
-        for (int i = 0; i < Game.map->charNumber; i++) {
+        
+        for (int i = 0; i < 4; i++) {
             if (i == 0) {
-                WD_TextureRender(s->playerNames[s->finalRanking[i]], 1440 / 2 - s->playerNames[s->finalRanking[i]]->w/2, 100);
+                SDL_Rect winPos = { 0 + (128 * s->finalRanking[i]),0, 128, 128 };
+                WD_TextureRenderExCustom(s->winChar, 1440 / 2 - 320 / 2, 200, &winPos, 0.0, NULL, SDL_FLIP_NONE, 320, 320);
+                WD_TextureRender(s->playerNames[i], 1440 / 2 - s->playerNames[i]->w/2, 100);
             }
             else if(s->finalRanking[i]!=-1){
-                SDL_Rect losPos = { 0 + (128 * i),0, 128, 128 };
-                WD_TextureRenderExCustom(s->loseChar, (1440/s->realPlayer) * (i) - 256/2, 600, &winPos, 0.0, NULL, SDL_FLIP_NONE, 256, 256);
-                WD_TextureRender(s->playerNames[s->finalRanking[i]], (1440 / s->realPlayer) * (i) - s->playerNames[s->finalRanking[i]]->w/2, 900);
+                SDL_Rect losPos = { 0 + (128 * s->finalRanking[i]),0, 128, 128 };
+                WD_TextureRenderExCustom(s->loseChar, (1440/s->realPlayer) * (i) - 256/2, 600, &losPos, 0.0, NULL, SDL_FLIP_NONE, 256, 256);
+                WD_TextureRender(s->playerNames[i], (1440 / s->realPlayer) * (i) - s->playerNames[i]->w/2, 900);
             }
         }
         for (int i = 0; i < Game.map->charNumber; i++) {
