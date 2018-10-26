@@ -235,6 +235,15 @@ void SceneMap_Receive(Scene_Map* s) {
                 if (s->player->dead) {
                     Mix_PlayChannel(-1, s->ded, 0);
                 }
+            // Número de kills
+            } else if(strncmp("KIL", data, 3) == 0) {
+                int totaln = 0;
+                for(int i = 0; i < 4; i++) {
+                    int kills, n;
+                    sscanf(data + 4 + totaln, "%d%n", &kills, &n);
+                    s->kills[i] = kills;
+                    totaln += n;
+                }
             // Fim de jogo
             } else if(strncmp("END", data, 3) == 0) {
                 int type, n, totaln = 0;

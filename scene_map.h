@@ -56,6 +56,7 @@ typedef struct Scene_Map {
     bool frozen, ended;
     int endOpacity;
     WTexture* placement[4];
+    int kills[4];
 } Scene_Map;
 
 Scene_Map* SceneMap_new();
