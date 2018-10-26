@@ -324,6 +324,7 @@ void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
                 if (s->login->text != NULL && s->senha->text != NULL) {
                     if ((strcmp(s->login->text, "") != 0) && (strcmp(s->senha->text, "")) != 0) {
                         s->loginPressed = true;
+                        Game.logado = true;
                     
                     }
                 }
@@ -333,11 +334,13 @@ void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
                 if (s->login->text!=NULL && s->senha->text != NULL) {
                     if ((strcmp(s->login->text, "")!=0) && (strcmp(s->senha->text, ""))!=0) {
                         s->loginPressed = true;
+                        Game.logado = true;
                     }
                 }
                 else {
                     strcpy(Game.nome, "User Teste");
                     strcpy(Game.loginID, "NULLRANK");
+                    Game.logado = false;
                     SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
                 }
                 break;
@@ -345,6 +348,7 @@ void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
             case 3:
                 strcpy(Game.nome, "User Teste");
                 strcpy(Game.loginID, "NULLRANK");
+                Game.logado = false;
                 SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
                 break;
             case 4:

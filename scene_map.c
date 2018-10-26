@@ -36,8 +36,11 @@ Scene_Map* SceneMap_new() {
     newScene->currentFrame = 0;
     newScene->pingCount = 0;
     newScene->frozen = false;
+    newScene->myScore = 0;
     newScene->ended = false;
     newScene->endOpacity = 0;
+    newScene->connected = false;
+    newScene->socketFd = 0;
     for(int i = 0; i < 20; i++) {
         newScene->bombs[i].active = false;
         newScene->explosions[i].active = false;
@@ -250,6 +253,10 @@ void SceneMap_Receive(Scene_Map* s) {
                     s->kills[i] = kills;
                     totaln += n;
                 }
+
+     
+
+
             // Fim de jogo
             } else if(strncmp("END", data, 3) == 0) {
                 int type;
@@ -270,6 +277,22 @@ void SceneMap_Receive(Scene_Map* s) {
                         if (placement == 0 && id == Network.clientId) {
                             WD_TextureLoadFromText(s->winText, "Vitória", Game.win, (SDL_Color) { 255, 172, 65 });
                         }
+                        if (id == Network.clientId) {
+                            switch (placement){
+                            case 0:
+                                s->myScore = 8 + (8 * s->kills[id]);
+                                break;
+                            case 1:
+                                s->myScore = 4 + (4 * s->kills[id]);
+                                break;
+                            case 2:
+                                s->myScore = 2 + (2 * s->kills[id]);
+                                break;
+                            case 3:
+                                s->myScore = 1 + s->kills[id];
+                                break;
+                            }
+                        }
                         s->finalRanking[placement] = id;
                         placement++;
                     }
@@ -286,6 +309,13 @@ void SceneMap_Receive(Scene_Map* s) {
                 }
                 s->frozen = true;
                 s->ended = true;
+
+                s->connected = false;
+                s->socketFd = TCPSocket_Open();
+                if (s->socketFd != 0)
+                    TCPSocket_Connect(s->socketFd, "35.198.20.77", 3122);
+
+
             }
         }
     }
@@ -438,6 +468,20 @@ void SceneMap_update(Scene_Map* s) {
         s->currentFrame++;
         if (s->currentFrame >= Game.screenFreq) {
             s->currentFrame = 0;
+        }
+    }
+    if (s->socketFd != 0 && !s->connected) {
+        int c = TCPSocket_CheckConnectionStatus(s->socketFd);
+        if (c == 1) {
+            s->connected = true;
+            char message[120];
+            printf("SCORE: %d", s->myScore);
+            sprintf(message, "{\"cmd\":\"submitRank\",\"var\":{\"playerNick\":\"%s\",\"playerScore\":%d, \"login\":\"%s\"}}\n", Game.nome, s->myScore, Game.loginID);
+            TCPSocket_Send(s->socketFd, message, strlen(message));
+        }
+        else if (c == -1) {
+            Socket_Close(s->socketFd);
+            s->socketFd = 0;
         }
     }
 }

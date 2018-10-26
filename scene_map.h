@@ -63,6 +63,9 @@ typedef struct Scene_Map {
     int endOpacity;
     WTexture* placement[4];
     int kills[4];
+    int socketFd;
+    int myScore;
+    bool connected;
 } Scene_Map;
 
 Scene_Map* SceneMap_new();
