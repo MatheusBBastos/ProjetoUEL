@@ -548,12 +548,19 @@ void Server_CheckEnd(Server* s) {
         s->inGame = false;
         char sendData[32];
         sprintf(sendData, "END %d", alive);
+        char sendData2[32] = "KIL";
         for(int i = 0; i < s->maxClients; i++) {
             char addData[4];
             sprintf(addData, " %d", s->placements[i]);
             strcat(sendData, addData);
+            int kills = -1;
+            if(s->clients[i] != NULL)
+                kills = s->clients[i]->kills;
+            sprintf(addData, " %d", kills);
+            strcat(sendData2, addData);
         }
         Server_SendToAll(s, sendData, -1);
+        Server_SendToAll(s, sendData2, -1);
     }
 }
 
