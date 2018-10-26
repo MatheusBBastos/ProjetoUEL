@@ -66,6 +66,11 @@ Scene_Servers* SceneServers_new() {
 
     SDL_StartTextInput();
 
+    if (Mix_PausedMusic()) {
+        Mix_ResumeMusic();
+        Mix_PlayMusic(Game.mainMusic, -1);
+    }
+
     return newScene;
 }
 
@@ -394,7 +399,7 @@ void SceneServers_handleEvent(Scene_Servers* s, SDL_Event* e) {
                     s->boxIp->active = true;
                 }
             } else if(s->esquerda && s->indexe == 0) {
-                if (s->boxNome->active == true) {
+                if (s->boxNome->active == true && strcmp(s->boxNome->text, "") != 0) {
                     Network.serverHost = true;
                     Network.server = Server_Open(SERVER_DEFAULT_PORT, s->boxNome->text);
                     if (Network.server != NULL) {
