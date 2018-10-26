@@ -74,9 +74,20 @@ Bomb_Render(Bomb* b, int screenX, int screenY, WTexture* bombSprite, int current
 Explosion_Render(Explosion* e, int screenX, int screenY, WTexture* explosionSprite) {
     if(e->active && e->explosionCount > 0) {
         e->explosionCount--;
+        if(e->explosionCount % (int) (6 * Game.screenFreq / 60.0) == 0) {
+            if(e->expanding) {
+                e->explosionFrame++;
+                if(e->explosionFrame == 5) {
+                    e->expanding = false;
+                    e->explosionFrame = 3;
+                }
+            } else {
+                e->explosionFrame--;
+            }
+        }
         for(int x = e->xMin; x <= e->xMax; x++) {
             SDL_RendererFlip flip;
-            SDL_Rect clip = {0, 0, explosionSprite->w / 3, explosionSprite->h};
+            SDL_Rect clip = {0, TILE_SIZE * e->explosionFrame, explosionSprite->w / 3, explosionSprite->h / 5};
             if(x == e->x) {
                 flip = SDL_FLIP_NONE;
                 clip.x = explosionSprite->w / 3 * 2;
@@ -85,14 +96,14 @@ Explosion_Render(Explosion* e, int screenX, int screenY, WTexture* explosionSpri
             } else if(x == e->xMax) {
                 flip = SDL_FLIP_HORIZONTAL;
             } else {
-                flip = SDL_FLIP_NONE;
+                flip = x > e->x ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
                 clip.x = explosionSprite->w / 3;
             }
-            WD_TextureRenderExCustom(explosionSprite, (x * TILE_SIZE - screenX), (e->y * TILE_SIZE - screenY), &clip, 0.0, NULL, flip, TILE_SIZE, TILE_SIZE);
+            WD_TextureRenderEx(explosionSprite, (x * TILE_SIZE - screenX), (e->y * TILE_SIZE - screenY), &clip, 0.0, NULL, flip);
         }
         for(int y = e->yMin; y <= e->yMax; y++) {
             SDL_RendererFlip flip;
-            SDL_Rect clip = {0, 0, explosionSprite->w / 3, explosionSprite->h};
+            SDL_Rect clip = {0, TILE_SIZE * e->explosionFrame, explosionSprite->w / 3, explosionSprite->h / 5};
             double angle = 90.0;
             if(y == e->y) {
                 flip = SDL_FLIP_NONE;
@@ -104,9 +115,10 @@ Explosion_Render(Explosion* e, int screenX, int screenY, WTexture* explosionSpri
                 flip = SDL_FLIP_NONE;
             } else {
                 flip = SDL_FLIP_NONE;
+                angle = y > e->y ? 270.0 : 90.0;
                 clip.x = explosionSprite->w / 3;
             }
-            WD_TextureRenderExCustom(explosionSprite, (e->x * TILE_SIZE - screenX), (y * TILE_SIZE - screenY), &clip, angle, NULL, flip, TILE_SIZE, TILE_SIZE);
+            WD_TextureRenderEx(explosionSprite, (e->x * TILE_SIZE - screenX), (y * TILE_SIZE - screenY), &clip, angle, NULL, flip);
         }
     }
 }
@@ -193,7 +205,9 @@ void SceneMap_Receive(Scene_Map* s) {
                 s->explosions[id].xMax = xMax;
                 s->explosions[id].yMin = yMin;
                 s->explosions[id].yMax = yMax;
-                s->explosions[id].explosionCount = Game.screenFreq * 0.5;
+                s->explosions[id].explosionCount = Game.screenFreq / 2;
+                s->explosions[id].explosionFrame = 3;
+                s->explosions[id].expanding = true;
                 Mix_HaltChannel(id);
                 Mix_PlayChannel(id, s->bombexp, 0);
             // Destruição de uma parede
