@@ -32,6 +32,12 @@ typedef struct Scene_Map {
     WTexture *bombSprite, *explosionSprite;
     WTexture* wallTexture;
     WTexture* puTexture;
+    WTexture* winChar;
+    WTexture* loseChar;
+    WTexture* winText;
+    WTexture* playerNames[4];
+    int realPlayer;
+    int finalRanking[4];
     Map* map;
     Mix_Chunk* bombexp;
     Mix_Chunk* bombload;
@@ -57,6 +63,11 @@ typedef struct Scene_Map {
     int endOpacity;
     WTexture* placement[4];
     int kills[4];
+    int socketFd;
+    int myScore;
+    WTexture* bg;
+    WTexture* status[4];
+    bool connected;
 } Scene_Map;
 
 Scene_Map* SceneMap_new();

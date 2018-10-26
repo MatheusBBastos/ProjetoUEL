@@ -102,6 +102,8 @@ typedef struct GameInfo {
     TTF_Font* Unisans;
     TTF_Font* roboto;
     Mix_Chunk* enter;
+    TTF_Font* tip;
+    TTF_Font* win;
     Mix_Chunk* change;
     // Fontes servers
     TTF_Font* serversFonte;
@@ -109,6 +111,7 @@ typedef struct GameInfo {
     TTF_Font* serversFontd;
     // Modo debug
     bool debug;
+    bool logado;
     char nome[50];
     char loginID[50];
     int rankPos;

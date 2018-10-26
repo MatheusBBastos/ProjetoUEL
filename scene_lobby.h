@@ -19,8 +19,8 @@ typedef struct Scene_Lobby {
     bool animfinished[4];
     Mix_Chunk* spawn;
     WTexture** players;
-    WTexture* iniciar;
-    WTexture* sair;
+    WTexture* bg;
+    WTexture* helptext[2];
     WTexture* playersSprite[4];
     WTexture* animation;
     Mix_Music* sound;

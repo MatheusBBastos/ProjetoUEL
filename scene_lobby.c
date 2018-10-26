@@ -22,13 +22,15 @@ Scene_Lobby* SceneLobby_new() {
         newScene->playersSprite[i] = WD_CreateTexture();
     }
 
-    newScene->iniciar = WD_CreateTexture();
-    newScene->sair = WD_CreateTexture();
+    newScene->bg = WD_CreateTexture();
+
 
     newScene->spawn = Mix_LoadWAV("content/feffect.mp3");
 
     newScene->pingCount = 0;
     newScene->frame = 0;
+    newScene->helptext[0] = WD_CreateTexture();
+    newScene->helptext[1] = WD_CreateTexture();
 
     newScene->animation = WD_CreateTexture();
 
@@ -36,16 +38,17 @@ Scene_Lobby* SceneLobby_new() {
 
     Game.map = Map_Create();
     SceneLobby_Receive(newScene);
-    newScene->curPos[0] = 0;
+
+    WD_TextureLoadFromFile(newScene->bg, "content/bglobby.png");
 
     WD_TextureLoadFromFile(newScene->playersSprite[0], "content/azul.png");
     WD_TextureLoadFromFile(newScene->playersSprite[1], "content/amarelo.png");
     WD_TextureLoadFromFile(newScene->playersSprite[2], "content/vermelho.png");
     WD_TextureLoadFromFile(newScene->playersSprite[3], "content/roxo.png");
 
-    WD_TextureLoadFromText(newScene->iniciar, "Iniciar", Game.inputFont, Cmsg);
-    WD_TextureLoadFromText(newScene->sair, "Sair", Game.inputFont, Cmsg);
 
+    WD_TextureLoadFromText(newScene->helptext[0], "Pressione espaço para começar", Game.tip, (SDL_Color) { 255, 255, 255 });
+    WD_TextureLoadFromText(newScene->helptext[1], "Adicionar bot: (Z) Fácil, (X) Médio, (C) Difícil", Game.tip, (SDL_Color) { 255, 255, 255 });
     return newScene;
 }
 
@@ -146,6 +149,12 @@ void SceneLobby_update(Scene_Lobby* s) {
         SceneLobby_Receive(s);
     SDL_SetRenderDrawColor(Game.renderer, 0, 0, 0, 255);
     SDL_RenderClear(Game.renderer);
+    WD_TextureRender(s->bg, 0, 0);
+
+    if (Network.serverHost) {
+        WD_TextureRender(s->helptext[0], 1440/2 - s->helptext[0]->w/2, 900);
+        WD_TextureRender(s->helptext[1], 1440 / 2 - s->helptext[1]->w / 2, 1000);
+    }
 
     SDL_Rect defaultPos = { 64,0, 64, 64 };
     for (int i = 0; i < 4; i++) {
@@ -207,8 +216,6 @@ void SceneLobby_destroy(Scene_Lobby* s) {
         WD_TextureDestroy(s->players[i]);
     }
     free(s->players);
-    WD_TextureDestroy(s->iniciar);
-    WD_TextureDestroy(s->sair);
     Mix_FreeMusic(s->sound);
     Mix_FreeChunk(s->spawn);
     free(s);

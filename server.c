@@ -313,7 +313,7 @@ void Server_CheckName(Server* s, int cId, int number) {
     bool found = false;
     char compstr[32];
     if(number != 0) {
-        sprintf(compstr, "%s(%d)", s->clients[cId]->username, number);
+        sprintf(compstr, "%s %d", s->clients[cId]->username, number);
     } else {
         strcpy(compstr, s->clients[cId]->username);
     }

@@ -10,6 +10,8 @@ Scene_Map* SceneMap_new() {
     newScene->backgroundMusic = Mix_LoadMUS("content/train.mp3");
     newScene->keyDown = false;
     newScene->keyUp = false;
+    newScene->bg = WD_CreateTexture();
+    WD_TextureLoadFromFile(newScene->bg, "content/bgingame.png");
     newScene->tileMap = WD_CreateTexture();
     newScene->animatedBomb = WD_CreateTexture();
     WD_TextureLoadFromFile(newScene->animatedBomb, "content/FSD.png");
@@ -23,6 +25,11 @@ Scene_Map* SceneMap_new() {
     WD_TextureLoadFromFile(newScene->wallTexture, "content/wall.png");
     newScene->puTexture = WD_CreateTexture();
     WD_TextureLoadFromFile(newScene->puTexture, "content/powerup.png");
+    newScene->winChar = WD_CreateTexture();
+    WD_TextureLoadFromFile(newScene->winChar, "content/win.png");
+    newScene->loseChar = WD_CreateTexture();
+    WD_TextureLoadFromFile(newScene->loseChar, "content/lose.png");
+    newScene->winText = WD_CreateTexture();
     newScene->screenX = 0;
     newScene->screenY = 0;
     newScene->player = Game.map->characters[Network.clientId];
@@ -31,14 +38,29 @@ Scene_Map* SceneMap_new() {
     newScene->currentFrame = 0;
     newScene->pingCount = 0;
     newScene->frozen = false;
+    newScene->myScore = 0;
     newScene->ended = false;
     newScene->endOpacity = 0;
+    newScene->connected = false;
+    newScene->socketFd = 0;
+    for (int i = 0; i < 4; i++) {
+        newScene->status[i] = WD_CreateTexture();
+        if (Game.map->characters[i] != NULL) {
+            WD_TextureLoadFromText(newScene->status[i], "Vivo", Game.roboto, (SDL_Color) { 255, 255, 255 });
+        }
+        else {
+            WD_TextureLoadFromText(newScene->status[i], " ", Game.rankMini, (SDL_Color) { 255, 255, 255 });
+        }
+    }
+
+
     for(int i = 0; i < 20; i++) {
         newScene->bombs[i].active = false;
         newScene->explosions[i].active = false;
     }
     for(int i = 0; i < 4; i++) {
         newScene->placement[i] = WD_CreateTexture();
+        newScene->playerNames[i] = WD_CreateTexture();
     }
     Mix_PlayMusic(newScene->backgroundMusic, -1);
     Mix_VolumeMusic(80);
@@ -232,6 +254,7 @@ void SceneMap_Receive(Scene_Map* s) {
                 sscanf(data + 4, "%d", &id);
                 if(Game.map->characters[id] != NULL)
                     Game.map->characters[id]->dead = true;
+                WD_TextureLoadFromText(s->status[id], "Morto", Game.roboto, (SDL_Color) { 255, 255, 255 });
                 if (s->player->dead) {
                     Mix_PlayChannel(-1, s->ded, 0);
                 }
@@ -244,29 +267,69 @@ void SceneMap_Receive(Scene_Map* s) {
                     s->kills[i] = kills;
                     totaln += n;
                 }
+
+     
+
+
             // Fim de jogo
             } else if(strncmp("END", data, 3) == 0) {
-                int type, n, totaln = 0;
-                sscanf(data + 4, "%d%n", &type, &n);
-                totaln += n;
+                int type;
+                sscanf(data + 4, "%d", &type);
                 // EMPATE: type = 0; VITORIA: type = 1
                 int placement = 0;
+                WD_TextureLoadFromText(s->winText, "Derrota", Game.win, (SDL_Color) { 255, 172, 65 });
+                int totaln = 0, n;
                 for(int i = 0; i < Game.map->charNumber; i++) {
                     int id;
-                    sscanf(data + 6 + i * 2, "%d%n", &id, &n);
+                    sscanf(data + 6 + totaln, "%d%n ", &id, &n);
+                    totaln += n;
                     if(id != -1) {
-                        char ganhador[4];
+                        char ganhador[32];
                         sprintf(ganhador, "#%d: %s", placement + 1, Network.playerNames[id]);
+                        WD_TextureLoadFromText(s->playerNames[placement], Network.playerNames[id], Game.roboto, (SDL_Color) { 255, 255, 255 });
                         WD_TextureLoadFromText(s->placement[placement], ganhador, Game.inputFont, (SDL_Color) {255, 255, 255});
+                        if (placement == 0 && id == Network.clientId) {
+                            WD_TextureLoadFromText(s->winText, "Vitória", Game.win, (SDL_Color) { 255, 172, 65 });
+                        }
+                        if (id == Network.clientId) {
+                            switch (placement){
+                            case 0:
+                                s->myScore = 8 + (8 * s->kills[id]);
+                                break;
+                            case 1:
+                                s->myScore = 4 + (4 * s->kills[id]);
+                                break;
+                            case 2:
+                                s->myScore = 2 + (2 * s->kills[id]);
+                                break;
+                            case 3:
+                                s->myScore = 1 + s->kills[id];
+                                break;
+                            }
+                        }
+                        s->finalRanking[placement] = id;
                         placement++;
                     }
-                    totaln += n;
                 }
                 for(; placement < Game.map->charNumber; placement++) {
                     WD_TextureLoadFromText(s->placement[placement], " ", Game.inputFont, (SDL_Color) {255, 255, 255});
+                    s->finalRanking[placement] = -1;
+                }
+                s->realPlayer = 0;
+                for (int i = 0; i < 4; i++) {
+                    if (s->finalRanking[i] != -1) {
+                        s->realPlayer++;
+                    }
                 }
                 s->frozen = true;
                 s->ended = true;
+
+                s->connected = false;
+                s->socketFd = TCPSocket_Open();
+                if (s->socketFd != 0)
+                    TCPSocket_Connect(s->socketFd, "35.198.20.77", 3122);
+
+
             }
         }
     }
@@ -303,6 +366,7 @@ void SceneMap_update(Scene_Map* s) {
         s->screenY = 0;
     SDL_SetRenderDrawColor(Game.renderer, 0x00, 0x00, 0x00, 0xFF);
     SDL_RenderClear(Game.renderer);
+    WD_TextureRender(s->bg, 0, 0);
     SDL_Rect renderQuad = {s->screenX, s->screenY, REFERENCE_WIDTH, REFERENCE_HEIGHT};
     s->screenX -= (REFERENCE_WIDTH - Game.map->width * TILE_SIZE) / 2;
     int dstWidth, dstHeight;
@@ -318,6 +382,10 @@ void SceneMap_update(Scene_Map* s) {
     // Renderizar as camadas do mapa
     SDL_RenderCopy(Game.renderer, Game.map->layers[0], &renderQuad, &dstRect);
     SDL_RenderCopy(Game.renderer, Game.map->layers[1], &renderQuad, &dstRect);
+    for (int i = 0; i < 4; i++) {
+        WD_TextureRender(s->status[i], 1300, 125 + (i * 125));
+    }
+
 
     // Movimentação do jogador
     if (!s->frozen && s->player != NULL && s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
@@ -395,7 +463,22 @@ void SceneMap_update(Scene_Map* s) {
         SDL_Rect fillRect = {0, 0, REFERENCE_WIDTH, REFERENCE_HEIGHT};
         SDL_SetRenderDrawColor(Game.renderer, 0, 0, 0, s->endOpacity);
         SDL_RenderFillRect(Game.renderer, &fillRect);
-        for(int i = 0; i < Game.map->charNumber; i++) {
+
+        WD_TextureRender(s->winText, 1440 / 2 - s->winText->w / 2, 500);
+        
+        for (int i = 0; i < 4; i++) {
+            if (i == 0) {
+                SDL_Rect winPos = { 0 + (128 * s->finalRanking[i]),0, 128, 128 };
+                WD_TextureRenderExCustom(s->winChar, 1440 / 2 - 320 / 2, 200, &winPos, 0.0, NULL, SDL_FLIP_NONE, 320, 320);
+                WD_TextureRender(s->playerNames[i], 1440 / 2 - s->playerNames[i]->w/2, 100);
+            }
+            else if(s->finalRanking[i]!=-1){
+                SDL_Rect losPos = { 0 + (128 * s->finalRanking[i]),0, 128, 128 };
+                WD_TextureRenderExCustom(s->loseChar, (1440/s->realPlayer) * (i) - 256/2, 600, &losPos, 0.0, NULL, SDL_FLIP_NONE, 256, 256);
+                WD_TextureRender(s->playerNames[i], (1440 / s->realPlayer) * (i) - s->playerNames[i]->w/2, 900);
+            }
+        }
+        for (int i = 0; i < Game.map->charNumber; i++) {
             WD_TextureRender(s->placement[i], 15, 15 + 45 * i);
         }
     }
@@ -404,6 +487,20 @@ void SceneMap_update(Scene_Map* s) {
         s->currentFrame++;
         if (s->currentFrame >= Game.screenFreq) {
             s->currentFrame = 0;
+        }
+    }
+    if (s->socketFd != 0 && !s->connected) {
+        int c = TCPSocket_CheckConnectionStatus(s->socketFd);
+        if (c == 1) {
+            s->connected = true;
+            char message[120];
+            printf("SCORE: %d", s->myScore);
+            sprintf(message, "{\"cmd\":\"submitRank\",\"var\":{\"playerNick\":\"%s\",\"playerScore\":%d, \"login\":\"%s\"}}\n", Game.nome, s->myScore, Game.loginID);
+            TCPSocket_Send(s->socketFd, message, strlen(message));
+        }
+        else if (c == -1) {
+            Socket_Close(s->socketFd);
+            s->socketFd = 0;
         }
     }
 }
