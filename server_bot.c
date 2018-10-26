@@ -22,22 +22,25 @@ void Server_UpdateCharMovement(Server* s, Character* c) {
         Character_GetTilePosition(c, &x, &y);
         TemporaryObject *o = &s->map->objects[y][x];
         if(o->exists && o->type == OBJ_POWERUP) {
+            char sendData[16];
             switch(s->powerups[o->objId].type) {
                 case PU_BLAST_RADIUS:
-                    printf("b\n");
                     s->clients[c->id]->bombRadius++;
                     break;
                 case PU_PLUS_BOMB:
-                    printf("a\n");
                     s->clients[c->id]->maxBombs++;
                     if(s->clients[c->id]->maxBombs > MAX_BOMBS_PER_PLAYER) {
                         s->clients[c->id]->maxBombs = MAX_BOMBS_PER_PLAYER;
                     }
                     break;
+                case PU_SHIELD:
+                    c->shieldDuration = 2 * SERVER_TICKRATE;
+                    sprintf(sendData, "SHI %d", c->id);
+                    Server_SendToAll(s, sendData, -1);
+                    break;
             }
             s->powerups[o->objId].exists = false;
             o->exists = false;
-            char sendData[16];
             sprintf(sendData, "PWD %d", o->objId);
             Server_SendToAll(s, sendData, -1);
         }

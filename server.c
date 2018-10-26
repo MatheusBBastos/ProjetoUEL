@@ -231,6 +231,9 @@ void Server_GenerateMap(Server* s) {
 }
 
 void Server_CharacterUpdate(Server* s, Character* c, Map* m) {
+    if(c->shieldDuration > 0) {
+        c->shieldDuration--;
+    }
     if(c->x != c->renderX || c->y != c->renderY) {
         c->moving = true;
         int x4 = c->x * 4;
@@ -331,16 +334,16 @@ void Server_CreateCharacters(Server* s) {
         if(s->clients[i] != NULL) {
             if(i == 0) {
                 s->map->characters[i] = Character_Create("content/azul.png", i, true);
-                Character_Place(s->map->characters[i], 17, 1);
+                Character_Place(s->map->characters[i], 15, 1);
             } else if(i == 1) {
                 s->map->characters[i] = Character_Create("content/vermelho.png", i, true);
                 Character_Place(s->map->characters[i], 1, 1);
             } else if(i == 2) {
                 s->map->characters[i] = Character_Create("content/amarelo.png", i, true);
-                Character_Place(s->map->characters[i], 1, 17);
+                Character_Place(s->map->characters[i], 1, 15);
             } else if(i == 3) {
                 s->map->characters[i] = Character_Create("content/roxo.png", i, true);
-                Character_Place(s->map->characters[i], 17, 17);
+                Character_Place(s->map->characters[i], 15, 15);
             }
             char sendData[80];
             Character* c = s->map->characters[i];
@@ -496,7 +499,7 @@ void Server_ExplodeBomb(Server* s, int bId) {
         }
         for(int cId = 0; cId < s->maxClients; cId++) {
             // checar colisão da explosão com o personagem
-            if(s->clients[cId] != NULL && !s->map->characters[cId]->dead) {
+            if(s->clients[cId] != NULL && !s->map->characters[cId]->dead && s->map->characters[cId]->shieldDuration == 0) {
                 SDL_Rect charRect;
                 Character_GetCollisionBox(s->map->characters[cId], &charRect, 0, 0);
                 SDL_Rect expRect1 = {xMin * TILE_SIZE, b->y * TILE_SIZE, (xMax - xMin + 1) * TILE_SIZE, TILE_SIZE};
@@ -508,7 +511,8 @@ void Server_ExplodeBomb(Server* s, int bId) {
                     Server_SendToAll(s, sendData, -1);
                     s->placements[s->currentPlacement] = cId;
                     s->currentPlacement--;
-                    c->kills++;
+                    if(cId != c->id)
+                        c->kills++;
                 }
             }
         }

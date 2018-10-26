@@ -214,6 +214,13 @@ void SceneMap_Receive(Scene_Map* s) {
                 Game.map->objects[y][x].exists = true;
                 Game.map->objects[y][x].type = OBJ_POWERUP;
                 Game.map->objects[y][x].objId = id;
+            // Escudo em um personagem
+            } else if(strncmp("SHI", data, 3) == 0) {
+                int id;
+                sscanf(data + 4, "%d", &id);
+                if(Game.map->characters[id] != NULL) {
+                    Game.map->characters[id]->shieldDuration = 2 * Game.screenFreq;
+                }
             // Desaparecimento de um powerup
             } else if(strncmp("PWD", data, 3) == 0) {
                 int id;
@@ -288,6 +295,7 @@ void SceneMap_update(Scene_Map* s) {
     SDL_SetRenderDrawColor(Game.renderer, 0x00, 0x00, 0x00, 0xFF);
     SDL_RenderClear(Game.renderer);
     SDL_Rect renderQuad = {s->screenX, s->screenY, REFERENCE_WIDTH, REFERENCE_HEIGHT};
+    s->screenX -= (REFERENCE_WIDTH - Game.map->width * TILE_SIZE) / 2;
     int dstWidth, dstHeight;
     if(Game.map->width * TILE_SIZE < REFERENCE_WIDTH)
         dstWidth = Game.map->width * TILE_SIZE;
@@ -297,7 +305,7 @@ void SceneMap_update(Scene_Map* s) {
         dstHeight = Game.map->width * TILE_SIZE;
     else
         dstHeight = REFERENCE_HEIGHT;
-    SDL_Rect dstRect = {0, 0, dstWidth, dstHeight};
+    SDL_Rect dstRect = {(REFERENCE_WIDTH - Game.map->width * TILE_SIZE) /2, 0, dstWidth, dstHeight};
     // Renderizar as camadas do mapa
     SDL_RenderCopy(Game.renderer, Game.map->layers[0], &renderQuad, &dstRect);
     SDL_RenderCopy(Game.renderer, Game.map->layers[1], &renderQuad, &dstRect);

@@ -29,6 +29,7 @@ Character* Character_Create(char* spritePath, int id, bool noTexture) {
     newCharacter->bombPassId = -1;
     newCharacter->forcingMovement = false;
     newCharacter->movementStackTop = -1;
+    newCharacter->shieldDuration = 0;
     return newCharacter;
 }
 
@@ -192,6 +193,12 @@ void Character_Update(Character* c, Map* m) {
 }
 
 void Character_Render(Character* c, int screenX, int screenY) {
+    if(c->shieldDuration > 0) {
+        c->shieldDuration--;
+        SDL_SetTextureColorMod(c->sprite->mTexture, 150, 150, 255);
+    } else {
+        SDL_SetTextureColorMod(c->sprite->mTexture, 255, 255, 255);
+    }
     if(c->dead && c->opacity > 0) {
         uint8_t minus = 255 / Game.screenFreq * 3;
         if(minus > c->opacity) {
