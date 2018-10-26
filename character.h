@@ -41,6 +41,7 @@ typedef struct Character {
     int targetX, targetY;
     uint8_t movementStack[64];
     int8_t movementStackTop;
+    int shieldDuration;
     //Movement* moveRoute;
 } Character;
 

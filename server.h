@@ -49,7 +49,6 @@ enum PowerUps {
     PU_BLAST_RADIUS,
     PU_PLUS_BOMB,
     PU_SHIELD,
-    PU_SPEED,
     TOTAL_POWERUPS
 };
 
