@@ -23,6 +23,8 @@ Scene_Map* SceneMap_new() {
     WD_TextureLoadFromFile(newScene->wallTexture, "content/wall.png");
     newScene->puTexture = WD_CreateTexture();
     WD_TextureLoadFromFile(newScene->puTexture, "content/powerup.png");
+    newScene->deadTexture = WD_CreateTexture();
+    WD_TextureLoadFromFile(newScene->deadTexture, "content/dead.png");
     newScene->screenX = 0;
     newScene->screenY = 0;
     newScene->player = Game.map->characters[Network.clientId];
@@ -244,8 +246,11 @@ void SceneMap_Receive(Scene_Map* s) {
             } else if(strncmp("DEA", data, 3) == 0) {
                 int id;
                 sscanf(data + 4, "%d", &id);
-                if(Game.map->characters[id] != NULL)
+                if(Game.map->characters[id] != NULL) {
                     Game.map->characters[id]->dead = true;
+                    Game.map->characters[id]->deadCount = 0;
+                    Game.map->characters[id]->animationCount = 0;
+                }
                 if (s->player->dead) {
                     Mix_PlayChannel(-1, s->ded, 0);
                 }
@@ -391,7 +396,7 @@ void SceneMap_update(Scene_Map* s) {
     // Renderizar os personagens
     for(int i = 0; i < Game.map->charNumber; i++) {
         if(s->renderCharacters[i] != -1 && Game.map->characters[s->renderCharacters[i]] != NULL) {
-            Character_Render(Game.map->characters[s->renderCharacters[i]], s->screenX, s->screenY);
+            Character_Render(Game.map->characters[s->renderCharacters[i]], s->deadTexture, s->screenX, s->screenY);
         }
     }
 
@@ -551,5 +556,6 @@ void SceneMap_destroy(Scene_Map* s) {
     WD_TextureDestroy(s->wallTexture);
     WD_TextureDestroy(s->animatedBomb);
     WD_TextureDestroy(s->puTexture);
+    WD_TextureDestroy(s->deadTexture);
     free(s);
 }

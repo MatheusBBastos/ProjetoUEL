@@ -165,13 +165,13 @@ void Character_Update(Character* c, Map* m) {
         }
         c->renderX = c->x4 / 4;
         c->renderY = c->y4 / 4;
-    } else {
+    } else if(!c->dead) {
         c->moving = false;
         c->animationIndex = 1;
         c->animationCount = 7;
         c->animPart = !c->animPart;
     }
-    if(c->moving) {
+    if(c->moving && !c->dead) {
         c->animationCount++;
         if(c->animationCount == 8) {
             c->animationCount = 0;
@@ -192,28 +192,32 @@ void Character_Update(Character* c, Map* m) {
     }
 }
 
-void Character_Render(Character* c, int screenX, int screenY) {
+void Character_Render(Character* c, WTexture* deadTexture, int screenX, int screenY) {
     if(c->shieldDuration > 0) {
         c->shieldDuration--;
         SDL_SetTextureColorMod(c->sprite->mTexture, 150, 150, 255);
     } else {
         SDL_SetTextureColorMod(c->sprite->mTexture, 255, 255, 255);
     }
-    if(c->dead && c->opacity > 0) {
-        uint8_t minus = 255 / Game.screenFreq * 3;
-        if(minus > c->opacity) {
-            c->opacity = 0;
-        } else {
-            c->opacity -= minus;
-        }
-    }
     SDL_SetTextureAlphaMod(c->sprite->mTexture, c->opacity);
     int realX = c->renderX - screenX;
     int realY = c->renderY - screenY;
     if(realX + c->sprite->w >= 0 && realY + c->sprite->h >= 0 && realX < REFERENCE_WIDTH && realY < REFERENCE_HEIGHT) {
-        SDL_Rect clip = {c->sprite->w / 3 * c->animationIndex, c->sprite->h / 4 * c->direction, c->sprite->w / 3, c->sprite->h / 4};
         SDL_Rect dest = {realX, realY, c->sprite->w / 3, c->sprite->h / 4};
-        SDL_RenderCopy(Game.renderer, c->sprite->mTexture, &clip, &dest);
+        if(c->dead) {
+            SDL_Rect clip = {TILE_SIZE * c->deadCount, TILE_SIZE * c->id, TILE_SIZE, TILE_SIZE};
+            SDL_RenderCopy(Game.renderer, deadTexture->mTexture, &clip, &dest);
+        } else {
+            SDL_Rect clip = {c->sprite->w / 3 * c->animationIndex, c->sprite->h / 4 * c->direction, c->sprite->w / 3, c->sprite->h / 4};
+            SDL_RenderCopy(Game.renderer, c->sprite->mTexture, &clip, &dest);
+        }
+    }
+    if(c->dead && c->deadCount < 7) {
+        c->animationCount++;
+        if(c->animationCount == 5 * Game.screenFreq / 60.0) {
+            c->animationCount = 0;
+            c->deadCount++;
+        }
     }
     if(Game.debug) {
         SDL_Rect box;
