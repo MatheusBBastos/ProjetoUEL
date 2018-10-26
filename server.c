@@ -559,8 +559,8 @@ void Server_CheckEnd(Server* s) {
             sprintf(addData, " %d", kills);
             strcat(sendData2, addData);
         }
-        Server_SendToAll(s, sendData, -1);
         Server_SendToAll(s, sendData2, -1);
+        Server_SendToAll(s, sendData, -1);
     }
 }
 
