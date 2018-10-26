@@ -28,7 +28,6 @@ typedef struct Scene_Servers {
     bool inGame;
     ServerInfo* servers;
     char string1[20], string2[20], string3[20];
-    WTexture* emJogo;
     WTexture* loading;
     WTexture* nome;
     WTexture* mutiplayer;

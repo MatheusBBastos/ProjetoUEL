@@ -21,7 +21,6 @@ Scene_Servers* SceneServers_new() {
     newScene->servir[1] = WD_CreateTexture();
     newScene->voltar = WD_CreateTexture();
     newScene->loading = WD_CreateTexture();
-    newScene->emJogo = WD_CreateTexture();
     newScene->indexe = 0;
     newScene->indexShow = 0;
     newScene->indexd = 0;
@@ -168,7 +167,7 @@ void SceneServers_update(Scene_Servers* s) {
                 int min, max;
                 sscanf(s->servers[i].num, "%d/%d", &min, &max);
                 if(s->inGame)    
-                    WD_TextureLoadFromText(s->emJogo, "EM JOGO", Game.serversFontd, orange);
+                    WD_TextureLoadFromText(s->serverSlot[i], "EM JOGO", Game.serversFontd, orange);
                 else if(min == 4)
                     WD_TextureLoadFromText(s->serverSlot[i], "LOTADO", Game.serversFontd, red);
                 else if(min == 3)
