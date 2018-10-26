@@ -32,6 +32,12 @@ typedef struct Scene_Map {
     WTexture *bombSprite, *explosionSprite;
     WTexture* wallTexture;
     WTexture* puTexture;
+    WTexture* winChar;
+    WTexture* loseChar;
+    WTexture* winText;
+    WTexture* playerNames[4];
+    int realPlayer;
+    int finalRanking[4];
     Map* map;
     Mix_Chunk* bombexp;
     Mix_Chunk* bombload;
