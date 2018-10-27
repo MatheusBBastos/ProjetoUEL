@@ -105,6 +105,7 @@ typedef struct GameInfo {
     TTF_Font* tip;
     TTF_Font* win;
     Mix_Chunk* change;
+    Mix_Chunk* type;
     // Fontes servers
     TTF_Font* serversFonte;
     TTF_Font* serversName;

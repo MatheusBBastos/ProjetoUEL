@@ -5,6 +5,8 @@ Scene_Map* SceneMap_new() {
     newScene->keyLeft = false;
     newScene->keyRight = false;
     newScene->bombexp = Mix_LoadWAV("content/bexp.mp3");
+    newScene->pickup = Mix_LoadWAV("content/pickup.mp3");
+    newScene->winSound = Mix_LoadWAV("content/win.mp3");
     newScene->bombload = Mix_LoadWAV("content/bload.mp3");
     newScene->ded = Mix_LoadWAV("content/dedp.mp3");
     newScene->backgroundMusic = Mix_LoadMUS("content/train.mp3");
@@ -248,6 +250,7 @@ void SceneMap_Receive(Scene_Map* s) {
                 int id;
                 sscanf(data + 4, "%d", &id);
                 Game.map->powerups[id].exists = false;
+                Mix_PlayChannel(id*2, s->pickup, 0);
             // Morte de um jogador
             } else if(strncmp("DEA", data, 3) == 0) {
                 int id;
@@ -256,7 +259,7 @@ void SceneMap_Receive(Scene_Map* s) {
                     Game.map->characters[id]->dead = true;
                 WD_TextureLoadFromText(s->status[id], "Morto", Game.roboto, (SDL_Color) { 255, 255, 255 });
                 if (s->player->dead) {
-                    Mix_PlayChannel(-1, s->ded, 0);
+                    Mix_PlayChannel(id*3, s->ded, 0);
                 }
             // Número de kills
             } else if(strncmp("KIL", data, 3) == 0) {
@@ -288,8 +291,13 @@ void SceneMap_Receive(Scene_Map* s) {
                         sprintf(ganhador, "#%d: %s", placement + 1, Network.playerNames[id]);
                         WD_TextureLoadFromText(s->playerNames[placement], Network.playerNames[id], Game.roboto, (SDL_Color) { 255, 255, 255 });
                         WD_TextureLoadFromText(s->placement[placement], ganhador, Game.inputFont, (SDL_Color) {255, 255, 255});
-                        if (placement == 0 && id == Network.clientId) {
+                        if (placement == 0 && id == Network.clientId && type == 1) {
                             WD_TextureLoadFromText(s->winText, "Vitória", Game.win, (SDL_Color) { 255, 172, 65 });
+                            Mix_PauseMusic();
+                            Mix_PlayChannel(-1, s->winSound, 0);
+                        }
+                        if (type == 0) {
+                            WD_TextureLoadFromText(s->winText, "Empate", Game.win, (SDL_Color) { 255, 172, 65 });
                         }
                         if (id == Network.clientId) {
                             switch (placement){
@@ -385,7 +393,6 @@ void SceneMap_update(Scene_Map* s) {
     for (int i = 0; i < 4; i++) {
         WD_TextureRender(s->status[i], 1300, 125 + (i * 125));
     }
-
 
     // Movimentação do jogador
     if (!s->frozen && s->player != NULL && s->player->x == s->player->renderX && s->player->y == s->player->renderY) {
@@ -489,7 +496,7 @@ void SceneMap_update(Scene_Map* s) {
             s->currentFrame = 0;
         }
     }
-    if (s->socketFd != 0 && !s->connected) {
+    if (s->socketFd != 0 && !s->connected && Game.logado) {
         int c = TCPSocket_CheckConnectionStatus(s->socketFd);
         if (c == 1) {
             s->connected = true;
@@ -625,12 +632,20 @@ void SceneMap_destroy(Scene_Map* s) {
     }
     for(int i = 0; i < 4; i++) {
         WD_TextureDestroy(s->placement[i]);
+        WD_TextureDestroy(s->playerNames[i]);
+        WD_TextureDestroy(s->status[i]);
     }
     Mix_FreeChunk(s->bombexp);
     Mix_FreeChunk(s->bombload);
     Mix_FreeMusic(s->backgroundMusic);
+    Mix_FreeChunk(s->winSound);
+    Mix_FreeChunk(s->pickup);
+    WD_TextureDestroy(s->bg);
     WD_TextureDestroy(s->bombSprite);
     WD_TextureDestroy(s->explosionSprite);
+    WD_TextureDestroy(s->winText);
+    WD_TextureDestroy(s->winChar);
+    WD_TextureDestroy(s->loseChar);
     WD_TextureDestroy(s->wallTexture);
     WD_TextureDestroy(s->animatedBomb);
     WD_TextureDestroy(s->puTexture);

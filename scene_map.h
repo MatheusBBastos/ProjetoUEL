@@ -42,6 +42,8 @@ typedef struct Scene_Map {
     Mix_Chunk* bombexp;
     Mix_Chunk* bombload;
     Mix_Chunk* ded;
+    Mix_Chunk* winSound;
+    Mix_Chunk* pickup;
     Mix_Music* backgroundMusic;
     int tileWidth, tileHeight, mapWidth, mapHeight;
     int screenX, screenY;

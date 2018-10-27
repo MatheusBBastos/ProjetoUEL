@@ -21,7 +21,7 @@ bool initialize() {
         SDL_GetCurrentDisplayMode(0, &current);
         Game.screenFreq = current.refresh_rate;
         if (current.w >= 1920) {
-            Game.screenMulti = 0.8;
+            Game.screenMulti = 1;
         }
         else {
             Game.screenMulti = 0.5;
@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
         Game.startFont = TTF_OpenFont("content/kozuki.ttf", 25); 
         Game.serversName = TTF_OpenFont("content/kozuki.ttf", 80);
         Game.tip = TTF_OpenFont("content/roboto.ttf", 48);
-        Game.win = TTF_OpenFont("content/roboto.ttf", 80);
+        Game.win = TTF_OpenFont("content/roboto.ttf", 100);
 
         Game.enter = Mix_LoadWAV("content/enter.ogg");
         Game.change = Mix_LoadWAV("content/change.ogg");
@@ -115,6 +115,7 @@ int main(int argc, char* argv[]) {
         SDL_Event e;
 
         Game.mainMusic = Mix_LoadMUS("content/hang.mp3");
+        Game.type = Mix_LoadWAV("content/type.wav");
         Mix_PlayMusic(Game.mainMusic, -1);
 
         while(!SceneManager.quit) {
