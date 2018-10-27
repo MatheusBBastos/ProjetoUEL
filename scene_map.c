@@ -39,8 +39,6 @@ Scene_Map* SceneMap_new() {
     newScene->screenY = 0;
     newScene->player = Game.map->characters[Network.clientId];
     newScene->renderCharacters = malloc(Game.map->charNumber * sizeof(int));
-    
-    Map_RenderFull(Game.map, newScene->tileMap);
 
     // Carregar texturas
     WD_TextureLoadFromFile(newScene->bg, "content/bgingame.png");
@@ -53,6 +51,8 @@ Scene_Map* SceneMap_new() {
     WD_TextureLoadFromFile(newScene->winChar, "content/win.png");
     WD_TextureLoadFromFile(newScene->loseChar, "content/lose.png");
     WD_TextureLoadFromFile(newScene->deadTexture, "content/dead.png");
+
+    Map_RenderFull(Game.map, newScene->tileMap);
 
     for (int i = 0; i < 4; i++) {
         newScene->status[i] = WD_CreateTexture();
@@ -164,7 +164,7 @@ void SceneMap_Receive(Scene_Map* s) {
     while (Socket_Receive(Network.sockFd, &sender, data, sizeof(data)) > 0) {
         Network.lastReceivedCount = 0;
         if (sender.address == Network.serverAddress->address && sender.port == Network.serverAddress->port) {
-            if (strcmp("PNG", data) != 0)
+            if (strcmp("PNG", data) != 0 && Game.debug)
                 printf("[Client] Received from server: %s\n", data);
             if (strncmp("PSE", data, 3) == 0) {
                 s->frozen = !s->frozen;

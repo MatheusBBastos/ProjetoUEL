@@ -55,7 +55,7 @@ void SceneLobby_Receive(Scene_Lobby* s) {
     char data[256];
     while (Socket_Receive(Network.sockFd, &sender, data, 256) > 0) {
         if (sender.address == Network.serverAddress->address && sender.port == Network.serverAddress->port) {
-            if (strcmp("PNG", data) != 0)
+            if (strcmp("PNG", data) != 0 && Game.debug)
                 printf("[Client] Received from server: %s\n", data);
             Network.lastReceivedCount = 0;
             if (strncmp("KCK", data, 3) == 0 || strncmp("SSD", data, 3) == 0) {
