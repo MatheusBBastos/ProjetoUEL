@@ -86,8 +86,6 @@ typedef struct GameInfo {
     int screenFreq;
     // Controle da resolução e escalonamento
     double screenMulti;
-    // Fonte principal
-    TTF_Font* mainFont;
     // Fonte telaLogin
     TTF_Font* telaLogin;
     // Fonte de entrada de texto
@@ -119,7 +117,6 @@ typedef struct GameInfo {
 
     Mix_Music* mainMusic;
 
-    TTF_Font* rank;
     // Singleplayer
     bool reset;
 

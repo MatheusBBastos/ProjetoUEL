@@ -89,7 +89,6 @@ int main(int argc, char* argv[]) {
     } else {
         SceneManager.quit = false;
         // Fontes
-        Game.mainFont = TTF_OpenFont("content/Fipps-Regular.ttf", 36);
         Game.telaLogin = TTF_OpenFont("content/kozuki.ttf", 48);
         Game.inputFont = TTF_OpenFont("content/kozuki.ttf", 40);
         Game.rankMini = TTF_OpenFont("content/Minecraft.ttf", 44);
@@ -97,7 +96,6 @@ int main(int argc, char* argv[]) {
         Game.mainMenu_botoes = TTF_OpenFont("content/kozuki.ttf", 62);
         Game.Unisans = TTF_OpenFont("content/uni.ttf", 60);
         Game.roboto = TTF_OpenFont("content/roboto.ttf", 60);
-        Game.rank = TTF_OpenFont("content/Gamer.ttf", 96);
         Game.serversFontd = TTF_OpenFont("content/Minecraft.ttf", 56);
         Game.serversFonte = TTF_OpenFont("content/Minecraft.ttf", 48);
         Game.startFont = TTF_OpenFont("content/kozuki.ttf", 25); 
@@ -133,10 +131,6 @@ int main(int argc, char* argv[]) {
             SDL_RenderCopy(Game.renderer, Game.screenTexture, NULL, &dest);
             SDL_RenderPresent(Game.renderer);
         }
-        TTF_CloseFont(Game.mainFont);
-        TTF_CloseFont(Game.telaLogin);
-        TTF_CloseFont(Game.inputFont);
-        Game.mainFont = NULL;
         SceneManager_changeScene(SCENE_UNDEFINED);
     }
     destroy();
