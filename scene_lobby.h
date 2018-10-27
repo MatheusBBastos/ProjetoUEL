@@ -10,19 +10,19 @@ typedef struct SceneManagerS SceneManagerS;
 #include "map.h"
 
 typedef struct Scene_Lobby {
-    char playerNames[4][32];
-    int pingCount;
-    int frame;
-    int curPos[4];
-    bool started[4];
-    bool conected[4];
-    bool animfinished[4];
-    Mix_Chunk* spawn;
     WTexture** players;
     WTexture* bg;
     WTexture* helptext[2];
     WTexture* playersSprite[4];
     WTexture* animation;
+    bool started[4];
+    bool conected[4];
+    bool animfinished[4];
+    int pingCount;
+    int frame;
+    int curPos[4];
+    char playerNames[4][32];
+    Mix_Chunk* spawn;
     Mix_Music* sound;
 } Scene_Lobby;
 

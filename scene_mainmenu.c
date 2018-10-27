@@ -141,7 +141,6 @@ int getRank(char res[2][6][30], char* data) {
 }
 
 
-
 void SceneMainMenu_update(Scene_MainMenu* s) {
     if (s->socketFd != 0 && !s->dataReceived) {
         if (!s->connected) {
@@ -255,6 +254,7 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
     WD_TextureRenderExCustom(s->animatedChar, 125, 830, &clip, 0.0, NULL, SDL_FLIP_NONE, 128, 128);
 }
 
+
 void SceneMainMenu_destroy(Scene_MainMenu* s) {
     WD_TextureDestroy(s->backgroundTexture);
     WD_TextureDestroy(s->seta);
@@ -268,6 +268,7 @@ void SceneMainMenu_destroy(Scene_MainMenu* s) {
     free(s);
     
 }
+
 
 void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e) {
 

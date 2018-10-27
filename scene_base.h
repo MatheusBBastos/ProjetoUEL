@@ -60,6 +60,7 @@ typedef struct SceneManagerS {
     Scene_Servers* sServers;
     Scene_Tutorial* sTutorial;
     Scene_Lobby* sLobby;
+    // Verificar se deve fechar o jogo
     bool quit;
 } SceneManagerS;
 

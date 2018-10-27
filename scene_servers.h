@@ -14,20 +14,6 @@ typedef struct ServerInfo {
 } ServerInfo;
 
 typedef struct Scene_Servers {
-    int numServers;
-    bool waitingConnection;
-    int receiveSock;
-    bool receivingInfo;
-    int receivingTimeout;
-    int connectionTimeout;
-    int frame;
-    short int maxServers;
-    short int indexd, indexe, posTela, indexShow;
-    bool esquerda;
-    bool needServersRefresh;
-    bool inGame;
-    ServerInfo* servers;
-    char string1[20], string2[20], string3[20];
     WTexture* loading;
     WTexture* nome;
     WTexture* mutiplayer;
@@ -40,7 +26,21 @@ typedef struct Scene_Servers {
     WTexture* voltar;
     TextBox* boxIp;
     TextBox* boxNome;
+    bool waitingConnection;
+    bool receivingInfo;
+    bool esquerda;
+    bool needServersRefresh;
+    bool inGame;
+    short int maxServers;
+    short int indexd, indexe, posTela, indexShow;
+    int numServers;
+    int receiveSock;
+    int receivingTimeout;
+    int connectionTimeout;
+    int frame;
+    char string1[20], string2[20], string3[20];
     SDL_Rect renderQuad;
+    ServerInfo* servers;
 } Scene_Servers;
 
 Scene_Servers* SceneServers_new();

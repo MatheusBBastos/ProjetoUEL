@@ -11,7 +11,7 @@ void SceneManager_performTransition(int duration, int newScene) {
 
 // Troca a cena, destruindo a anterior e criando a nova
 void SceneManager_changeScene(int newScene) {
-    switch(SceneManager.currentScene) {
+    switch (SceneManager.currentScene) {
         case SCENE_START:
             SceneStart_destroy(SceneManager.sStart);
             break;
@@ -38,7 +38,7 @@ void SceneManager_changeScene(int newScene) {
             break;
     }
     SceneManager.currentScene = newScene;
-    switch(newScene) {
+    switch (newScene) {
         case SCENE_START:
             SceneManager.sStart = SceneStart_new();
             break;
@@ -68,7 +68,7 @@ void SceneManager_changeScene(int newScene) {
 
 // Atualiza e renderiza a cena atual, além de mostrar os efeitos de uma transição se for o caso
 void SceneManager_updateScene() {
-    switch(SceneManager.currentScene) {
+    switch (SceneManager.currentScene) {
         case SCENE_START:
             SceneStart_update(SceneManager.sStart);
             break;
@@ -94,7 +94,7 @@ void SceneManager_updateScene() {
             SceneLobby_update(SceneManager.sLobby);
             break;
     }
-    if(SceneManager.inTransition) {
+    if (SceneManager.inTransition) {
         // Se, na transição, a cena ainda nao foi trocada (primeira fase)
         if(!SceneManager.transitionChangedScene) {
             // Renderizar na cor preta
@@ -120,7 +120,7 @@ void SceneManager_updateScene() {
             SDL_SetRenderDrawColor(Game.renderer, 0xFF, 0xFF, 0xFF, 0xFF);
             SceneManager.transitionFrame++;
             // Fim da transição
-            if(SceneManager.transitionFrame >= SceneManager.transitionDuration) {
+            if (SceneManager.transitionFrame >= SceneManager.transitionDuration) {
                 SceneManager.inTransition = false;
             }
         }
@@ -128,7 +128,7 @@ void SceneManager_updateScene() {
 }
 
 void SceneManager_handleEvent(SDL_Event* e) {
-    switch(SceneManager.currentScene) {
+    switch (SceneManager.currentScene) {
         case SCENE_START:
             SceneStart_handleEvent(SceneManager.sStart, e);
             break;
