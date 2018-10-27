@@ -281,7 +281,6 @@ void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e) {
                 s->mult = true;
             } else {
                 Mix_PlayChannel(-1, Game.enter, 0);
-                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOGIN);
             }
         } else if (e->key.keysym.sym == SDLK_DOWN) {
             if (s->btnJogar) {
@@ -315,9 +314,13 @@ void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e) {
         } else if (e->key.keysym.sym == SDLK_RETURN && s->index == 2) {
             Mix_PlayChannel(-1, Game.enter, 0);
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOGIN);
-        } else if (e->key.keysym.sym == SDLK_ESCAPE && s->btnJogar) {
-            s->btnJogar = false;
-            s->mult = true;
+        } else if (e->key.keysym.sym == SDLK_ESCAPE) {
+            if(s->btnJogar) {
+                s->btnJogar = false;
+                s->mult = true;
+            } else {
+                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOGIN);
+            }
         }
     }
 }
