@@ -42,6 +42,7 @@ typedef struct Character {
     uint8_t movementStack[64];
     int8_t movementStackTop;
     int shieldDuration;
+    short int deadCount;
     //Movement* moveRoute;
 } Character;
 
@@ -61,7 +62,7 @@ void Character_Place(Character* c, int x, int y);
 
 void Character_Update(Character* c, Map* m);
 
-void Character_Render(Character* c, int screenX, int screenY);
+void Character_Render(Character* c, WTexture* deadTexture, int screenX, int screenY);
 
 void Character_Destroy(Character* c);
 
