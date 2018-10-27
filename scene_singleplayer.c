@@ -196,13 +196,20 @@ void SceneSingleplayer_handleEvent(Scene_Singleplayer* s, SDL_Event* e) {
         if (s->primeiraTela) {
             if (e->key.keysym.sym == SDLK_ESCAPE) {
                 SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
+                Mix_PlayChannel(-1, Game.enter, 0);
             } else if (e->key.keysym.sym == SDLK_UP) {
-                if (s->index > 0)
+                if (s->index > 0) {
                     s->index--;
+                    Mix_PlayChannel(-1, Game.change, 0);
+                }
+                    
             } else if (e->key.keysym.sym == SDLK_DOWN) {
-                if (s->index < 2 )
+                if (s->index < 2) {
                     s->index++;
+                    Mix_PlayChannel(-1, Game.change, 0);
+                }
             } else if (e->key.keysym.sym == SDLK_RETURN) {
+                Mix_PlayChannel(-1, Game.enter, 0);
                 if (s->index == 0) {
                     if (s->temArquivo)
                         s->primeiraTela = false;
@@ -217,7 +224,9 @@ void SceneSingleplayer_handleEvent(Scene_Singleplayer* s, SDL_Event* e) {
         } else {
             if (e->key.keysym.sym == SDLK_RIGHT || e->key.keysym.sym == SDLK_LEFT) {
                 s->index = !s->index;
+                Mix_PlayChannel(-1, Game.change, 0);
             } else if (e->key.keysym.sym == SDLK_RETURN) {
+                Mix_PlayChannel(-1, Game.enter, 0);
                 if (s->index == 0) {
                     SceneSingleplayer_openServer(s);
                     Game.reset = true;

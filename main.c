@@ -21,7 +21,7 @@ bool initialize() {
         SDL_GetCurrentDisplayMode(0, &current);
         Game.screenFreq = current.refresh_rate;
         if (current.w >= 1920) {
-            Game.screenMulti = 1;
+            Game.screenMulti = 0.8;
         }
         else {
             Game.screenMulti = 0.5;
