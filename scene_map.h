@@ -20,6 +20,8 @@ typedef struct Explosion {
     int x, y, xMin, xMax, yMin, yMax;
     bool active;
     int explosionCount;
+    short int explosionFrame;
+    bool expanding;
 } Explosion;
 
 Bomb_Render(Bomb* b, int screenX, int screenY, WTexture* bombSprite, int frame);
@@ -45,6 +47,7 @@ typedef struct Scene_Map {
     bool connected;
     int realPlayer;
     int finalRanking[4];
+    WTexture* deadTexture;
     int tileWidth, tileHeight, mapWidth, mapHeight;
     int screenX, screenY;
     int* renderCharacters;

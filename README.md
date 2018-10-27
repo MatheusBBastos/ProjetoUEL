@@ -1,7 +1,12 @@
-# Projeto UEL
+# Bomb'Em
 [![Build Status](https://travis-ci.org/Epherex/ProjetoUEL.svg?branch=master)](https://travis-ci.org/Epherex/ProjetoUEL) <br>
 
-Projeto acadêmico para a matéria de Laboratório de Computação (1o ano).
+Projeto acadêmico para a matéria de Técnicas de Programação A (1º ano), ministrada
+pelo professor Luiz Fernando Carvalho. Alunos:
+* Matheus Barbiero Bastos
+* Melvi Trevisan Ferreira
+* Thales Alexandre Landim
+* Vinicius Marino Luciano
 
 ### Pré requisitos
 
@@ -20,13 +25,7 @@ Resolução: 800x600 <br>
 200MB de armazenamento <br>
 Conexão internet*: 100kbps/s
 
-**A conexão com internet é necessária somente para o modo singleplayer*
+**A conexão com internet é necessária somente para o modo multiplayer*
 
-###### Máximo suportado
+#### Máximo suportado
 Resolução: 3840x2160
-
-
-## Estágio de desenvolvimento
-
-Talvez seu computador queime. Não nos responsabilizamos. <br>
-# Se for dar clone no repositório, boa sorte!

@@ -572,14 +572,17 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
     if(cId != -1) {
         s->clients[cId]->lastMessage = SDL_GetTicks();
         if(s->paused) {
+            // Despause
             if(strncmp("PSE", buffer, 3) == 0 && cId == s->hostId && s->inGame) {
                 s->paused = false;
                 Server_SendToAll(s, "PSE", -1);
             }
         } else {
+            // Pause
             if(strncmp("PSE", buffer, 3) == 0 && cId == s->hostId && s->inGame) {
                 s->paused = true;
                 Server_SendToAll(s, "PSE", -1);
+            // Movimentação
             } else if(strncmp("POS", buffer, 3) == 0 && s->inGame) {
                 int newX, newY, dir;
                 uint64_t movementId;
@@ -599,8 +602,10 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
                     }
                     chr->lastMovementId = movementId;
                 }
+            // Desconexão
             } else if(strncmp("DCS", buffer, 3) == 0) {
                 Server_PlayerDisconnect(s, cId);
+            // Adição de bot
             } else if(strncmp("BOT", buffer, 3) == 0) {
                 if(s->hostId == cId && s->connectedClients < s->maxClients && !s->inGame && !s->gameEnded) {
                     int difficulty;
@@ -617,6 +622,7 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
                     sprintf(sendData3, "PNM %d %s", id, s->clients[id]->username);
                     Server_SendToAll(s, sendData3, id);
                 }
+            // Começar jogo
             } else if(strncmp("STA", buffer, 3) == 0) {
                 if(s->hostId == cId && !s->inGame && !s->gameEnded) {
                     s->inGame = true;
@@ -627,6 +633,7 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
                     Server_SendToAll(s, sendData, strlen(sendData) + 1);
                     Server_GenerateMap(s);
                 }
+            // Colocar bomba
             } else if(strncmp("BMB", buffer, 3) == 0) {
                 if(s->inGame) {
                     Server_PlaceBomb(s, cId);
@@ -634,12 +641,14 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
             }
         }
     } else {
+        // Solicitar informações do servidor
         if(strncmp("INF", buffer, 3) == 0) {
             if(!s->inGame && !s->gameEnded && !s->singleplayer) {
                 char sendData[64];
                 sprintf(sendData, "INF %d %d %s", s->connectedClients, s->maxClients, s->name);
                 Socket_Send(s->sockfd, sender, sendData, strlen(sendData) + 1);
             }
+        // Conexão
         } else if(strncmp("CON", buffer, 3) == 0) {
             if(s->singleplayer && s->connectedClients > 0)
                 return;
@@ -694,7 +703,7 @@ int Server_InitLoop(Server* s) {
         int bytes;
         while((bytes = Socket_Receive(s->sockfd, &sender, buffer, sizeof(buffer))) > 0) {
             buffer[bytes] = '\0';
-            if(strncmp("PNG", buffer, 3) != 0)
+            if(strncmp("PNG", buffer, 3) != 0 && Game.debug)
                 printf("[Server] Received from %s (Port: %hu): %s\n", sender.addrString, sender.port, buffer);
             Server_HandleMessage(s, &sender, buffer);
         }
@@ -723,7 +732,8 @@ int Server_InitLoop(Server* s) {
         }
         count++;
         if(count == SERVER_TICKRATE) {
-            printf("[Server] Connected clients: %d\n", s->connectedClients);
+            if(Game.debug)
+                printf("[Server] Connected clients: %d\n", s->connectedClients);
             count = 0;
         }
         uint64_t now = SDL_GetPerformanceCounter();
