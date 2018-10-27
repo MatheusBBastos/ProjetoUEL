@@ -223,6 +223,7 @@ void SceneSingleplayer_handleEvent(Scene_Singleplayer* s, SDL_Event* e) {
                     Game.reset = true;
                 } else {
                     s->primeiraTela = true;
+                    s->index = 0;
                 }
             }
         }
