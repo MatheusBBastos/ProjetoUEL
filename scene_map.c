@@ -5,7 +5,6 @@ Scene_Map* SceneMap_new() {
 
     // Texturas
     newScene->bg = WD_CreateTexture();
-    newScene->bombSprite = WD_CreateTexture();
     newScene->explosionSprite = WD_CreateTexture();
     newScene->wallTexture = WD_CreateTexture();
     newScene->puTexture = WD_CreateTexture();
@@ -44,7 +43,6 @@ Scene_Map* SceneMap_new() {
     WD_TextureLoadFromFile(newScene->bg, "content/bgingame.png");
     WD_TextureLoadFromFile(newScene->animatedBomb, "content/FSD.png");
     WD_TextureLoadFromFile(newScene->tileMap, "content/tilemaster.png");
-    WD_TextureLoadFromFile(newScene->bombSprite, "content/bomb.png");
     WD_TextureLoadFromFile(newScene->explosionSprite, "content/explosion.png");
     WD_TextureLoadFromFile(newScene->wallTexture, "content/wall.png");
     WD_TextureLoadFromFile(newScene->puTexture, "content/powerup.png");
@@ -77,6 +75,31 @@ Scene_Map* SceneMap_new() {
         Mix_ResumeMusic();
 
     return newScene;
+}
+
+bool haveBot() {
+    int qntPlayers = 0;
+    int qntBots = 0;
+    for (int i = 0; i < 4; i++) {
+        if (Game.map->characters[i] != NULL) {
+            if (strncmp(Network.playerNames[i], "BOT", 3) == 0) {
+                qntBots++;
+            }
+            else {
+                qntPlayers++;
+            }
+        }
+    }
+
+    if (qntPlayers == 3 && qntBots == 1) {
+        return false;
+    }
+    else if (qntBots == 0) {
+        return false;
+    }
+    else {
+        return true;
+    }
 }
 
 
@@ -378,7 +401,7 @@ void SceneMap_Receive(Scene_Map* s) {
                             fwrite(&pontuacaoAtual, sizeof(int), 1, arq);
                         fclose(arq);
                     }
-                } else {
+                } else if(!haveBot()){
                     s->connected = false;
                     s->socketFd = TCPSocket_Open();
                     if (s->socketFd != 0)
@@ -680,7 +703,6 @@ void SceneMap_destroy(Scene_Map* s) {
     Mix_FreeChunk(s->winSound);
     Mix_FreeChunk(s->pickup);
     WD_TextureDestroy(s->bg);
-    WD_TextureDestroy(s->bombSprite);
     WD_TextureDestroy(s->explosionSprite);
     WD_TextureDestroy(s->winText);
     WD_TextureDestroy(s->winChar);

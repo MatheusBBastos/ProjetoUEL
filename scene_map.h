@@ -31,7 +31,7 @@ Explosion_Render(Explosion* e, int screenX, int screenY, WTexture* explosionSpri
 typedef struct Scene_Map {
     WTexture* tileMap;
     WTexture* animatedBomb;
-    WTexture *bombSprite, *explosionSprite;
+    WTexture *explosionSprite;
     WTexture* wallTexture;
     WTexture* puTexture;
     WTexture* winChar;

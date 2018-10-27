@@ -18,6 +18,7 @@ Scene_Login* SceneLogin_new() {
 
     newScene->loginPressed = false;
     newScene->connectionNotStarted = true;
+    newScene->socketFd = -1;
 
     // Texturas
     newScene->loading = WD_CreateTexture();
@@ -67,7 +68,7 @@ Scene_Login* SceneLogin_new() {
 void SceneLogin_update(Scene_Login* s) {
     ///// -- HANDLE NETWORK -- /////
     if (s->loginPressed) {
-        if (s->socketFd != 0 && s->connectionNotStarted) {
+        if (s->connectionNotStarted) {
             s->dataReceived = false;
             s->connected = false;
             s->socketFd = TCPSocket_Open();
