@@ -8,11 +8,26 @@ typedef struct SceneManagerS SceneManagerS;
 #include "widgets.h"
 
 typedef struct Scene_Singleplayer {
-    WTexture* textTexture;
-    WTexture* testTexture;
+    WTexture* iniciar;
+    WTexture* continuar;
+    WTexture* voltar;
+    WTexture* background;
+    WTexture* mensagem;
+    WTexture* mensagem1;
+    WTexture* sim;
+    WTexture* nao;
+    WTexture* bemVindo;
+    WTexture* nome;
+    WTexture* pontu;
+    WTexture* nivel;
+    WTexture* imgBoneco;
     SDL_Rect renderQuad;
-    int cont;
-    int socketFd, s2;
+    SDL_Rect posBoneco;
+    bool primeiraTela;
+    bool temArquivo;
+    short int index;
+    int pontuacao;
+    bool waitingConnection;
 } Scene_Singleplayer;
 
 Scene_Singleplayer* SceneSingleplayer_new();

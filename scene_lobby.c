@@ -62,7 +62,7 @@ void SceneLobby_Receive(Scene_Lobby* s) {
             Network.lastReceivedCount = 0;
             if(strncmp("KCK", data, 3) == 0 || strncmp("SSD", data, 3) == 0) {
                 Network.connectedToServer = false;
-                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
+                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, Network.singleplayer ? SCENE_SINGLEPLAYER : SCENE_SERVERS);
             } else if(strncmp("PNM", data, 3) == 0) {
                 int id;
                 char name[32];
@@ -134,7 +134,7 @@ void SceneLobby_Disconnect(Scene_Lobby* s) {
     }
     if(Network.serverHost)
         Server_Close(Network.server);
-    SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
+    SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, Network.singleplayer ? SCENE_SINGLEPLAYER : SCENE_SERVERS);
     Map_Destroy(Game.map);
     Game.map = NULL;
 }
@@ -233,7 +233,7 @@ void SceneLobby_handleEvent(Scene_Lobby* s, SDL_Event* e) {
             }
             if(Network.serverHost)
                 Server_Close(Network.server);
-            SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
+            SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, Network.singleplayer ? SCENE_SINGLEPLAYER : SCENE_SERVERS);
             Map_Destroy(Game.map);
             Game.map = NULL;
         } else if(e->key.keysym.sym == SDLK_SPACE) {

@@ -12,10 +12,6 @@ Scene_Login* SceneLogin_new() {
         Mix_PlayMusic(Game.mainMusic, -1);
     }
 
-   // newScene->music = Mix_LoadMUS("content/hang.mp3");
-   // Mix_PlayMusic(newScene->music, -1);
-   // Mix_PauseMusic();
-
     SDL_Color colorSelected = { 255, 255, 255 };
     SDL_Color colorNotSelected = { 255, 255, 255 };
     SDL_Color fullRed = { 255,0,0 };
@@ -23,6 +19,7 @@ Scene_Login* SceneLogin_new() {
     newScene->loginPressed = false;
     newScene->connectionNotStarted = true;
 
+    // Texturas
     newScene->loading = WD_CreateTexture();
     newScene->logo[0] = WD_CreateTexture();
     newScene->logo[1] = WD_CreateTexture();
@@ -30,30 +27,24 @@ Scene_Login* SceneLogin_new() {
     newScene->backgroundTexture = WD_CreateTexture();
     newScene->textLogar = WD_CreateTexture();
     newScene->textModoOff = WD_CreateTexture();
-    newScene->modoOff = false;
-    newScene->brute = false;
     newScene->textCaps = WD_CreateTexture();
     newScene->textErrorBrute = WD_CreateTexture();
-    newScene->textVoltar = WD_CreateTexture();
-    newScene->index = 0; // Começar no login
+    newScene->textSair = WD_CreateTexture();
+    newScene->brute = false;
+    
+    // Começar no login
+    newScene->index = 0; 
 
-
+    // Carregar texturas
     WD_TextureLoadFromFile(newScene->loading, "content/loading.png");
     WD_TextureLoadFromFile(newScene->logo[0], "content/torch.png");
     WD_TextureLoadFromFile(newScene->logo[1], "content/logo.png");
     WD_TextureLoadFromText(newScene->textLogar, "ENTRAR", Game.telaLogin, colorSelected);
-    WD_TextureLoadFromText(newScene->textVoltar, "VOLTAR", Game.telaLogin, colorNotSelected);
+    WD_TextureLoadFromText(newScene->textSair, "SAIR", Game.telaLogin, colorNotSelected);
     WD_TextureLoadFromText(newScene->textModoOff, "MODO OFFLINE", Game.telaLogin, colorSelected);
     WD_TextureLoadFromText(newScene->textCaps, "*CAPS LIGADO", Game.telaLogin, colorNotSelected);
     WD_TextureLoadFromText(newScene->textError, "*Acesso negado", Game.telaLogin, colorNotSelected);
     WD_TextureLoadFromText(newScene->textErrorBrute, "*Bruteforce negado", Game.telaLogin, colorNotSelected);
-
-
-    //newScene->logo[0]->h *= 0.5; newScene->logo[0]->w *= 0.5;
-    //newScene->logo[1]->h *= Game.screenMulti; newScene->logo[1]->w *= Game.screenMulti;
-
-    //newScene->seta->h *= Game.screenMulti;
-    //newScene->seta->w *= Game.screenMulti;
 
     WD_TextureLoadFromFile(newScene->backgroundTexture, "content/bglogin.png");
     int w = newScene->backgroundTexture->w, h = newScene->backgroundTexture->h;
@@ -61,6 +52,7 @@ Scene_Login* SceneLogin_new() {
     newScene->renderQuad.y = 0;
     newScene->renderQuad.w = w;
     newScene->renderQuad.h = h;
+
     SDL_Color textColor = { 50, 50, 50, 255 };
     newScene->login = WD_CreateTextBox(235, 610, 375, 52, 30, Game.inputFont, colorNotSelected, false);
     newScene->senha = WD_CreateTextBox(235, 680, 375, 52, 30, Game.inputFont, colorNotSelected, true);
@@ -71,6 +63,7 @@ Scene_Login* SceneLogin_new() {
 
     return newScene;
 }
+
 
 void SceneLogin_update(Scene_Login* s) {
     ///// -- HANDLE NETWORK -- /////
@@ -93,13 +86,11 @@ void SceneLogin_update(Scene_Login* s) {
                     sprintf(message, "{\"cmd\":\"login\",\"var\":{\"login\":\"%s\",\"senha\":\"%s\"}}\n", s->login->text, resp);
                     TCPSocket_Send(s->socketFd, message, strlen(message));
                     puts(message);
-                }
-                else if (c == -1) {
+                } else if (c == -1) {
                     Socket_Close(s->socketFd);
                     s->socketFd = 0;
                 }
-            }
-            else {
+            } else {
                 char data[2000];
                 int c = TCPSocket_Receive(s->socketFd, data, 2000);
                 if (c > 0) {
@@ -119,8 +110,7 @@ void SceneLogin_update(Scene_Login* s) {
                         if (jsoneq(data, &t[i], "playerName") == 0) {
                             sprintf(resposta, "%.*s", t[i + 1].end - t[i + 1].start, data + t[i + 1].start);
                             logado = true;
-                        }
-                        else if (jsoneq(data, &t[i], "logado") == 0) {
+                        } else if (jsoneq(data, &t[i], "logado") == 0) {
                             char temp[5];
                             sprintf(temp, "%.*s", t[i + 1].end - t[i + 1].start, data + t[i + 1].start);
                             if (strcmp(temp, "2")==0) {
@@ -134,8 +124,7 @@ void SceneLogin_update(Scene_Login* s) {
                         strcpy(Game.nome, resposta);
                         strcpy(Game.loginID, s->login->text);
                         SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
-                    }
-                    else {
+                    } else {
                         s->acessonegado = true;
                     }
 
@@ -143,8 +132,7 @@ void SceneLogin_update(Scene_Login* s) {
                     Socket_Close(s->socketFd);
                     s->loginPressed = false;
                     s->connectionNotStarted = true;
-                }
-                else if (c == -1) {
+                } else if (c == -1) {
                     Socket_Close(s->socketFd);
                     s->loginPressed = false;
                     s->connectionNotStarted = true;
@@ -156,7 +144,7 @@ void SceneLogin_update(Scene_Login* s) {
 
     SDL_Rect indexLogin = { 135, 800 + s->textLogar->h , s->textLogar->w, 5 };
     SDL_Rect indexModoOff = { 135, 875 + s->textModoOff->h , s->textModoOff->w, 5 };
-    SDL_Rect indexVoltar = { 135, 950 + s->textVoltar->h , s->textVoltar->w, 5 };
+    SDL_Rect indexVoltar = { 135, 950 + s->textSair->h , s->textSair->w, 5 };
 
     SDL_SetRenderDrawColor(Game.renderer, 0x12, 0xFF, 0xFF, 0xFF);
     SDL_RenderClear(Game.renderer);
@@ -167,12 +155,10 @@ void SceneLogin_update(Scene_Login* s) {
     if (SDL_GetModState() & KMOD_CAPS) {
         WD_TextureRender(s->textCaps, 660, 700);
     }
+    
     if (s->brute) {
         WD_TextureRender(s->textErrorBrute, 660, 700 + 100);
     }
-
-
-
 
     if (s->loginPressed && s->socketFd != 0 && !s->dataReceived) {
         double angle = Game.screenFreq / 60.0 * 6 * s->frame;
@@ -182,7 +168,7 @@ void SceneLogin_update(Scene_Login* s) {
     }
     WD_TextureRender(s->textLogar, 135, 800);
     WD_TextureRender(s->textModoOff, 135, 875);
-    WD_TextureRender(s->textVoltar, 135, 950);
+    WD_TextureRender(s->textSair, 135, 950);
 
     SDL_SetRenderDrawBlendMode(Game.renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(Game.renderer, 0xFF, 0xFF, 0xFF, 100);
@@ -192,35 +178,17 @@ void SceneLogin_update(Scene_Login* s) {
     }
 
     switch (s->index) {
-    case 2:
-        SDL_RenderFillRect(Game.renderer, &indexLogin);
-        break;
-    case 3:
-        SDL_RenderFillRect(Game.renderer, &indexModoOff);
-        break;
-    case 4:
-        SDL_RenderFillRect(Game.renderer, &indexVoltar);
-        break;
+        case 2:
+            SDL_RenderFillRect(Game.renderer, &indexLogin);
+            break;
+        case 3:
+            SDL_RenderFillRect(Game.renderer, &indexModoOff);
+            break;
+        case 4:
+            SDL_RenderFillRect(Game.renderer, &indexVoltar);
+            break;
     }
 
-    /*
-    if (s->modoOff && s->index == 2) {
-        WD_TextureRender(s->textLogarOff, 135, 800);
-       WD_TextureRender(s->textModoOff, 135, 875);
-        WD_TextureRender(s->seta, posSetaX[0], posSetaY);
-    }
-    else if (!s->modoOff && s->index == 2) {
-        WD_TextureRender(s->textLogar, 135, 800);
-       WD_TextureRender(s->textModoOffOff, 135, 875);
-       WD_TextureRender(s->seta, posSetaX[1], posSetaY);
-    }
-    
-
-
-    /*SDL_Rect rect = { 480, 580, 520, 52 };
-    SDL_RenderFillRect(Game.renderer, &rect);
-    rect.y += 90;
-    SDL_RenderFillRect(Game.renderer, &rect);*/
     if (s->index == 0) {
         s->login->active = true;
     } else {
@@ -233,6 +201,7 @@ void SceneLogin_update(Scene_Login* s) {
     }
     WD_TextBoxRender(s->login, s->frame);
     WD_TextBoxRender(s->senha, s->frame);
+
     if (s->enteringFrame < 100) {
         SDL_SetRenderDrawColor(Game.renderer, 0x00, 0x00, 0x00, 255 - 2.5 * s->enteringFrame);
         SDL_Rect fillRect = { 0, 0, REFERENCE_WIDTH, REFERENCE_HEIGHT };
@@ -240,7 +209,7 @@ void SceneLogin_update(Scene_Login* s) {
         s->enteringFrame++;
     }
     s->frame++;
-    if(s->frame >= Game.screenFreq) {
+    if (s->frame >= Game.screenFreq) {
         s->frame = 0;
     }
 
@@ -248,14 +217,11 @@ void SceneLogin_update(Scene_Login* s) {
         s->positionAnimado++;
     }
 
-
-
     if (s->positionAnimado == 16)
         s->positionAnimado = 0;
 
     SDL_Rect clip = { 0, 320 * s->positionAnimado, 320, 320 };
     WD_TextureRenderExCustom(s->logo[0], 1440-320, 1080-400, &clip, 0.0, NULL, SDL_FLIP_NONE, 320, 320);
-
 }
 
 
@@ -269,7 +235,7 @@ void SceneLogin_destroy(Scene_Login* s) {
     WD_TextBoxDestroy(s->login);
     WD_TextBoxDestroy(s->senha);
     WD_TextureDestroy(s->textErrorBrute);
-    WD_TextureDestroy(s->textVoltar);
+    WD_TextureDestroy(s->textSair);
     WD_TextureDestroy(s->textCaps);
     SDL_StopTextInput();
     free(s);
@@ -284,7 +250,7 @@ void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
         Mix_PlayChannel(-1, Game.type, 0);
     }
 
-    if(e->type == SDL_KEYDOWN) {
+    if (e->type == SDL_KEYDOWN) {
         if (e->key.keysym.sym == SDLK_BACKSPACE){
              s->acessonegado = false;
              s->brute = false;
@@ -301,53 +267,44 @@ void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
                 }
             }
             switch (s->index) {
-            case 2:
-                if (s->login->text!=NULL && s->senha->text != NULL) {
-                    if ((strcmp(s->login->text, "")!=0) && (strcmp(s->senha->text, ""))!=0) {
-                        s->loginPressed = true;
-                        Game.logado = true;
+                case 2:
+                    if (s->login->text!=NULL && s->senha->text != NULL) {
+                        if ((strcmp(s->login->text, "")!=0) && (strcmp(s->senha->text, ""))!=0) {
+                            s->loginPressed = true;
+                            Game.logado = true;
+                        }
                     }
-                }
-                else {
+                    else {
+                        strcpy(Game.nome, "User Teste");
+                        strcpy(Game.loginID, "NULLRANK");
+                        Game.logado = false;
+                        SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
+                    }
+                    break;
+                
+                case 3:
                     strcpy(Game.nome, "User Teste");
                     strcpy(Game.loginID, "NULLRANK");
                     Game.logado = false;
                     SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
-                }
-                break;
-            
-            case 3:
-                strcpy(Game.nome, "User Teste");
-                strcpy(Game.loginID, "NULLRANK");
-                Game.logado = false;
-                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);
-                break;
-            case 4:
-                //Voltar;
-                break;
-
-
+                    break;
+                case 4:
+                    SceneManager.quit = true;
+                    break;
             }
             Mix_PlayChannel(-1, Game.enter, 0);
-        }
-      /*  else if (e->key.keysym.sym == SDLK_RIGHT && s->index == 2 || e->key.keysym.sym == SDLK_LEFT && s->index == 3) {
-            s->modoOff = !s->modoOff;
-        }*/
-        else if ((e->key.keysym.sym == SDLK_DOWN || e->key.keysym.sym == SDLK_TAB) && s->index <= 3) {
+        } else if ((e->key.keysym.sym == SDLK_DOWN || e->key.keysym.sym == SDLK_TAB) && s->index <= 3) {
             s->index++;
             if(s->index > 1)
-            Mix_PlayChannel(-1, Game.change, 0);
-        }
-        else if (e->key.keysym.sym == SDLK_UP && s->index > 0) {
+                Mix_PlayChannel(-1, Game.change, 0);
+        } else if (e->key.keysym.sym == SDLK_UP && s->index > 0) {
             s->index--;
             if (s->index > 1)
-            Mix_PlayChannel(-1, Game.change, 0);
-        }
-        else if (e->key.keysym.sym == SDLK_F2) {
+                Mix_PlayChannel(-1, Game.change, 0);
+        } else if (e->key.keysym.sym == SDLK_F2) {
             if (Mix_PausedMusic()) {
                 Mix_ResumeMusic();
-            }
-            else {
+            } else {
                 Mix_PauseMusic();
             }
         }

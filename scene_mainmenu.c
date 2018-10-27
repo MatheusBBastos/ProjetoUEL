@@ -7,6 +7,8 @@ SDL_Color blueMenu = { 91,116,212 };
 
 Scene_MainMenu* SceneMainMenu_new() {
     Scene_MainMenu* newScene = malloc(sizeof(Scene_MainMenu));
+
+    // Texturas
     newScene->backgroundTexture = WD_CreateTexture();
     newScene->bemvindo = WD_CreateTexture();
     newScene->nome = WD_CreateTexture();
@@ -17,13 +19,18 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->multiplayer = WD_CreateTexture();
     newScene->singleplayer = WD_CreateTexture();
     newScene->rankPOS = WD_CreateTexture();
+    newScene->animatedChar = WD_CreateTexture();
+
+    // Começar no 'jogar'
     newScene->index = 0;
+
+    // Não clicou em jogar
     newScene->btnJogar=false;
     newScene->mult=true;
-    newScene->animatedChar = WD_CreateTexture();
-    newScene->frame = 0;
     newScene->animation = false;
+    newScene->frame = 0;
 
+    // Cores dos textos
     SDL_Color colorBemvindo = {141,38,38}; 
     SDL_Color colorWhite = {255, 255, 255};
     SDL_Color orange = { 255,172,65 };
@@ -31,7 +38,7 @@ Scene_MainMenu* SceneMainMenu_new() {
     newScene->connected = false;
     newScene->dataReceived = false;
     newScene->socketFd = TCPSocket_Open();
-    if(newScene->socketFd != 0)
+    if (newScene->socketFd != 0)
         TCPSocket_Connect(newScene->socketFd, "35.198.20.77", 3122);
     char anw[6][20];
     for (int i = 0; i < 5; i++) {
@@ -45,18 +52,17 @@ Scene_MainMenu* SceneMainMenu_new() {
         WD_TextureLoadFromText(newScene->rankName[i], anw[i], Game.Unisans, colorWhite);
     }
 
+    // Carregar texturas
     WD_TextureLoadFromText(newScene->bemvindo, "BEM VINDO", Game.mainMenu, colorWhite);
     WD_TextureLoadFromText(newScene->nome, Game.nome, Game.mainMenu, blueMenu);
-
     WD_TextureLoadFromText(newScene->jogar, "Jogar", Game.mainMenu_botoes, orange);
     WD_TextureLoadFromText(newScene->tutorial, "Tutorial", Game.mainMenu_botoes, orange);
     WD_TextureLoadFromText(newScene->logout, "Logout", Game.mainMenu_botoes, orange);
-
     WD_TextureLoadFromText(newScene->multiplayer, "Multiplayer", Game.mainMenu_botoes, colorWhite);
     WD_TextureLoadFromText(newScene->singleplayer, "Singleplayer", Game.mainMenu_botoes, colorWhite);
-
     WD_TextureLoadFromFile(newScene->seta, "content/seta.png");
 
+    // Gerar imagem aleatória
     char cor[30];
     srand(time(NULL));   // Initialization, should only be called once.
     int r = rand() % 4;
@@ -79,16 +85,13 @@ Scene_MainMenu* SceneMainMenu_new() {
     }
 
     WD_TextureLoadFromFile(newScene->animatedChar,cor);
+
     WD_TextureLoadFromFile(newScene->backgroundTexture, "content/bgrank.png");
     int w = newScene->backgroundTexture->w, h = newScene->backgroundTexture->h;
     newScene->renderQuad.x = 0;
     newScene->renderQuad.y = 0;
     newScene->renderQuad.w = w;
     newScene->renderQuad.h = h;
-
-
-    //newScene->seta->h *= Game.screenMulti;
-    //newScene->seta->w *= Game.screenMulti;
 
     return newScene;
 }
@@ -121,7 +124,6 @@ int getRank(char res[2][6][30], char* data) {
     }
 
     for (int i = 0; i < 5; i++) {
-       // sprintf(res[i],"#%d %s   %s", i+1, nomes[i], scores[i]);
         sprintf(res[0][i], "%s", nomes[i]);
         char temp[5];
         sprintf(temp, "%s", scores[i]);
@@ -131,8 +133,7 @@ int getRank(char res[2][6][30], char* data) {
             if (sc < 10) {
                 sprintf(res[1][i], "00%d", atoi(temp));
             }
-        }
-        else {
+        } else {
             sprintf(res[1][i], "%d", atoi(temp));
         }
     }
@@ -142,10 +143,10 @@ int getRank(char res[2][6][30], char* data) {
 
 
 void SceneMainMenu_update(Scene_MainMenu* s) {
-    if(s->socketFd != 0 && !s->dataReceived) {
-        if(!s->connected) {
+    if (s->socketFd != 0 && !s->dataReceived) {
+        if (!s->connected) {
             int c = TCPSocket_CheckConnectionStatus(s->socketFd);
-            if(c == 1) {
+            if (c == 1) {
                 s->connected = true;
                 char message[120];
                 sprintf(message, "{\"cmd\":\"getRank\",\"var\":{\"login\":\"%s\"}}\n", Game.loginID);
@@ -157,10 +158,10 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
         } else {
             char data[2000];
             int c = TCPSocket_Receive(s->socketFd, data, 2000);
-            if(c > 0) {
+            if (c > 0) {
                 char anw[2][6][30];
                 data[c] = '\0';
-                if(getRank(anw, data) == 0) {
+                if (getRank(anw, data) == 0) {
                     SDL_Color colorNotSelected = {255, 255, 255};
                     for (int i = 0; i < 5; i++) {
                         WD_TextureLoadFromText(s->rankName[i], anw[0][i], Game.Unisans, colorNotSelected);
@@ -188,6 +189,7 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
     WD_TextureRender(s->bemvindo, 270, 835);
     WD_TextureRender(s->nome, 270, 910);
 
+    // Barra de baixo dos botões
     SDL_Rect indexJogar = { 135, 570 + s->jogar->h , s->jogar->w, 5 };
     SDL_Rect indexTutorial = { 135, 645 + s->tutorial->h , s->tutorial->w, 5 };
     SDL_Rect indexLogout = { 135, 720 + s->logout->h , s->logout->w, 5 };
@@ -195,12 +197,8 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
     SDL_Rect indexMulti = { 200, 490 + s->multiplayer->h , s->multiplayer->w, 5 };
     SDL_Rect indexSingle = { 200, 560 + s->singleplayer->h , s->singleplayer->w, 5 };
 
-
-
     SDL_SetRenderDrawBlendMode(Game.renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(Game.renderer, 0, 125, 0xFF, 100);
-
-
 
     for (int i = 0; i < 5; i++) {
         WD_TextureRender(s->rankName[i], 1170, (505 + ((i)*70)));
@@ -210,22 +208,22 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
 
     WD_TextureRender(s->rankPOS, 270, 990);
 
-    if(!s->btnJogar) {
+    if (!s->btnJogar) {
         WD_TextureRender(s->jogar, 135, 570);
         switch (s->index) {
-        case 0:
-            SDL_RenderFillRect(Game.renderer, &indexJogar);
-            break;
-        case 1:
-            SDL_RenderFillRect(Game.renderer, &indexTutorial);
-            break;
-        case 2:
-            SDL_RenderFillRect(Game.renderer, &indexLogout);
-            break;
+            case 0:
+                SDL_RenderFillRect(Game.renderer, &indexJogar);
+                break;
+            case 1:
+                SDL_RenderFillRect(Game.renderer, &indexTutorial);
+                break;
+            case 2:
+                SDL_RenderFillRect(Game.renderer, &indexLogout);
+                break;
         }
     } else {
         WD_TextureRender(s->jogar, 135, 420);
-        if(s->mult) {
+        if (s->mult) {
             SDL_RenderFillRect(Game.renderer, &indexMulti);
         } else {
             SDL_RenderFillRect(Game.renderer, &indexSingle);
@@ -249,25 +247,22 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
 
     if (s->animation) {
         current = 2;
-    }
-    else {
+    } else {
         current = 0;
     }
 
-
     SDL_Rect clip = { 64 * current, 0, 64, 64 };
     WD_TextureRenderExCustom(s->animatedChar, 125, 830, &clip, 0.0, NULL, SDL_FLIP_NONE, 128, 128);
-
 }
 
 void SceneMainMenu_destroy(Scene_MainMenu* s) {
     WD_TextureDestroy(s->backgroundTexture);
+    WD_TextureDestroy(s->seta);
     WD_TextureDestroy(s->bemvindo);
     WD_TextureDestroy(s->nome);
     WD_TextureDestroy(s->jogar);
     WD_TextureDestroy(s->tutorial);
     WD_TextureDestroy(s->logout);
-    WD_TextureDestroy(s->seta);
     WD_TextureDestroy(s->multiplayer);
     WD_TextureDestroy(s->singleplayer);
     free(s);
@@ -276,54 +271,52 @@ void SceneMainMenu_destroy(Scene_MainMenu* s) {
 
 void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e) {
 
-    if(SceneManager.inTransition)
+    if (SceneManager.inTransition)
         return;
-    if(e->type == SDL_KEYDOWN) {
-        if(e->key.keysym.sym == SDLK_TAB) {
+    if (e->type == SDL_KEYDOWN) {
+        if (e->key.keysym.sym == SDLK_TAB) {
             if (s->btnJogar) {
                 s->btnJogar = false;
                 s->mult = true;
-            }
-            else {
+            } else {
                 Mix_PlayChannel(-1, Game.enter, 0);
                 SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOGIN);
             }
-        } else if(e->key.keysym.sym == SDLK_DOWN) {
+        } else if (e->key.keysym.sym == SDLK_DOWN) {
             if (s->btnJogar) {
                 s->mult = false;
                 Mix_PlayChannel(-1, Game.change, 0);
-            }
-            else if (s->index < 2) {
+            } else if (s->index < 2) {
                 Mix_PlayChannel(-1, Game.change, 0);
                 s->index++;
             }
-        } else if(e->key.keysym.sym == SDLK_UP) {
+        } else if (e->key.keysym.sym == SDLK_UP) {
             if (s->btnJogar) {
                 s->mult = true;
                 Mix_PlayChannel(-1, Game.change, 0);
-            }
-            else if (s->index > 0) {
+            } else if (s->index > 0) {
                 Mix_PlayChannel(-1, Game.change, 0);
                 s->index--;
             }
-        }  else if (e->key.keysym.sym == SDLK_RETURN && s-> index == 0) {
+        } else if (e->key.keysym.sym == SDLK_RETURN && s-> index == 0) {
             if (s->btnJogar == true) {
                 Mix_PlayChannel(-1, Game.enter, 0);
-                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
+                if(s->mult)
+                    SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
+                else
+                    SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SINGLEPLAYER);
             }
             else
                 s->btnJogar = true;
-        }  else if (e->key.keysym.sym == SDLK_RETURN && s->index == 1) {
+        } else if (e->key.keysym.sym == SDLK_RETURN && s->index == 1) {
             Mix_PlayChannel(-1, Game.enter, 0);
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_TUTORIAL);
-        }  else if (e->key.keysym.sym == SDLK_RETURN && s->index == 2) {
+        } else if (e->key.keysym.sym == SDLK_RETURN && s->index == 2) {
             Mix_PlayChannel(-1, Game.enter, 0);
             SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOGIN);
-        }  else if (e->key.keysym.sym == SDLK_ESCAPE && s->btnJogar) {
+        } else if (e->key.keysym.sym == SDLK_ESCAPE && s->btnJogar) {
             s->btnJogar = false;
             s->mult = true;
         }
     }
-    
-
 }

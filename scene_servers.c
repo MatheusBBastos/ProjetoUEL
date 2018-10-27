@@ -83,6 +83,7 @@ void SceneServers_RefreshList(Scene_Servers* s) {
     s->indexd = 0;
     s->posTela = 0;
     s->esquerda = true;
+    s->inGame = false;
 
     char sendData[] = "INF";
     Address* broad = NewAddress(255, 255, 255, 255, BROADCAST_PORT);
@@ -106,6 +107,7 @@ void SceneServers_update(Scene_Servers* s) {
             if(strncmp("CON", data, 3) == 0) {
                 sscanf(data + 4, "%d", &Network.clientId);
                 Network.connectedToServer = true;
+                Network.singleplayer = false;
                 printf("[Client] Connection to server estabilished\n");
                 SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOBBY);
             } else if(strncmp("FLL", data, 3) == 0) {

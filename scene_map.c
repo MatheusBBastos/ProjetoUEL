@@ -149,7 +149,7 @@ void SceneMap_Receive(Scene_Map* s) {
             } else if(strncmp("KCK", data, 3) == 0) {
                 Network.connectedToServer = false;
                 Mix_PauseMusic();
-                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
+                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, Network.singleplayer ? SCENE_SINGLEPLAYER : SCENE_SERVERS);
             // Correção de posição
             } else if(strncmp("FIX", data, 3) == 0) {
                 uint64_t mId;
@@ -183,7 +183,7 @@ void SceneMap_Receive(Scene_Map* s) {
             // Desligamento do servidor
             } else if(strncmp("SSD", data, 3) == 0) {
                 Network.connectedToServer = false;
-                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
+                SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, Network.singleplayer ? SCENE_SINGLEPLAYER : SCENE_SERVERS);
             // Colocação de uma bomba
             } else if(strncmp("BMB", data, 3) == 0) {
                 int id, x, y;
@@ -332,10 +332,32 @@ void SceneMap_Receive(Scene_Map* s) {
                 s->frozen = true;
                 s->ended = true;
 
-                s->connected = false;
-                s->socketFd = TCPSocket_Open();
-                if (s->socketFd != 0)
-                    TCPSocket_Connect(s->socketFd, "35.198.20.77", 3122);
+                if(Network.singleplayer) {
+                    FILE* arq;
+                    arq = fopen("save.dat", "rb");
+                    if(arq == NULL) {
+                        arq = fopen("save.dat", "wb");
+                        fwrite(&s->myScore, sizeof(int), 1, arq);
+                        fclose(arq);
+                    } else {
+                        int pontuacaoAtual;
+                        fread(&pontuacaoAtual, sizeof(int), 1, arq);
+                        pontuacaoAtual+=s->myScore;
+                        fclose(arq);
+
+                        arq = fopen("save.dat", "wb");
+                        if(Game.reset)
+                            fwrite(&s->myScore, sizeof(int), 1, arq);
+                        else
+                            fwrite(&pontuacaoAtual, sizeof(int), 1, arq);
+                        fclose(arq);
+                    }
+                } else {
+                    s->connected = false;
+                    s->socketFd = TCPSocket_Open();
+                    if (s->socketFd != 0)
+                        TCPSocket_Connect(s->socketFd, "35.198.20.77", 3122);
+                }
 
 
             }
@@ -349,7 +371,7 @@ void SceneMap_Receive(Scene_Map* s) {
     Network.lastReceivedCount++;
     if(Network.lastReceivedCount > Game.screenFreq * 5) {
         Mix_PauseMusic();
-        SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
+        SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, Network.singleplayer ? SCENE_SINGLEPLAYER : SCENE_SERVERS);
     }
 }
 
@@ -516,7 +538,7 @@ void SceneMap_handleEvent(Scene_Map* s, SDL_Event* e) {
     if(e->type == SDL_KEYDOWN) {
         if(e->key.keysym.sym == SDLK_ESCAPE) {
             Mix_PauseMusic();
-            SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_SERVERS);
+            SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, Network.singleplayer ? SCENE_SINGLEPLAYER : SCENE_SERVERS);
         } else if(e->key.keysym.sym == SDLK_SPACE && s->player != NULL && !s->player->dead) {
             Socket_Send(Network.sockFd, Network.serverAddress, "BMB", 4);
         } else if(e->key.keysym.sym == SDLK_p) {

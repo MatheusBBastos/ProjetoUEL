@@ -110,8 +110,8 @@ int main(int argc, char* argv[]) {
 
 
         SDL_RenderPresent(Game.renderer);
-        SceneManager.currentScene = SCENE_START;
-        SceneManager.sStart = SceneStart_new();
+        SceneManager.currentScene = SCENE_LOGIN;
+        SceneManager.sLogin = SceneLogin_new();
         SDL_Event e;
 
         Game.mainMusic = Mix_LoadMUS("content/hang.mp3");

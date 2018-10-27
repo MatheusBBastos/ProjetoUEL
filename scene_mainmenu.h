@@ -9,14 +9,6 @@ typedef struct SceneManagerS SceneManagerS;
 
 typedef struct Scene_MainMenu {
     WTexture* backgroundTexture;
-    SDL_Rect renderQuad;
-    short int index;
-    int socketFd;
-    bool connected, dataReceived;
-    bool btnJogar;
-    bool mult;
-    int frame;
-    bool animation;
     WTexture* seta;
     WTexture* bemvindo;
     WTexture* nome;
@@ -30,7 +22,15 @@ typedef struct Scene_MainMenu {
     WTexture* animatedChar;
     WTexture* singleplayer;
     WTexture* rankPOS; 
+    bool connected, dataReceived;
+    bool btnJogar;
+    bool mult;
+    bool animation;
+    short int index;
+    int socketFd;
+    int frame;
     char ranking[100];
+    SDL_Rect renderQuad;
 } Scene_MainMenu;
 
 Scene_MainMenu * SceneMainMenu_new();

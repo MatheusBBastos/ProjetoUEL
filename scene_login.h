@@ -8,24 +8,23 @@ typedef struct SceneManagerS SceneManagerS;
 #include "widgets.h"
 
 typedef struct Scene_Login {
-    int socketFd;
-    bool connected, dataReceived, loginPressed, connectionNotStarted;
-    int enteringFrame, frame;
     WTexture* loading;
     WTexture* backgroundTexture;
     WTexture* textLogar;
     WTexture* textModoOff;
     WTexture* logo[2];
-    WTexture* textVoltar;
     WTexture* textCaps;
     WTexture* textErrorBrute;
+    WTexture* textError;
+    WTexture* textSair;
     TextBox* login;
     TextBox* senha;
-    WTexture* textError;
-    bool modoOff;
+    bool connected, dataReceived, loginPressed, connectionNotStarted;
     bool acessonegado;
     bool brute;
     short int index;
+    int socketFd;
+    int enteringFrame, frame;
     int positionAnimado;
     SDL_Rect renderQuad;
 } Scene_Login;

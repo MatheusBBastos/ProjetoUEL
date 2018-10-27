@@ -120,6 +120,9 @@ typedef struct GameInfo {
     Mix_Music* mainMusic;
 
     TTF_Font* rank;
+    // Singleplayer
+    bool reset;
+
 
     Map* map;
 } GameInfo;
@@ -136,6 +139,7 @@ typedef struct NetworkS {
     SDL_Thread* serverThread;
     int lastReceivedCount;
     char playerNames[4][32];
+    bool singleplayer;
 } NetworkS;
 
 typedef struct SceneManagerS SceneManagerS;
