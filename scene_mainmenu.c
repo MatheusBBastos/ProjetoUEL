@@ -60,7 +60,6 @@ Scene_MainMenu* SceneMainMenu_new() {
     WD_TextureLoadFromText(newScene->logout, "Logout", Game.mainMenu_botoes, orange);
     WD_TextureLoadFromText(newScene->multiplayer, "Multiplayer", Game.mainMenu_botoes, colorWhite);
     WD_TextureLoadFromText(newScene->singleplayer, "Singleplayer", Game.mainMenu_botoes, colorWhite);
-    WD_TextureLoadFromFile(newScene->seta, "content/seta.png");
 
     // Gerar imagem aleatória
     char cor[30];

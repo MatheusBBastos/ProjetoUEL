@@ -38,7 +38,6 @@ Scene_Login* SceneLogin_new() {
     // Carregar texturas
     WD_TextureLoadFromFile(newScene->loading, "content/loading.png");
     WD_TextureLoadFromFile(newScene->logo[0], "content/torch.png");
-    WD_TextureLoadFromFile(newScene->logo[1], "content/logo.png");
     WD_TextureLoadFromText(newScene->textLogar, "ENTRAR", Game.telaLogin, colorSelected);
     WD_TextureLoadFromText(newScene->textSair, "SAIR", Game.telaLogin, colorNotSelected);
     WD_TextureLoadFromText(newScene->textModoOff, "MODO OFFLINE", Game.telaLogin, colorSelected);

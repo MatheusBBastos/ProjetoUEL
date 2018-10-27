@@ -39,8 +39,8 @@ Scene_Lobby* SceneLobby_new() {
     WD_TextureLoadFromFile(newScene->bg, "content/bglobby.png");
 
     WD_TextureLoadFromFile(newScene->playersSprite[0], "content/azul.png");
-    WD_TextureLoadFromFile(newScene->playersSprite[1], "content/amarelo.png");
-    WD_TextureLoadFromFile(newScene->playersSprite[2], "content/vermelho.png");
+    WD_TextureLoadFromFile(newScene->playersSprite[1], "content/vermelho.png");
+    WD_TextureLoadFromFile(newScene->playersSprite[2], "content/amarelo.png");
     WD_TextureLoadFromFile(newScene->playersSprite[3], "content/roxo.png");
 
     WD_TextureLoadFromText(newScene->helptext[0], "Pressione espaço para começar", Game.tip, (SDL_Color) { 255, 255, 255 });
