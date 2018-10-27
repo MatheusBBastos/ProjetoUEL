@@ -8,8 +8,8 @@ typedef struct SceneManagerS SceneManagerS;
 #include "widgets.h"
 
 typedef struct Scene_Tutorial {
-    WTexture* msg;
-    WTexture *img;
+    WTexture* bg;
+    SDL_Rect renderQuad;
 } Scene_Tutorial;
 
 Scene_Tutorial* SceneTutorial_new();
