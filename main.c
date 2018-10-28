@@ -31,6 +31,7 @@ bool initialize() {
         Game.window = SDL_CreateWindow("Projeto UEL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, Game.screenWidth, Game.screenHeight, SDL_WINDOW_SHOWN);
         SDL_Surface *icon = IMG_Load("content/icon.png");
         SDL_SetWindowIcon(Game.window, icon);
+        SDL_SetWindowBordered(Game.window, false);
         if(Game.window == NULL) {
             printf("Falha ao criar a janela! Erro: %s\n", SDL_GetError());
             success = false;
