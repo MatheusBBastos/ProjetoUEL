@@ -328,6 +328,14 @@ void SceneMap_Receive(Scene_Map* s) {
                 int placement = 0;
                 WD_TextureLoadFromText(s->winText, "Derrota", Game.win, (SDL_Color) { 255, 172, 65 });
                 int totaln = 0, n;
+                s->realPlayer = 0;
+
+                for (int i = 0; i < 4; i++) {
+                    if (Game.map->characters[i] != NULL) {
+                        s->realPlayer++;
+                    }
+                }
+
                 for (int i = 0; i < Game.map->charNumber; i++) {
                     int id;
                     sscanf(data + 6 + totaln, "%d%n ", &id, &n);
@@ -346,7 +354,8 @@ void SceneMap_Receive(Scene_Map* s) {
                             WD_TextureLoadFromText(s->winText, "Empate", Game.win, (SDL_Color) { 255, 172, 65 });
                         }
                         if (id == Network.clientId) {
-                            switch (placement){
+                            int placement_atualizado = 4 - s->realPlayer + placement;
+                            switch (placement_atualizado){
                                 case 0:
                                     s->myScore = 8 + (8 * s->kills[id]);
                                     break;
@@ -373,12 +382,7 @@ void SceneMap_Receive(Scene_Map* s) {
                     WD_TextureLoadFromText(s->placement[placement], " ", Game.inputFont, (SDL_Color) {255, 255, 255});
                     s->finalRanking[placement] = -1;
                 }
-                s->realPlayer = 0;
-                for (int i = 0; i < 4; i++) {
-                    if (s->finalRanking[i] != -1) {
-                        s->realPlayer++;
-                    }
-                }
+
                 s->frozen = true;
                 s->ended = true;
 
