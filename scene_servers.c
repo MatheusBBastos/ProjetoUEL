@@ -107,6 +107,12 @@ void SceneServers_RefreshList(Scene_Servers* s) {
     for (int i = 0; i < 3; i++) {
         WD_TextureLoadFromText(s->serverName[i], " ", Game.serversFontd, Cwhite);
     }
+
+    s->connected_Online = false;
+    s->dataReceived_Online = false;
+    s->socketFd_Online = TCPSocket_Open();
+    if (s->socketFd_Online != 0)
+        TCPSocket_Connect(s->socketFd_Online, "35.198.20.77", 3122);
 }
 
 void getServerList(Scene_Servers* s, char* data) {
@@ -131,8 +137,8 @@ void getServerList(Scene_Servers* s, char* data) {
                 sprintf(ip,"%.*s", t[i2 + 1].end - t[i2 + 1].start, data + t[i2 + 1].start);
                 unsigned int ip1, ip2, ip3, ip4;
                 sscanf(ip, "%u.%u.%u.%u", &ip1, &ip2, &ip3, &ip4);
-                s->servers[y].addr.address = NewAddress(ip1, ip2, ip3, ip4, SERVER_DEFAULT_PORT);
-                s->servers[y].addr.port = 7567;
+                s->servers[y].addr.address = NewAddress(ip1, ip2, ip3, ip4, SERVER_DEFAULT_PORT)->address;
+                s->servers[y].addr.port = SERVER_DEFAULT_PORT;
                 sprintf(s->servers[y].num, "WEB");
                 break;
             }
