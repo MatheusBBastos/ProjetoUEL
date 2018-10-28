@@ -336,7 +336,7 @@ void SceneMap_Receive(Scene_Map* s) {
                     totaln += n;
                     if (id != -1) {
                         char ganhador[32];
-                        sprintf(ganhador, "#%d: %s", placement + 1, Network.playerNames[id]);
+                        sprintf(ganhador, "#%d: %s (+%d)", placement + 1, Network.playerNames[id], s->myScore);
                         WD_TextureLoadFromText(s->playerNames[placement], Network.playerNames[id], Game.roboto, (SDL_Color) { 255, 255, 255 });
                         WD_TextureLoadFromText(s->placement[placement], ganhador, Game.inputFont, (SDL_Color) {255, 255, 255});
                         if (placement == 0 && id == Network.clientId && type == 1) {
@@ -362,6 +362,8 @@ void SceneMap_Receive(Scene_Map* s) {
                                     s->myScore = 1 + s->kills[id];
                                     break;
                             }
+                            sprintf(ganhador, "#%d: %s (+%d pontos)", placement + 1, Network.playerNames[id], s->myScore);
+                            WD_TextureLoadFromText(s->placement[placement], ganhador, Game.inputFont, (SDL_Color) { 255, 255, 255 });
                         }
                         s->finalRanking[placement] = id;
                         placement++;

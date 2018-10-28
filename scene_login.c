@@ -60,6 +60,10 @@ Scene_Login* SceneLogin_new() {
     newScene->acessonegado = false;
     SDL_StartTextInput();
     newScene->positionAnimado = 0;
+    if (Mix_PausedMusic()) {
+        Mix_ResumeMusic();
+        Mix_PlayMusic(Game.mainMusic, -1);
+    }
 
     return newScene;
 }

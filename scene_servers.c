@@ -1,4 +1,5 @@
 #include "scene_servers.h"
+#include "jsmn.h"
 
 
 Scene_Servers* SceneServers_new() {
@@ -7,6 +8,12 @@ Scene_Servers* SceneServers_new() {
     }
 
     Scene_Servers* newScene = malloc(sizeof(Scene_Servers));
+
+    newScene->connected_Online = false;
+    newScene->dataReceived_Online = false;
+    newScene->socketFd_Online = TCPSocket_Open();
+    if (newScene->socketFd_Online != 0)
+        TCPSocket_Connect(newScene->socketFd_Online, "35.198.20.77", 3122);
 
     newScene->receiveSock = Socket_Open(0, false);
     int broadcast = 1;
@@ -102,8 +109,73 @@ void SceneServers_RefreshList(Scene_Servers* s) {
     }
 }
 
+void getServerList(Scene_Servers* s, char* data) {
+    int r;
+    jsmn_parser p;
+    jsmntok_t t[128];
+
+    jsmn_init(&p);
+    r = jsmn_parse(&p, data, strlen(data), t, sizeof(t) / sizeof(t[0]));
+    if (r < 0) {
+        printf("Failed to parse JSON: %d\n", r);
+        return 1;
+    }
+    int numeroDeServers = (r - 1) / 6;
+    for (int i = 0, i2 = 3, i1 = 5; i < numeroDeServers; i++,i2 += 6, i1 += 6) {
+        char nome[32], ip[32];
+      //   printf("%d: %.*s\n",i, t[i + 1].end - t[i + 1].start, data + t[i + 1].start);
+        for (int y = 0; y < s->maxServers; y++) {
+            if (s->servers[y].text[0] == '\0') {
+                s->numServers++;
+                sprintf(s->servers[y].text,"%.*s", t[i1 + 1].end - t[i1 + 1].start, data + t[i1 + 1].start);
+                sprintf(ip,"%.*s", t[i2 + 1].end - t[i2 + 1].start, data + t[i2 + 1].start);
+                unsigned int ip1, ip2, ip3, ip4;
+                sscanf(ip, "%u.%u.%u.%u", &ip1, &ip2, &ip3, &ip4);
+                s->servers[y].addr.address = NewAddress(ip1, ip2, ip3, ip4, SERVER_DEFAULT_PORT);
+                s->servers[y].addr.port = 7567;
+                sprintf(s->servers[y].num, "WEB");
+                break;
+            }
+        }
+    }
+    s->needServersRefresh = true;
+
+    return 0;
+}
+
 
 void SceneServers_update(Scene_Servers* s) {
+    if (s->socketFd_Online != 0 && !s->dataReceived_Online) {
+        if (!s->connected_Online) {
+            int c = TCPSocket_CheckConnectionStatus(s->socketFd_Online);
+            if (c == 1) {
+                s->connected_Online = true;
+                char message[120];
+                sprintf(message, "{\"cmd\":\"request\"}\n");
+                TCPSocket_Send(s->socketFd_Online, message, strlen(message));
+            }
+            else if (c == -1) {
+                Socket_Close(s->socketFd_Online);
+                s->socketFd_Online = 0;
+            }
+        }
+        else {
+            char data[2000];
+            int c = TCPSocket_Receive(s->socketFd_Online, data, 2000);
+            if (c > 0) {
+                char anw[2][6][30];
+                data[c] = '\0';
+                getServerList(s,data);
+                s->dataReceived_Online = true;
+                Socket_Close(s->socketFd_Online);
+            }
+            else if (c == -1) {
+                Socket_Close(s->socketFd_Online);
+            }
+        }
+    }
+
+
     if (s->waitingConnection && !SceneManager.inTransition) {
         Address sender;
         char data[32];
