@@ -340,13 +340,13 @@ void Server_CreateCharacters(Server* s) {
                 Character_Place(s->map->characters[i], 1, 1);
             } else if(i == 1) {
                 s->map->characters[i] = Character_Create("content/vermelho.png", i, true);
-                Character_Place(s->map->characters[i], 15, 1);
+                Character_Place(s->map->characters[i], 15, 15);
             } else if(i == 2) {
                 s->map->characters[i] = Character_Create("content/amarelo.png", i, true);
                 Character_Place(s->map->characters[i], 1, 15);
             } else if(i == 3) {
                 s->map->characters[i] = Character_Create("content/roxo.png", i, true);
-                Character_Place(s->map->characters[i], 15, 15);
+                Character_Place(s->map->characters[i], 15, 1);
             }
             char sendData[80];
             Character* c = s->map->characters[i];

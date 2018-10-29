@@ -63,7 +63,7 @@ Scene_MainMenu* SceneMainMenu_new() {
 
     // Gerar imagem aleatória
     char cor[30];
-    srand(time(NULL));   // Initialization, should only be called once.
+    srand(time(NULL));   
     int r = rand() % 4;
     switch (r) {
     case 0:
