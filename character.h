@@ -39,8 +39,8 @@ typedef struct Character {
     int bombPassId;
     bool forcingMovement;
     int targetX, targetY;
-    uint8_t movementStack[64];
-    int8_t movementStackTop;
+    uint8_t movementStack[256];
+    short int movementStackTop;
     int shieldDuration;
     short int deadCount;
     //Movement* moveRoute;

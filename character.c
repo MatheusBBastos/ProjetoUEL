@@ -50,8 +50,8 @@ void Character_GetCollisionBox(Character* c, SDL_Rect* box, int offsetX, int off
 void Character_GetTilePosition(Character* c, int* x, int* y) {
     SDL_Rect box;
     Character_GetCollisionBox(c, &box, 0, 0);
-    *x = (box.x + box.w / 2) / TILE_SIZE;
-    *y = (box.y + box.h / 2) / TILE_SIZE;
+    *x = (box.x + box.w / 2 - 1) / TILE_SIZE;
+    *y = (box.y + box.h / 2 - 1) / TILE_SIZE;
 }
 
 bool Character_Passable(Character* c, Map* m, int x, int y) {
@@ -59,7 +59,7 @@ bool Character_Passable(Character* c, Map* m, int x, int y) {
     Character_GetCollisionBox(c, &collisionBox, x * TILE_SIZE - c->x, y * TILE_SIZE - c->y);
     if(Map_Passable(m, &collisionBox, c)) {
         bool noCollision = true;
-        for(int i = 0; i < m->charNumber; i++) {
+        /*for(int i = 0; i < m->charNumber; i++) {
             if(m->characters[i] == NULL || m->characters[i]->dead || m->characters[i]->id == c->id)
                 continue;
             SDL_Rect otherCollisionBox;
@@ -68,7 +68,7 @@ bool Character_Passable(Character* c, Map* m, int x, int y) {
                 noCollision = false;
                 break;
             }
-        }
+        }*/
         return noCollision;
     } else {
         return false;
@@ -97,7 +97,7 @@ bool Character_TryToMove(Character* c, int dir, Map* m) {
     }
     if(Map_Passable(m, &collisionBox, c)) {
         bool noCollision = true;
-        for(int i = 0; i < m->charNumber; i++) {
+        /*for(int i = 0; i < m->charNumber; i++) {
             if(m->characters[i] == NULL || m->characters[i]->dead || m->characters[i]->id == c->id)
                 continue;
             SDL_Rect otherCollisionBox;
@@ -107,7 +107,7 @@ bool Character_TryToMove(Character* c, int dir, Map* m) {
                 noCollision = false;
                 break;
             }
-        }
+        }*/
         if(noCollision) {
             c->x = newX;
             c->y = newY;
