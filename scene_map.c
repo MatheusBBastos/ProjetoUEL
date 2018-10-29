@@ -5,7 +5,6 @@ Scene_Map* SceneMap_new() {
 
     // Texturas
     newScene->bg = WD_CreateTexture();
-    newScene->bombSprite = WD_CreateTexture();
     newScene->explosionSprite = WD_CreateTexture();
     newScene->wallTexture = WD_CreateTexture();
     newScene->puTexture = WD_CreateTexture();
@@ -14,6 +13,7 @@ Scene_Map* SceneMap_new() {
     newScene->winText = WD_CreateTexture();
     newScene->tileMap = WD_CreateTexture();
     newScene->animatedBomb = WD_CreateTexture();
+    newScene->scoreText = WD_CreateTexture();
     newScene->deadTexture = WD_CreateTexture();
     // Sons
     newScene->bombexp = Mix_LoadWAV("content/bexp.mp3");
@@ -44,7 +44,6 @@ Scene_Map* SceneMap_new() {
     WD_TextureLoadFromFile(newScene->bg, "content/bgingame.png");
     WD_TextureLoadFromFile(newScene->animatedBomb, "content/FSD.png");
     WD_TextureLoadFromFile(newScene->tileMap, "content/tilemaster.png");
-    WD_TextureLoadFromFile(newScene->bombSprite, "content/bomb.png");
     WD_TextureLoadFromFile(newScene->explosionSprite, "content/explosion.png");
     WD_TextureLoadFromFile(newScene->wallTexture, "content/wall.png");
     WD_TextureLoadFromFile(newScene->puTexture, "content/powerup.png");
@@ -77,6 +76,28 @@ Scene_Map* SceneMap_new() {
         Mix_ResumeMusic();
 
     return newScene;
+}
+
+bool haveBot() {
+    int qntPlayers = 0;
+    int qntBots = 0;
+    for (int i = 0; i < 4; i++) {
+        if (Game.map->characters[i] != NULL) {
+            if (strncmp(Network.playerNames[i], "BOT", 3) == 0) {
+                qntBots++;
+            }
+            else {
+                qntPlayers++;
+            }
+        }
+    }
+
+    if (qntPlayers > 1) {
+        return false;
+    }
+    else {
+        return true;
+    }
 }
 
 
@@ -307,13 +328,21 @@ void SceneMap_Receive(Scene_Map* s) {
                 int placement = 0;
                 WD_TextureLoadFromText(s->winText, "Derrota", Game.win, (SDL_Color) { 255, 172, 65 });
                 int totaln = 0, n;
+                s->realPlayer = 0;
+
+                for (int i = 0; i < 4; i++) {
+                    if (Game.map->characters[i] != NULL) {
+                        s->realPlayer++;
+                    }
+                }
+
                 for (int i = 0; i < Game.map->charNumber; i++) {
                     int id;
                     sscanf(data + 6 + totaln, "%d%n ", &id, &n);
                     totaln += n;
                     if (id != -1) {
                         char ganhador[32];
-                        sprintf(ganhador, "#%d: %s", placement + 1, Network.playerNames[id]);
+                        sprintf(ganhador, "#%d: %s", placement + 1, Network.playerNames[id], s->myScore);
                         WD_TextureLoadFromText(s->playerNames[placement], Network.playerNames[id], Game.roboto, (SDL_Color) { 255, 255, 255 });
                         WD_TextureLoadFromText(s->placement[placement], ganhador, Game.inputFont, (SDL_Color) {255, 255, 255});
                         if (placement == 0 && id == Network.clientId && type == 1) {
@@ -325,7 +354,8 @@ void SceneMap_Receive(Scene_Map* s) {
                             WD_TextureLoadFromText(s->winText, "Empate", Game.win, (SDL_Color) { 255, 172, 65 });
                         }
                         if (id == Network.clientId) {
-                            switch (placement){
+                            int placement_atualizado = 4 - s->realPlayer + placement;
+                            switch (placement_atualizado){
                                 case 0:
                                     s->myScore = 8 + (8 * s->kills[id]);
                                     break;
@@ -339,6 +369,10 @@ void SceneMap_Receive(Scene_Map* s) {
                                     s->myScore = 1 + s->kills[id];
                                     break;
                             }
+                            char littlevar[50];
+                            sprintf(littlevar, "+%d pontos", s->myScore);
+                            WD_TextureLoadFromText(s->scoreText, littlevar, Game.inputFont, (SDL_Color) { 255, 255, 255 });
+                            WD_TextureLoadFromText(s->placement[placement], ganhador, Game.inputFont, (SDL_Color) { 255, 255, 255 });
                         }
                         s->finalRanking[placement] = id;
                         placement++;
@@ -348,12 +382,7 @@ void SceneMap_Receive(Scene_Map* s) {
                     WD_TextureLoadFromText(s->placement[placement], " ", Game.inputFont, (SDL_Color) {255, 255, 255});
                     s->finalRanking[placement] = -1;
                 }
-                s->realPlayer = 0;
-                for (int i = 0; i < 4; i++) {
-                    if (s->finalRanking[i] != -1) {
-                        s->realPlayer++;
-                    }
-                }
+
                 s->frozen = true;
                 s->ended = true;
 
@@ -378,7 +407,7 @@ void SceneMap_Receive(Scene_Map* s) {
                             fwrite(&pontuacaoAtual, sizeof(int), 1, arq);
                         fclose(arq);
                     }
-                } else {
+                } else if(!haveBot()){
                     s->connected = false;
                     s->socketFd = TCPSocket_Open();
                     if (s->socketFd != 0)
@@ -520,6 +549,7 @@ void SceneMap_update(Scene_Map* s) {
         SDL_RenderFillRect(Game.renderer, &fillRect);
 
         WD_TextureRender(s->winText, 1440 / 2 - s->winText->w / 2, 500);
+        WD_TextureRender(s->scoreText, 1440 / 2 - s->scoreText->w / 2, 1000);
         
         for (int i = 0; i < 4; i++) {
             if (i == 0) {
@@ -536,6 +566,7 @@ void SceneMap_update(Scene_Map* s) {
             WD_TextureRender(s->placement[i], 15, 15 + 45 * i);
         }
     }
+
 
     if (!s->frozen) {
         s->currentFrame++;
@@ -680,7 +711,6 @@ void SceneMap_destroy(Scene_Map* s) {
     Mix_FreeChunk(s->winSound);
     Mix_FreeChunk(s->pickup);
     WD_TextureDestroy(s->bg);
-    WD_TextureDestroy(s->bombSprite);
     WD_TextureDestroy(s->explosionSprite);
     WD_TextureDestroy(s->winText);
     WD_TextureDestroy(s->winChar);
@@ -689,5 +719,6 @@ void SceneMap_destroy(Scene_Map* s) {
     WD_TextureDestroy(s->animatedBomb);
     WD_TextureDestroy(s->puTexture);
     WD_TextureDestroy(s->deadTexture);
+    WD_TextureDestroy(s->scoreText);
     free(s);
 }

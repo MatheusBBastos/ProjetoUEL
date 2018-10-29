@@ -20,6 +20,7 @@ typedef struct Scene_Singleplayer {
     WTexture* nome;
     WTexture* pontu;
     WTexture* nivel;
+    WTexture* boxbox;
     WTexture* imgBoneco;
     SDL_Rect renderQuad;
     SDL_Rect posBoneco;

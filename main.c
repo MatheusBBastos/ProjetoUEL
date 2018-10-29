@@ -21,7 +21,7 @@ bool initialize() {
         SDL_GetCurrentDisplayMode(0, &current);
         Game.screenFreq = current.refresh_rate;
         if (current.w >= 1920) {
-            Game.screenMulti = 0.8;
+            Game.screenMulti = 0.9;
         }
         else {
             Game.screenMulti = 0.5;
@@ -29,6 +29,8 @@ bool initialize() {
         Game.screenWidth = REFERENCE_WIDTH * Game.screenMulti;
         Game.screenHeight = REFERENCE_HEIGHT * Game.screenMulti;
         Game.window = SDL_CreateWindow("Projeto UEL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, Game.screenWidth, Game.screenHeight, SDL_WINDOW_SHOWN);
+        SDL_Surface *icon = IMG_Load("content/icon.png");
+        SDL_SetWindowIcon(Game.window, icon);
         if(Game.window == NULL) {
             printf("Falha ao criar a janela! Erro: %s\n", SDL_GetError());
             success = false;

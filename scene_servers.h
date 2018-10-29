@@ -31,6 +31,7 @@ typedef struct Scene_Servers {
     bool esquerda;
     bool needServersRefresh;
     bool inGame;
+    bool connected_Online, dataReceived_Online;
     short int maxServers;
     short int indexd, indexe, posTela, indexShow;
     int numServers;
@@ -38,9 +39,11 @@ typedef struct Scene_Servers {
     int receivingTimeout;
     int connectionTimeout;
     int frame;
+    int socketFd_Online;
     char string1[20], string2[20], string3[20];
     SDL_Rect renderQuad;
     ServerInfo* servers;
+
 } Scene_Servers;
 
 Scene_Servers* SceneServers_new();

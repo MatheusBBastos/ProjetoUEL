@@ -22,6 +22,7 @@ Scene_Singleplayer* SceneSingleplayer_new() {
     newScene->pontu = WD_CreateTexture();
     newScene->nivel = WD_CreateTexture();
     newScene->imgBoneco = WD_CreateTexture();
+    newScene->boxbox = WD_CreateTexture();
     newScene->primeiraTela = true;
     newScene->waitingConnection = false;
     newScene->temArquivo = true;
@@ -51,7 +52,7 @@ Scene_Singleplayer* SceneSingleplayer_new() {
 
     char pontac[15], nivel[15];
     sprintf(pontac, "%d/100", newScene->pontuacao%100);
-    sprintf(nivel, "NIVEL %d", newScene->pontuacao/100);
+    sprintf(nivel, "NÍVEL %d", newScene->pontuacao/100);
 
     // Carregar texturas
     WD_TextureLoadFromText(newScene->iniciar, "INICIAR", Game.mainMenu_botoes, orange);
@@ -63,19 +64,27 @@ Scene_Singleplayer* SceneSingleplayer_new() {
     WD_TextureLoadFromText(newScene->nao, "[NÃO]", Game.roboto, gray);
     WD_TextureLoadFromText(newScene->bemVindo, "BEM VINDO", Game.mainMenu_botoes, white );
     WD_TextureLoadFromText(newScene->nome, Game.nome, Game.mainMenu_botoes, blue);
+
     if(newScene->pontuacao%100 > 50)
         WD_TextureLoadFromText(newScene->pontu, pontac, Game.roboto, orange);
     else
         WD_TextureLoadFromText(newScene->pontu, pontac, Game.roboto, white);
+
     WD_TextureLoadFromText(newScene->nivel, nivel, Game.roboto, white);
     WD_TextureLoadFromFile(newScene->imgBoneco, "content/cabecas.png");
-
+    WD_TextureLoadFromFile(newScene->boxbox, "content/boxbox.png");
     WD_TextureLoadFromFile(newScene->background, "content/bgsingle.png");
+
     int w = newScene->background->w, h = newScene->background->h;
     newScene->renderQuad.x = 0;
     newScene->renderQuad.y = 0;
     newScene->renderQuad.w = w;
     newScene->renderQuad.h = h;
+
+    if (Mix_PausedMusic()) {
+        Mix_ResumeMusic();
+        Mix_PlayMusic(Game.mainMusic, -1);
+    }
 
     return newScene;
 }
@@ -123,17 +132,20 @@ void SceneSingleplayer_update(Scene_Singleplayer* s) {
     if (s->primeiraTela) {
 
         if (s->temArquivo) {
-            SDL_Rect barraTotal = { 30+256+30, 30+s->nome->h, 500, 80};
+            int sfx = 1440 / 2 - 786 / 2;
+            int ypls = 150;
+            SDL_Rect barraTotal = { sfx + 30+256+30, 30+s->nome->h + ypls, 500, 80};
             SDL_Rect barraPontuacao = { barraTotal.x, barraTotal.y, (s->pontuacao % 100) / 100.0 * barraTotal.w, barraTotal.h };
             SDL_RenderFillRect(Game.renderer, &barraTotal);
             SDL_SetRenderDrawColor(Game.renderer, 255, 0, 0, 150);
             SDL_RenderFillRect(Game.renderer, &barraPontuacao);
 
+            WD_TextureRender(s->boxbox, sfx + 30, 30 + ypls);
             WD_TextureRender(s->pontu, barraTotal.x , barraTotal.y + barraTotal.h );
-            WD_TextureRender(s->nome, barraTotal.x, 30);
-            WD_TextureRender(s->nivel, (barraTotal.x - s->nivel->w)/2 , 30+256+30);
+            WD_TextureRender(s->nome, barraTotal.x, 30 +ypls);
+            WD_TextureRender(s->nivel, sfx/2 + (barraTotal.x - s->nivel->w)/2 , 30+256+30+ypls);
 
-            WD_TextureRenderEx(s->imgBoneco, 30, 30, &s->posBoneco, 0.0, NULL, SDL_FLIP_NONE);
+            WD_TextureRenderEx(s->imgBoneco, 30 + sfx, 30+ypls, &s->posBoneco, 0.0, NULL, SDL_FLIP_NONE);
         }
 
         WD_TextureRender(s->iniciar, (REFERENCE_WIDTH - s->iniciar->w)/2, 600);
@@ -185,6 +197,7 @@ void SceneSingleplayer_destroy(Scene_Singleplayer* s) {
     WD_TextureDestroy(s->bemVindo);
     WD_TextureDestroy(s->nome);
     WD_TextureDestroy(s->pontu);
+    WD_TextureDestroy(s->boxbox);
     free(s);
 }
 
