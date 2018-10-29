@@ -548,7 +548,6 @@ void SceneMap_update(Scene_Map* s) {
         if (c == 1) {
             s->connected = true;
             char message[120];
-            printf("SCORE: %d", s->myScore);
             sprintf(message, "{\"cmd\":\"submitRank\",\"var\":{\"playerNick\":\"%s\",\"playerScore\":%d, \"login\":\"%s\"}}\n", Game.nome, s->myScore, Game.loginID);
             TCPSocket_Send(s->socketFd, message, strlen(message));
         } else if (c == -1) {
@@ -674,6 +673,7 @@ void SceneMap_destroy(Scene_Map* s) {
         WD_TextureDestroy(s->playerNames[i]);
         WD_TextureDestroy(s->status[i]);
     }
+    Mix_FreeChunk(s->ded);
     Mix_FreeChunk(s->bombexp);
     Mix_FreeChunk(s->bombload);
     Mix_FreeMusic(s->backgroundMusic);

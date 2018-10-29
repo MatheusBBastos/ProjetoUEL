@@ -74,7 +74,8 @@ int PF_ManhattanDistance(PFInstance* instance, Node* node) {
 
 void PF_NodeSetNeighbors(PFInstance* instance, Node* node) {
     int newx, newy;
-    for(int y1 = -1; y1 <= 1; y1++) {
+    int r = rand() % 2;
+    for(int y1 = r == 0 ? -1 : 1; r == 0 && y1 <= 1 || r == 1 && y1 >= -1; r == 0 ? y1++ : y1--) {
         for(int x1 = -1; x1 <= 1; x1++) {
             newx = node->x + x1;
             newy = node->y + y1;
@@ -101,7 +102,7 @@ bool PF_ConditionSatisfied(PFInstance* instance, Node* node) {
     if(instance->safeSpot) {
         return Map_CheckSafeSpot(instance->map, node->x, node->y, instance->minRange);
     } else {
-        return (PF_ManhattanDistance(instance, node) <= instance->minRange);
+        return (PF_ManhattanDistance(instance, node) <= instance->minRange && (node->x == instance->targetNode->x || node->y == instance->targetNode->y));
     }
 }
 
@@ -123,16 +124,21 @@ bool PF_Find(Map* map, Character* c, int tx, int ty, int minRange, bool findSafe
     instance.heap.data = malloc(map->width * map->height * sizeof(Node*));
 
     currentNode->closed = true;
+    int nodesChecked = 0;
     while(!PF_ConditionSatisfied(&instance, currentNode)) {
         PF_NodeSetNeighbors(&instance, currentNode);
         currentNode = Heap_Pop(&instance.heap);
-        if(currentNode == NULL) {
+        nodesChecked++;
+        if(currentNode == NULL || nodesChecked > 100) {
+            free(instance.heap.data);
+            PF_DestroyNodeGrid(instance.grid);
             return false;
         }
         currentNode->closed = true;
     }
 
     int foundX = currentNode->x, foundY = currentNode->y;
+    instance.character->movementStackTop = -1;
 
     while(currentNode != NULL && currentNode->parent != NULL) {
         uint8_t dir;

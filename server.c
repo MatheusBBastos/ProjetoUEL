@@ -21,10 +21,6 @@ Client* Client_New(Address* addr, int id, bool bot) {
 }
 
 void Client_Destroy(Client* c, Server* s) {
-    if(s->map->characters[c->id] != NULL) {
-        Character_Destroy(s->map->characters[c->id]);
-        s->map->characters[c->id] = NULL;
-    }
     if(c->addr != NULL)
         free(c->addr);
     free(c);
@@ -37,9 +33,6 @@ Server* Server_Open(unsigned short port, char nm[32], bool singleplayer) {
         strcpy(newServer->name, nm);
         if(!singleplayer) {
             newServer->listenSockFd = Socket_Open(BROADCAST_PORT, true);
-            if(newServer->listenSockFd != 0) {
-                printf("%d\n", newServer->listenSockFd);
-            }
         }
         newServer->singleplayer = singleplayer;
         newServer->port = port;
@@ -83,6 +76,8 @@ void Server_Destroy(Server* s) {
             Client_Destroy(s->clients[i], s);
     }
     Map_Destroy(s->map);
+    free(s->bombs);
+    free(s->powerups);
     free(s->clients);
     free(s->placements);
     free(s);
@@ -290,7 +285,7 @@ bool Server_CheckMovement(Server* s, int id, int x, int y) {
     Character_GetCollisionBox(c, &collisionBox, x - c->x, y - c->y);
     if(Map_Passable(s->map, &collisionBox, c)) {
         bool noCollision = true;
-        for(int i = 0; i < s->maxClients; i++) {
+        /*for(int i = 0; i < s->maxClients; i++) {
             if(s->clients[i] == NULL || s->map->characters[i]->dead || i == id)
                 continue;
             SDL_Rect otherCollisionBox;
@@ -302,7 +297,7 @@ bool Server_CheckMovement(Server* s, int id, int x, int y) {
                 noCollision = false;
                 break;
             }
-        }
+        }*/
         return noCollision;
     } else {
         return false;
@@ -340,13 +335,13 @@ void Server_CreateCharacters(Server* s) {
                 Character_Place(s->map->characters[i], 1, 1);
             } else if(i == 1) {
                 s->map->characters[i] = Character_Create("content/vermelho.png", i, true);
-                Character_Place(s->map->characters[i], 15, 1);
+                Character_Place(s->map->characters[i], 15, 15);
             } else if(i == 2) {
                 s->map->characters[i] = Character_Create("content/amarelo.png", i, true);
-                Character_Place(s->map->characters[i], 1, 15);
+                Character_Place(s->map->characters[i], 15, 1);
             } else if(i == 3) {
                 s->map->characters[i] = Character_Create("content/roxo.png", i, true);
-                Character_Place(s->map->characters[i], 15, 15);
+                Character_Place(s->map->characters[i], 1, 15);
             }
             char sendData[80];
             Character* c = s->map->characters[i];

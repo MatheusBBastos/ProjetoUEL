@@ -51,6 +51,74 @@ int distance(int xBot, int yBot, int xOthers, int yOthers) {
     return (abs(xBot - xOthers) + abs(yBot - yOthers));
 }
 
+bool Bot_CheckKill(Map* map, int radius, int bx, int by, int tx, int ty) {
+    if(bx != tx && by != ty)
+        return false;
+    if(bx == tx && by == ty)
+        return true;
+    if(bx == tx) {
+        if(by < ty) {
+            for(int i = 1; i <= radius; i++) {
+                if(by + i == ty) {
+                    return true;
+                } else if(map->objects[by + i][bx].exists && map->objects[by + i][bx].type == OBJ_WALL) {
+                    return false;
+                } else if(Map_Get(map, bx, by + i, 1) == WALL_TILE) {
+                    return false;
+                }
+            }
+            return false;
+        } else if(by > ty) {
+            for(int i = 1; i <= radius; i++) {
+                if(by - i == ty) {
+                    return true;
+                } else if(map->objects[by - i][bx].exists && map->objects[by - i][bx].type == OBJ_WALL) {
+                    return false;
+                } else if(Map_Get(map, bx, by - i, 1) == WALL_TILE) {
+                    return false;
+                }
+            }
+            return false;
+        } else {
+            return true;
+        }
+    } else {
+        if(bx < tx) {
+            for(int i = 1; i <= radius; i++) {
+                if(bx + i == tx) {
+                    return true;
+                } else if(map->objects[by][bx + i].exists && map->objects[by][bx + i].type == OBJ_WALL) {
+                    return false;
+                } else if(Map_Get(map, bx + i, by, 1) == WALL_TILE) {
+                    return false;
+                }
+            }
+            return false;
+        } else {
+            for(int i = 1; i <= radius; i++) {
+                if(bx - i == tx) {
+                    return true;
+                } else if(map->objects[by][bx - i].exists && map->objects[by][bx - i].type == OBJ_WALL) {
+                    return false;
+                } else if(Map_Get(map, bx - i, by, 1) == WALL_TILE) {
+                    return false;
+                }
+            }
+            return false;
+        }
+    }
+}
+
+bool checarEIr(Server* s, int id, int x, int y, int x1, int y1) {
+    if(x1 == 0 && y1 == 0 || !Character_Passable(s->map->characters[id], s->map, x + x1, y + y1)) {
+        return false;
+    }
+    if(s->clients[id]->b.difficulty == DIFFICULTY_HARD && !Map_CheckSafeSpot(s->map, x+x1, y+y1, 5)) {
+        return false;
+    }
+    return (PF_Find(s->map, s->map->characters[id], x + x1, y + y1, 0, false));
+}
+
 void Server_UpdateBot(Server* s, int id) {
     // Character: s->map->characters[id]
     // Client: s->clients[id]
@@ -59,10 +127,12 @@ void Server_UpdateBot(Server* s, int id) {
     // s->clients[id]->b.difficultyy
 
     Character* c = s->map->characters[id];
-    if(!c->dead && !c->forcingMovement && s->clients[id]->bombsPlaced == 0) {
-        int x, y, bombX, bombY;
+    if(c->dead)
+        return;
+    int x, y, bombX, bombY;
+    Character_GetTilePosition(c, &x, &y);
+    if(s->clients[id]->bombsPlaced == 0) {
         bool actionMade = false;
-        Character_GetTilePosition(c, &x, &y);
 
         // Pegando o boneco mais proximo
         int menorDist = 40;
@@ -73,7 +143,7 @@ void Server_UpdateBot(Server* s, int id) {
                 int x2 = s->map->characters[i]->x;
                 int y2 = s->map->characters[i]->y;
                 Character_GetTilePosition(s->map->characters[i], &x2, &y2);
-                if(distance(x, y, x2, y2) < menorDist && distance(x, y, x2, y2) > 0) {
+                if(distance(x, y, x2, y2) < menorDist && (s->clients[id]->b.difficulty != DIFFICULTY_EASY || distance(x, y, x2, y2) > 0)) {
                     menorDist = distance(x, y, x2, y2);
                     distX = x - x2;
                     distY = y - y2;
@@ -86,14 +156,21 @@ void Server_UpdateBot(Server* s, int id) {
         if(posX_prox == -1 && posY_prox == -1)
             return;
 
+        if(menorDist == 0 && c->forcingMovement && s->clients[id]->b.difficulty > DIFFICULTY_EASY) {
+            Server_PlaceBomb(s, id);
+        }
+        
+        if(c->forcingMovement)
+            return;
+
         if(menorDist < (s->clients[id]->bombRadius + 2) && s->clients[id]->b.difficulty > DIFFICULTY_EASY) {
-            if(s->clients[id]->b.difficulty == DIFFICULTY_MEDIUM || (x == posX_prox || y == posY_prox)) {
+            if(s->clients[id]->b.difficulty == DIFFICULTY_MEDIUM || Bot_CheckKill(s->map, s->clients[id]->bombRadius, x, y, posX_prox, posY_prox)) {
                 Server_PlaceBomb(s, id);
                 bombX = x;
                 bombY = y;
                 actionMade = true;
             }
-        } else if(distY > 0 && distX > 0 || distY > 0 && distX == 0) {// Cima esquerda
+        } else {
             for(int x1 = -1; x1 <= 1; x1++) {
                 for(int y1 = -1; y1 <= 1; y1++) {
                     if(x1 != 0 && y1 != 0 || x1 == 0 && y1 == 0) {
@@ -114,66 +191,7 @@ void Server_UpdateBot(Server* s, int id) {
                     break;
             }
 
-        }  else if(distY > 0 && distX < 0 || distY == 0 && distX > 0) {// Cima direita
-            for(int x1 = 1; x1 >= -1; x1--) {
-                for(int y1 = -1; y1 <= 1; y1++) {
-                    if(x1 != 0 && y1 != 0 || x1 == 0 && y1 == 0) {
-                        continue;
-                    }
-
-                    TemporaryObject o = s->map->objects[y + y1][x + x1];
-                    if(o.exists && o.type == OBJ_WALL) {
-                        Server_PlaceBomb(s, id);
-                        actionMade = true;
-                        bombX = x;
-                        bombY = y;
-                        break;
-                    }
-                }
-                if(actionMade)
-                    break;
-            }
-
-        } else if(distY < 0 && distX < 0 || distY == 0 && distX < 0) { // Baixo direita
-            for(int x1 = 1; x1 >= -1; x1--) {
-                for(int y1 = 1; y1 >= -1; y1--) {
-                    if(x1 != 0 && y1 != 0 || x1 == 0 && y1 == 0) {
-                        continue;
-                    }
-
-                    TemporaryObject o = s->map->objects[y + y1][x + x1];
-                    if(o.exists && o.type == OBJ_WALL) {
-                        Server_PlaceBomb(s, id);
-                        actionMade = true;
-                        bombX = x;
-                        bombY = y;
-                        break;
-                    }
-                }
-                if(actionMade)
-                    break;
-            }
-
-        } else if(distY < 0 && distX > 0 || distY < 0 && distX == 0) { // Baixo esquerda
-            for(int x1 = -1; x1 <= 1; x1++) {
-                for(int y1 = 1; y1 >= -1; y1--) {
-                    if(x1 != 0 && y1 != 0 || x1 == 0 && y1 == 0) {
-                        continue;
-                    }
-
-                    TemporaryObject o = s->map->objects[y + y1][x + x1];
-                    if(o.exists && o.type == OBJ_WALL) {
-                        Server_PlaceBomb(s, id);
-                        actionMade = true;
-                        bombX = x;
-                        bombY = y;
-                        break;
-                    }
-                }
-                if(actionMade)
-                    break;
-            }
-        }
+        }  
         // Se fez alguma ação,
         // Achar um lugar perto para correr
         if(actionMade) {
@@ -214,10 +232,7 @@ void Server_UpdateBot(Server* s, int id) {
                 if(distY > 0 && distX > 0 || distY > 0 && distX == 0) {
                     for(int x1 = -2; x1 <= 2; x1++) {
                         for(int y1 = -2; y1 <= 2; y1++) {
-                            if(x1 == 0 && y1 == 0 || !Character_Passable(c, s->map, x + x1, y + y1)) {
-                                continue;
-                            }
-                            if(PF_Find(s->map, c, x + x1, y + y1, 0, false)) {
+                            if(checarEIr(s, id, x, y, x1, y1)) {
                                 actionMade = true;
                                 break;
                             }
@@ -229,10 +244,7 @@ void Server_UpdateBot(Server* s, int id) {
                 } else if(distY > 0 && distX < 0 || distY == 0 && distX > 0) {
                     for(int x1 = 2; x1 >= -2; x1--) {
                         for(int y1 = -2; y1 <= 2; y1++) {
-                            if(x1 == 0 && y1 == 0 || !Character_Passable(c, s->map, x + x1, y + y1)) {
-                                continue;
-                            }
-                            if(PF_Find(s->map, c, x + x1, y + y1, 0, false)) {
+                            if(checarEIr(s, id, x, y, x1, y1)) {
                                 actionMade = true;
                                 break;
                             }
@@ -246,10 +258,7 @@ void Server_UpdateBot(Server* s, int id) {
                     
                     for(int x1 = 2; x1 >= -2; x1--) {
                         for(int y1 = 2; y1 >= -2; y1--) {
-                            if(x1 == 0 && y1 == 0 || !Character_Passable(c, s->map, x + x1, y + y1)) {
-                                continue;
-                            }
-                            if(PF_Find(s->map, c, x + x1, y + y1, 0, false)) {
+                            if(checarEIr(s, id, x, y, x1, y1)) {
                                 actionMade = true;
                                 break;
                             }
@@ -263,13 +272,10 @@ void Server_UpdateBot(Server* s, int id) {
                     
                     for(int x1 = -2; x1 <= 2; x1++) {
                         for(int y1 = 2; y1 >= -2; y1--) {
-                            if(x1 == 0 && y1 == 0 || !Character_Passable(c, s->map, x + x1, y + y1)) {
-                                continue;
-                            }
-                            if(PF_Find(s->map, c, x + x1, y + y1, 0, false)) {
+                            if(checarEIr(s, id, x, y, x1, y1)) {
                                 actionMade = true;
                                 break;
-                            } 
+                            }
                         }
                         if(actionMade) {
                             break;
@@ -277,6 +283,11 @@ void Server_UpdateBot(Server* s, int id) {
                     }
                 }
             }
+        }
+    } else if(!c->forcingMovement && s->clients[id]->b.difficulty > DIFFICULTY_EASY) {
+        if(!Map_CheckSafeSpot(s->map, x, y, 1 + s->clients[id]->b.difficulty * 2)) {
+            c->movementStackTop = -1;
+            PF_Find(s->map, c, 0, 0, 1 + s->clients[id]->b.difficulty * 2, true);
         }
     }
 }
