@@ -1,4 +1,4 @@
-# [Baixar jogo](https://github.com/Epherex/ProjetoUEL/releases/tag/v1.0)
+# [Baixar jogo](https://github.com/Epherex/ProjetoUEL/releases)
 
 # Bomb'Em
 [![Build Status](https://travis-ci.org/Epherex/ProjetoUEL.svg?branch=master)](https://travis-ci.org/Epherex/ProjetoUEL) <br>
