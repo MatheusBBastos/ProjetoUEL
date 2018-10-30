@@ -440,10 +440,11 @@ void Server_ExplodeBomb(Server* s, int bId) {
             if(o->exists) {
                 if(o->type == OBJ_WALL)
                     Server_DestroyWall(s, b->x + x, b->y);
-                else
+                else  
                     Server_ExplodeBomb(s, o->objId);
                 xMax++;
-                break;
+                if(o->type != OBJ_POWERUP)
+                    break;
             } else if(Map_Get(s->map, b->x + x, b->y, 1) == WALL_TILE) {
                 break;
             } else {
@@ -455,10 +456,11 @@ void Server_ExplodeBomb(Server* s, int bId) {
             if(o->exists) {
                 if(o->type == OBJ_WALL)
                     Server_DestroyWall(s, b->x - x, b->y);
-                else
+                else if(o->type == OBJ_BOMB)
                     Server_ExplodeBomb(s, o->objId);
                 xMin--;
-                break;
+                if(o->type != OBJ_POWERUP)
+                    break;
             } else if(Map_Get(s->map, b->x - x, b->y, 1) == WALL_TILE) {
                 break;
             } else {
@@ -470,10 +472,11 @@ void Server_ExplodeBomb(Server* s, int bId) {
             if(o->exists) {
                 if(o->type == OBJ_WALL)
                     Server_DestroyWall(s, b->x, b->y + y);
-                else
+                else if(o->type == OBJ_BOMB)
                     Server_ExplodeBomb(s, o->objId);
                 yMax++;
-                break;
+                if(o->type != OBJ_POWERUP)
+                    break;
             } else if(Map_Get(s->map, b->x, b->y + y, 1) == WALL_TILE) {
                 break;
             } else {
@@ -485,10 +488,11 @@ void Server_ExplodeBomb(Server* s, int bId) {
             if(o->exists) {
                 if(o->type == OBJ_WALL)
                     Server_DestroyWall(s, b->x, b->y - y);
-                else
+                else if(o->type == OBJ_BOMB)
                     Server_ExplodeBomb(s, o->objId);
                 yMin--;
-                break;
+                if(o->type != OBJ_POWERUP)
+                    break;
             } else if(Map_Get(s->map, b->x, b->y - y, 1) == WALL_TILE) {
                 break;
             } else {
@@ -586,13 +590,17 @@ void Server_HandleMessage(Server* s, Address* sender, char* buffer) {
                     Character* chr = s->map->characters[cId];
                     char sendData[32];
                     if(Server_CheckMovement(s, cId, newX, newY)) {
+                        chr->renderX = chr->x;
+                        chr->renderY = chr->renderY;
+                        chr->x4 = chr->x * 4;
+                        chr->y4 = chr->y4 = chr->y * 4;
                         chr->x = newX;
                         chr->y = newY;
                         chr->direction = dir;
                         sprintf(sendData, "POS %d %d %d %d", cId, newX, newY, dir);
                         Server_SendToAll(s, sendData, cId);
                     } else {
-                        sprintf(sendData, "FIX %llu %d %d", movementId, chr->x, chr->y);
+                        sprintf(sendData, "FIX %llu %d %d %d", movementId, chr->x, chr->y, chr->bombPassId);
                         Socket_Send(s->sockfd, sender, sendData, strlen(sendData) + 1);
                     }
                     chr->lastMovementId = movementId;

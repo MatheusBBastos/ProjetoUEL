@@ -230,8 +230,8 @@ void Server_UpdateBot(Server* s, int id) {
             } else {
                 // Caso contrario, achar alguma posição que seja possivel andar
                 if(distY > 0 && distX > 0 || distY > 0 && distX == 0) {
-                    for(int x1 = -2; x1 <= 2; x1++) {
-                        for(int y1 = -2; y1 <= 2; y1++) {
+                    for(int x1 = -1; x1 <= 1; x1++) {
+                        for(int y1 = -1; y1 <= 1; y1++) {
                             if(checarEIr(s, id, x, y, x1, y1)) {
                                 actionMade = true;
                                 break;
@@ -242,8 +242,8 @@ void Server_UpdateBot(Server* s, int id) {
                         }
                     }
                 } else if(distY > 0 && distX < 0 || distY == 0 && distX > 0) {
-                    for(int x1 = 2; x1 >= -2; x1--) {
-                        for(int y1 = -2; y1 <= 2; y1++) {
+                    for(int x1 = 1; x1 >= -1; x1--) {
+                        for(int y1 = -1; y1 <= 1; y1++) {
                             if(checarEIr(s, id, x, y, x1, y1)) {
                                 actionMade = true;
                                 break;
@@ -256,8 +256,8 @@ void Server_UpdateBot(Server* s, int id) {
 
                 } else if(distY < 0 && distX < 0 || distY == 0 && distX < 0) {
                     
-                    for(int x1 = 2; x1 >= -2; x1--) {
-                        for(int y1 = 2; y1 >= -2; y1--) {
+                    for(int x1 = 1; x1 >= -1; x1--) {
+                        for(int y1 = 1; y1 >= -1; y1--) {
                             if(checarEIr(s, id, x, y, x1, y1)) {
                                 actionMade = true;
                                 break;
@@ -270,8 +270,8 @@ void Server_UpdateBot(Server* s, int id) {
 
                 } else if(distY < 0 && distX > 0 || distY < 0 && distX == 0) {
                     
-                    for(int x1 = -2; x1 <= 2; x1++) {
-                        for(int y1 = 2; y1 >= -2; y1--) {
+                    for(int x1 = -1; x1 <= 1; x1++) {
+                        for(int y1 = 1; y1 >= -1; y1--) {
                             if(checarEIr(s, id, x, y, x1, y1)) {
                                 actionMade = true;
                                 break;

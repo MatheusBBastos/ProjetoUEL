@@ -197,11 +197,12 @@ void SceneMap_Receive(Scene_Map* s) {
             // Correção de posição
             } else if (strncmp("FIX", data, 3) == 0) {
                 uint64_t mId;
-                int x, y;
-                sscanf(data + 4, "%llu %d %d", &mId, &x, &y);
+                int x, y, bombPassId;
+                sscanf(data + 4, "%llu %d %d %d", &mId, &x, &y, &bombPassId);
                 if(s->player != NULL) {
                     s->player->x = x;
                     s->player->y = y;
+                    s->player->bombPassId = bombPassId;
                 }
             // Atualização de posição
             } else if (strncmp("POS", data, 3) == 0) {
