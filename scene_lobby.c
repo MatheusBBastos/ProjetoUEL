@@ -217,6 +217,10 @@ void SceneLobby_destroy(Scene_Lobby* s) {
     WD_TextureDestroy(s->helptext[1]);
     WD_TextureDestroy(s->animation);
     free(s->players);
+    WD_TextureDestroy(s->helptext[0]);
+    WD_TextureDestroy(s->helptext[1]);
+    WD_TextureDestroy(s->animation);
+    WD_TextureDestroy(s->bg);
     Mix_FreeMusic(s->sound);
     Mix_FreeChunk(s->spawn);
     free(s);
