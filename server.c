@@ -150,12 +150,9 @@ void Server_CheckInactiveClients(Server* s) {
             if(now - s->clients[i]->lastMessage > 5000) {
                 printf("[Server] 5s passed since last received message from client id %d, kicking\n", i);
                 Server_KickPlayer(s, i);
-            } else {
-                Socket_Send(s->sockfd, s->clients[i]->addr, "PNG", 4);
-                if(s->inGame && !s->paused && s->map->characters[i] != NULL) {
-                    Server_CharacterUpdate(s, s->map->characters[i], s->map);
-                    Server_UpdateCharMovement(s, s->map->characters[i]);
-                }
+            } else if(s->inGame && !s->paused && s->map->characters[i] != NULL) {
+                Server_CharacterUpdate(s, s->map->characters[i], s->map);
+                Server_UpdateCharMovement(s, s->map->characters[i]);
             }
         }
     }
@@ -741,6 +738,11 @@ int Server_InitLoop(Server* s) {
         if(count == SERVER_TICKRATE) {
             if(Game.debug)
                 printf("[Server] Connected clients: %d\n", s->connectedClients);
+            for(int i = 0; i < s->maxClients; i++) {
+                if(s->clients[i] != NULL) {
+                    Socket_Send(s->sockfd, s->clients[i]->addr, "PNG", 4);
+                }
+            }
             count = 0;
         }
         uint64_t now = SDL_GetPerformanceCounter();
