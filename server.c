@@ -438,12 +438,13 @@ void Server_ExplodeBomb(Server* s, int bId) {
         for(int x = 1; x <= c->bombRadius; x++) {
             TemporaryObject* o = &s->map->objects[b->y][b->x + x];
             if(o->exists) {
-                if(o->type == OBJ_WALL)
+                int type = o->type;
+                if(type == OBJ_WALL)
                     Server_DestroyWall(s, b->x + x, b->y);
-                else  
+                else if(type == OBJ_BOMB)
                     Server_ExplodeBomb(s, o->objId);
                 xMax++;
-                if(o->type != OBJ_POWERUP)
+                if(type != OBJ_POWERUP)
                     break;
             } else if(Map_Get(s->map, b->x + x, b->y, 1) == WALL_TILE) {
                 break;
@@ -454,12 +455,13 @@ void Server_ExplodeBomb(Server* s, int bId) {
         for(int x = 1; x <= c->bombRadius; x++) {
             TemporaryObject* o = &s->map->objects[b->y][b->x - x];
             if(o->exists) {
-                if(o->type == OBJ_WALL)
+                int type = o->type;
+                if(type == OBJ_WALL)
                     Server_DestroyWall(s, b->x - x, b->y);
-                else if(o->type == OBJ_BOMB)
+                else if(type == OBJ_BOMB)
                     Server_ExplodeBomb(s, o->objId);
                 xMin--;
-                if(o->type != OBJ_POWERUP)
+                if(type != OBJ_POWERUP)
                     break;
             } else if(Map_Get(s->map, b->x - x, b->y, 1) == WALL_TILE) {
                 break;
@@ -470,12 +472,13 @@ void Server_ExplodeBomb(Server* s, int bId) {
         for(int y = 1; y <= c->bombRadius; y++) {
             TemporaryObject* o = &s->map->objects[b->y + y][b->x];
             if(o->exists) {
-                if(o->type == OBJ_WALL)
+                int type = o->type;
+                if(type == OBJ_WALL)
                     Server_DestroyWall(s, b->x, b->y + y);
-                else if(o->type == OBJ_BOMB)
+                else if(type == OBJ_BOMB)
                     Server_ExplodeBomb(s, o->objId);
                 yMax++;
-                if(o->type != OBJ_POWERUP)
+                if(type != OBJ_POWERUP)
                     break;
             } else if(Map_Get(s->map, b->x, b->y + y, 1) == WALL_TILE) {
                 break;
@@ -486,12 +489,13 @@ void Server_ExplodeBomb(Server* s, int bId) {
         for(int y = 1; y <= c->bombRadius; y++) {
             TemporaryObject* o = &s->map->objects[b->y - y][b->x];
             if(o->exists) {
-                if(o->type == OBJ_WALL)
+                int type = o->type;
+                if(type == OBJ_WALL)
                     Server_DestroyWall(s, b->x, b->y - y);
-                else if(o->type == OBJ_BOMB)
+                else if(type == OBJ_BOMB)
                     Server_ExplodeBomb(s, o->objId);
                 yMin--;
-                if(o->type != OBJ_POWERUP)
+                if(type != OBJ_POWERUP)
                     break;
             } else if(Map_Get(s->map, b->x, b->y - y, 1) == WALL_TILE) {
                 break;
