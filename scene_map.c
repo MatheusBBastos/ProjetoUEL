@@ -118,7 +118,7 @@ int compareCharacters(const void * a, const void * b) {
 
 Bomb_Render(Bomb* b, int screenX, int screenY, WTexture* bombSprite, int currentFrame) {
     if (b->active) {
-        if (currentFrame % 20 == 0) {
+        if (currentFrame % (Game.screenFreq/3) == 0) {
             b->frame++;
         }
         SDL_Rect clip = { 0, 64 * b->frame, 64, 64 };

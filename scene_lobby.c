@@ -187,7 +187,7 @@ void SceneLobby_update(Scene_Lobby* s) {
             if (s->curPos[i] == 0) {
                 Mix_PlayChannel(-1, s->spawn, 0);
             }
-            if (s->frame % 4 == 0) {
+            if (s->frame % (Game.screenFreq/15) == 0) {
                 s->curPos[i]++;
             }
             if (s->curPos[i] == 5) {
@@ -200,7 +200,7 @@ void SceneLobby_update(Scene_Lobby* s) {
     }
 
     s->frame++;
-    if (s->frame >= 60) {
+    if (s->frame >= Game.screenFreq) {
         s->frame = 0;
     }
 

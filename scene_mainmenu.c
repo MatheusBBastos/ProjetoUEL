@@ -239,7 +239,7 @@ void SceneMainMenu_update(Scene_MainMenu* s) {
 
     int current = 0;
 
-    if (s->frame % 15 == 0) {
+    if (s->frame % (Game.screenFreq/4) == 0) {
         s->animation = !s->animation;
     }
 
