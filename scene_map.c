@@ -75,6 +75,12 @@ Scene_Map* SceneMap_new() {
     if (Mix_PausedMusic())
         Mix_ResumeMusic();
 
+    for (int i = 0; i < Game.map->charNumber; i++) {
+        newScene->nickOnPlayer[i] = WD_CreateTexture();
+        WD_TextureLoadFromText(newScene->nickOnPlayer[i], Network.playerNames[i], Game.niq, (SDL_Color) { 255, 255, 255 });
+        printf("%s (%d)\n", Network.playerNames[i], strlen(Network.playerNames[i]));
+    }
+
     return newScene;
 }
 
@@ -512,6 +518,7 @@ void SceneMap_update(Scene_Map* s) {
     }
 
 
+
     // Renderizar paredes
     Map_RenderWalls(Game.map, s->wallTexture, s->screenX, s->screenY);
     // Renderizar PowerUps
@@ -535,8 +542,16 @@ void SceneMap_update(Scene_Map* s) {
         }
     }
 
+
+
     // Renderizar terceira camada
     SDL_RenderCopy(Game.renderer, Game.map->layers[2], &renderQuad, &dstRect);
+
+    for (int i = 0; i < Game.map->charNumber; i++) {
+        if (Game.map->characters[i] != NULL) {
+            WD_TextureRender(s->nickOnPlayer[i], Game.map->characters[i]->renderX - s->screenX - (s->nickOnPlayer[i]->w/2) + (Game.map->characters[i]->sprite->w/6), Game.map->characters[i]->renderY - 40 - s->screenY );
+        }
+    }
 
     // Tela final
     if (s->ended) {

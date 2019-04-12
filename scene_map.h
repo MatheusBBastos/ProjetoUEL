@@ -40,6 +40,7 @@ typedef struct Scene_Map {
     WTexture* winText;
     WTexture* playerNames[4];
     WTexture* placement[4];
+    WTexture* nickOnPlayer[4];
     WTexture* bg;
     WTexture* status[4];
     bool keyUp, keyDown, keyRight, keyLeft;

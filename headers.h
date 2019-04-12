@@ -108,6 +108,7 @@ typedef struct GameInfo {
     TTF_Font* serversFonte;
     TTF_Font* serversName;
     TTF_Font* serversFontd;
+    TTF_Font* niq;
     // Modo debug
     bool debug;
     bool logado;
