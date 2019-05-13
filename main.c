@@ -104,7 +104,8 @@ int main(int argc, char* argv[]) {
         Game.serversName = TTF_OpenFont("content/kozuki.ttf", 80);
         Game.tip = TTF_OpenFont("content/roboto.ttf", 48);
         Game.win = TTF_OpenFont("content/roboto.ttf", 100);
-
+        Game.niq = TTF_OpenFont("content/roboto.ttf", 35);
+        Game.visualEd = 1;
         Game.enter = Mix_LoadWAV("content/enter.ogg");
         Game.change = Mix_LoadWAV("content/change.ogg");
 
@@ -114,7 +115,15 @@ int main(int argc, char* argv[]) {
         SceneManager.sLogin = SceneLogin_new();
         SDL_Event e;
 
-        Game.mainMusic = Mix_LoadMUS("content/hang.mp3");
+        switch (Game.visualEd) {
+            case 0:
+                Game.mainMusic = Mix_LoadMUS("content/hang.mp3");
+                break;
+            case 1:
+                Game.mainMusic = Mix_LoadMUS("content/BGT.mp3");
+                break;
+        }
+
         Game.type = Mix_LoadWAV("content/type.wav");
         Mix_PlayMusic(Game.mainMusic, -1);
 

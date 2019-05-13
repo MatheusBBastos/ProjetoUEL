@@ -25,7 +25,8 @@ Scene_Login* SceneLogin_new() {
     newScene->logo[0] = WD_CreateTexture();
     newScene->logo[1] = WD_CreateTexture();
     newScene->textError = WD_CreateTexture();
-    newScene->backgroundTexture = WD_CreateTexture();
+    newScene->backgroundTexture[0] = WD_CreateTexture();
+    newScene->backgroundTexture[1] = WD_CreateTexture();
     newScene->textLogar = WD_CreateTexture();
     newScene->textModoOff = WD_CreateTexture();
     newScene->textCaps = WD_CreateTexture();
@@ -46,16 +47,22 @@ Scene_Login* SceneLogin_new() {
     WD_TextureLoadFromText(newScene->textError, "*Acesso negado", Game.telaLogin, colorNotSelected);
     WD_TextureLoadFromText(newScene->textErrorBrute, "*Bruteforce negado", Game.telaLogin, colorNotSelected);
 
-    WD_TextureLoadFromFile(newScene->backgroundTexture, "content/bglogin.png");
-    int w = newScene->backgroundTexture->w, h = newScene->backgroundTexture->h;
-    newScene->renderQuad.x = 0;
-    newScene->renderQuad.y = 0;
-    newScene->renderQuad.w = w;
-    newScene->renderQuad.h = h;
+    switch (Game.visualEd) {
+        case 0:
+            WD_TextureLoadFromFile(newScene->backgroundTexture[0], "content/bglogin.png");
+            break;
+        case 1:
+            WD_TextureLoadFromFile(newScene->backgroundTexture[0], "content/extrabg2.png");
+            WD_TextureLoadFromFile(newScene->backgroundTexture[1], "content/extrabg.png");
+        break;
+    }
+
 
     SDL_Color textColor = { 50, 50, 50, 255 };
     newScene->login = WD_CreateTextBox(235, 610, 375, 52, 30, Game.inputFont, colorNotSelected, false);
     newScene->senha = WD_CreateTextBox(235, 680, 375, 52, 30, Game.inputFont, colorNotSelected, true);
+    newScene->maxFrame = 0;
+    newScene->plusOne = 0;
 
     newScene->acessonegado = false;
     SDL_StartTextInput();
@@ -150,10 +157,29 @@ void SceneLogin_update(Scene_Login* s) {
     SDL_Rect indexModoOff = { 135, 875 + s->textModoOff->h , s->textModoOff->w, 5 };
     SDL_Rect indexVoltar = { 135, 950 + s->textSair->h , s->textSair->w, 5 };
 
-    SDL_SetRenderDrawColor(Game.renderer, 0x12, 0xFF, 0xFF, 0xFF);
+    SDL_SetRenderDrawColor(Game.renderer, 0, 0, 0, 255);
     SDL_RenderClear(Game.renderer);
-    WD_TextureRenderDest(s->backgroundTexture, &s->renderQuad);
-    SDL_SetRenderDrawColor(Game.renderer, 0x00, 0x00, 0x00, 0x00);
+
+    switch (Game.visualEd) {
+        case 0:
+            WD_TextureRender(s->backgroundTexture[0], 0, 0);
+            break;
+        case 1:
+            if (s->maxFrame % 10 == 0) {
+                if (s->plusOne < 1165)
+                    s->plusOne++;
+                else
+                    s->plusOne--;
+            }
+
+            SDL_Rect xdd = { s->plusOne, 0, 1440, 1080 };
+            WD_TextureRenderExCustom(s->backgroundTexture[1], 0, 0, &xdd, 0.0, NULL, SDL_FLIP_NONE, 1440, 1080);
+
+
+            WD_TextureRender(s->backgroundTexture[0], 0, 0);
+            break;
+    }
+
 
 
     if (SDL_GetModState() & KMOD_CAPS) {
@@ -213,27 +239,33 @@ void SceneLogin_update(Scene_Login* s) {
         s->enteringFrame++;
     }
     s->frame++;
+    s->maxFrame++;
     if (s->frame >= Game.screenFreq) {
         s->frame = 0;
     }
+    if (Game.visualEd == 0) {
+        if (s->frame % 6 == 0) {
+            s->positionAnimado++;
+        }
 
-    if (s->frame % 6 == 0) {
-        s->positionAnimado++;
+        if (s->positionAnimado == 16)
+            s->positionAnimado = 0;
+
+        SDL_Rect clip = { 0, 320 * s->positionAnimado, 320, 320 };
+        WD_TextureRenderExCustom(s->logo[0], 1440-320, 1080-400, &clip, 0.0, NULL, SDL_FLIP_NONE, 320, 320);
     }
 
-    if (s->positionAnimado == 16)
-        s->positionAnimado = 0;
-
-    SDL_Rect clip = { 0, 320 * s->positionAnimado, 320, 320 };
-    WD_TextureRenderExCustom(s->logo[0], 1440-320, 1080-400, &clip, 0.0, NULL, SDL_FLIP_NONE, 320, 320);
 }
 
 
 void SceneLogin_destroy(Scene_Login* s) {
+    if (Game.visualEd == 1) {
+        WD_TextureDestroy(s->backgroundTexture[1]);
+    }
     WD_TextureDestroy(s->loading);
     WD_TextureDestroy(s->logo[0]);
     WD_TextureDestroy(s->logo[1]);
-    WD_TextureDestroy(s->backgroundTexture);
+    WD_TextureDestroy(s->backgroundTexture[0]);
     WD_TextureDestroy(s->textLogar);
     WD_TextureDestroy(s->textModoOff);
     WD_TextBoxDestroy(s->login);
@@ -287,7 +319,12 @@ void SceneLogin_handleEvent(Scene_Login* s, SDL_Event* e) {
                     break;
                 
                 case 3:
-                    strcpy(Game.nome, "User Teste");
+                    if (s->login->text != NULL && (strcmp(s->login->text, "") != 0)) {
+                        strcpy(Game.nome, s->login->text);
+                    }
+                    else {
+                        strcpy(Game.nome, "User Teste");
+                    }
                     strcpy(Game.loginID, "NULLRANK");
                     Game.logado = false;
                     SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_MAINMENU);

@@ -66,26 +66,34 @@ Scene_MainMenu* SceneMainMenu_new() {
     srand(time(NULL));   
     int r = rand() % 4;
     switch (r) {
-    case 0:
-        sprintf(cor, "content/azul.png");
-        break;
-    case 1:
-        sprintf(cor, "content/vermelho.png");
-        break;
-    case 2:
-        sprintf(cor, "content/roxo.png");
-        break;
-    case 3:
-        sprintf(cor, "content/amarelo.png");
-        break;
-    default:
-        sprintf(cor, "content/azul.png");
-        break;
+        case 0:
+            sprintf(cor, "content/azul.png");
+            break;
+        case 1:
+            sprintf(cor, "content/vermelho.png");
+            break;
+        case 2:
+            sprintf(cor, "content/roxo.png");
+            break;
+        case 3:
+            sprintf(cor, "content/amarelo.png");
+            break;
+        default:
+            sprintf(cor, "content/azul.png");
+            break;
     }
 
     WD_TextureLoadFromFile(newScene->animatedChar,cor);
 
-    WD_TextureLoadFromFile(newScene->backgroundTexture, "content/bgrank.png");
+    switch (Game.visualEd) {
+        case 0:
+            WD_TextureLoadFromFile(newScene->backgroundTexture, "content/bgrank.png");
+            break;
+        case 1:
+            WD_TextureLoadFromFile(newScene->backgroundTexture, "content/bgrank2.png");
+            break;
+    }
+
     int w = newScene->backgroundTexture->w, h = newScene->backgroundTexture->h;
     newScene->renderQuad.x = 0;
     newScene->renderQuad.y = 0;
@@ -320,6 +328,27 @@ void SceneMainMenu_handleEvent(Scene_MainMenu* s, SDL_Event* e) {
             } else {
                 SceneManager_performTransition(DEFAULT_TRANSITION_DURATION, SCENE_LOGIN);
             }
+        } else if (e->key.keysym.sym == SDLK_p) {
+            if (Game.visualEd == 0) {
+                Game.visualEd = 1;
+            }
+            else {
+                Game.visualEd = 0;
+            }
+
+            switch (Game.visualEd) {
+            case 0:
+                Game.mainMusic = Mix_LoadMUS("content/hang.mp3");
+                break;
+            case 1:
+                Game.mainMusic = Mix_LoadMUS("content/BGT.mp3");
+                break;
+            }
+
+            Game.type = Mix_LoadWAV("content/type.wav");
+            Mix_PauseMusic();
+            Mix_ResumeMusic();
+            Mix_PlayMusic(Game.mainMusic, -1);
         }
     }
 }

@@ -59,7 +59,14 @@ Scene_Servers* SceneServers_new() {
     WD_TextureLoadFromText(newScene->servir[1], "nova sala", Game.mainMenu_botoes, orange);
     WD_TextureLoadFromText(newScene->voltar, "Voltar", Game.mainMenu_botoes, orange);
     WD_TextureLoadFromFile(newScene->loading, "content/loading.png");
-    WD_TextureLoadFromFile(newScene->backgroundTexture, "content/bgserver.png");
+    switch (Game.visualEd) {
+        case 0:
+            WD_TextureLoadFromFile(newScene->backgroundTexture, "content/bgserver.png");
+            break;
+        case 1:
+            WD_TextureLoadFromFile(newScene->backgroundTexture, "content/bgserver2.png");
+            break;
+    }
 
     for (int i = 0; i < 4; i++) {
         newScene->serverName[i] = WD_CreateTexture();

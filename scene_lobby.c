@@ -36,7 +36,14 @@ Scene_Lobby* SceneLobby_new() {
     Game.map = Map_Create();
     SceneLobby_Receive(newScene);
 
-    WD_TextureLoadFromFile(newScene->bg, "content/bglobby.png");
+    switch (Game.visualEd) {
+        case 0:
+            WD_TextureLoadFromFile(newScene->bg, "content/bglobby.png");
+            break;
+        case 1:
+            WD_TextureLoadFromFile(newScene->bg, "content/bglobby2.png");
+            break;
+    }
 
     WD_TextureLoadFromFile(newScene->playersSprite[0], "content/azul.png");
     WD_TextureLoadFromFile(newScene->playersSprite[1], "content/vermelho.png");

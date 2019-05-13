@@ -9,7 +9,7 @@ typedef struct SceneManagerS SceneManagerS;
 
 typedef struct Scene_Login {
     WTexture* loading;
-    WTexture* backgroundTexture;
+    WTexture* backgroundTexture[2];
     WTexture* textLogar;
     WTexture* textModoOff;
     WTexture* logo[2];
@@ -24,6 +24,7 @@ typedef struct Scene_Login {
     bool brute;
     short int index;
     int socketFd;
+    int maxFrame, plusOne;
     int enteringFrame, frame;
     int positionAnimado;
     SDL_Rect renderQuad;

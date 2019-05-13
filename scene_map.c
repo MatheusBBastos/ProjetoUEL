@@ -21,7 +21,6 @@ Scene_Map* SceneMap_new() {
     newScene->winSound = Mix_LoadWAV("content/win.mp3");
     newScene->bombload = Mix_LoadWAV("content/bload.mp3");
     newScene->ded = Mix_LoadWAV("content/dedp.mp3");
-    newScene->backgroundMusic = Mix_LoadMUS("content/train.mp3");
     newScene->keyLeft = false;
     newScene->keyRight = false;
     newScene->keyDown = false;
@@ -40,12 +39,26 @@ Scene_Map* SceneMap_new() {
     newScene->player = Game.map->characters[Network.clientId];
     newScene->renderCharacters = malloc(Game.map->charNumber * sizeof(int));
 
+    switch (Game.visualEd) {
+        case 0:
+            WD_TextureLoadFromFile(newScene->bg, "content/bgingame.png");
+            WD_TextureLoadFromFile(newScene->animatedBomb, "content/FSD.png");
+            WD_TextureLoadFromFile(newScene->tileMap, "content/tilemaster.png");
+            newScene->backgroundMusic = Mix_LoadMUS("content/train.mp3");
+            WD_TextureLoadFromFile(newScene->wallTexture, "content/wall.png");
+            break;
+        case 1:
+            WD_TextureLoadFromFile(newScene->bg, "content/bgingame2.png");
+            WD_TextureLoadFromFile(newScene->animatedBomb, "content/FSD2.png");
+            WD_TextureLoadFromFile(newScene->tileMap, "content/tilemaster2.png");
+            newScene->backgroundMusic = Mix_LoadMUS("content/thrl.mp3");
+            WD_TextureLoadFromFile(newScene->wallTexture, "content/wall2.png");
+            break;
+    }
+
+
     // Carregar texturas
-    WD_TextureLoadFromFile(newScene->bg, "content/bgingame.png");
-    WD_TextureLoadFromFile(newScene->animatedBomb, "content/FSD.png");
-    WD_TextureLoadFromFile(newScene->tileMap, "content/tilemaster.png");
     WD_TextureLoadFromFile(newScene->explosionSprite, "content/explosion.png");
-    WD_TextureLoadFromFile(newScene->wallTexture, "content/wall.png");
     WD_TextureLoadFromFile(newScene->puTexture, "content/powerup.png");
     WD_TextureLoadFromFile(newScene->winChar, "content/win.png");
     WD_TextureLoadFromFile(newScene->loseChar, "content/lose.png");
